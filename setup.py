@@ -12,7 +12,7 @@ setup(
     name='demeter',
     version='1.0.0',
     packages=['change', 'weight', 'demeter', 'demeter_io'],
-    url='https://stash.pnnl.gov/projects/immm/repos/demeter/browse',
+    url='https://github.com/IMMM-SFA/demeter',
     license='BSD 2-Clause',
     author='Chris R. Vernon; Yannick le Page',
     author_email='chris.vernon@pnnl.gov; niquya@gmail.com',
