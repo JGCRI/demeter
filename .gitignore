@@ -1,0 +1,14 @@
+# OS-specific files
+.DS_Store
+
+# python pyc files
+*.pyc
+
+# exclude .idea dir
+.idea
+
+# exclude .nc files
+*.nc
+
+# exclude outputs dir
+outputs/
