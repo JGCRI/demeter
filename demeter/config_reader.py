@@ -215,10 +215,3 @@ class ReadConfig:
 
         else:
             return list()
-
-
-if __name__ == "__main__":
-
-    ini = '/users/d3y010/repos/github/demeter/config.ini'
-
-    ReadConfig(ini)
