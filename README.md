@@ -13,6 +13,6 @@ The Global Change Assessment Model (GCAM) is a global integrated assessment mode
 
 ## Installation
 Once cloned, run the setup.py file like so from terminal or command line:
-'python setup.py install'
+`python setup.py install`
 
 If a permissions error is encountered either run the command sudo or on Windows open cmd as an administrator.
