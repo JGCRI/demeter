@@ -10,5 +10,10 @@
 # exclude .nc files
 *.nc
 
-# exclude outputs dir
+# exclude dirs
 outputs/
+build/
+demeter.egg-info/
+dist/
+
+.Rhistory
