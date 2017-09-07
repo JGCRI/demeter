@@ -11,7 +11,7 @@ def readme():
 setup(
     name='demeter',
     version='1.0.0',
-    packages=['change', 'weight', 'demeter', 'demeter_io'],
+    packages=['demeter.change', 'demeter.weight', 'demeter', 'demeter.demeter_io'],
     url='https://github.com/IMMM-SFA/demeter',
     license='BSD 2-Clause',
     author='Chris R. Vernon; Yannick le Page',
