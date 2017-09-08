@@ -47,12 +47,15 @@ def reg_metric_iter(allregnumber, allregmet):
 
 
 def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub, pft, cons_data_subpft, reg,
-                target_intensification, trans_mat, target_change, errortol):
+                target_intensification, trans_mat, target_change, errortol, diag_file, diagnostic):
     """
     Apply conversion to every qualifying PFT.
 
     :return:            Array of PFTs
     """
+    if diagnostic == 1:
+        diag_file.write('{},{},{},{},{}\n'.format(reg+1, metnumber, pft, pft_toconv, int_target))
+
     while notdone:
         # grid cells with both the expanding and to-convert PFT
         exist_cells = np.where((spat_ludataharm_sub[:, pft] > 0)
@@ -109,7 +112,10 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
                   & (len(exist_cells) > 0) \
                   & (np.sum(mean_cons_cells) != len(mean_cons_cells))
 
-    return int_target, target_change, trans_mat, target_intensification  # int_target may not need to be returned, may be error in Yannicks original script
+        if diagnostic == 1:
+            diag_file.write('{},{},{},{},{}\n'.format(reg + 1, metnumber, pft, pft_toconv, int_target))
+
+    return int_target, target_change, trans_mat, target_intensification
 
 
 def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
@@ -193,7 +199,7 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
                 if len(exist_cells) > 0:
                     cpft = _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub, pft,
                                         cons_data_subpft, reg, target_intensification, trans_mat, target_change,
-                                        errortol)
+                                        errortol, diag_file, diagnostic)
 
                     int_target, target_change, trans_mat, target_intensification = cpft
 
@@ -207,11 +213,6 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
             percent = 0
         else:
             percent = (per_numer / per_denom) * 100
-
-        # write diagnostic
-        if diagnostic == 1:
-            diag_file.write('{0},{1},{2},{3},{4},{5},{6},{7}\n'.format(reg, metnumber, pft_ord, pft, fcs, int_target,
-                                                                  achieved, percent))
 
     return spat_ludataharm_sub, trans_mat, target_change, target_intensification
 
@@ -272,7 +273,7 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
         diag_fn, diag_ext = os.path.splitext(eval(diag_str))
         diag_fp = '{0}_{1}{2}'.format(diag_fn, yr, diag_ext)
         diag_file = open(diag_fp, 'w')
-        diag_file.write('reg,aeznumber,pftord,pft,lname,exp_target,achieved,percent\n')
+        diag_file.write('region_id,metric_id,from_pft,to_pft,target_value\n')
 
     else:
         diag_file = None

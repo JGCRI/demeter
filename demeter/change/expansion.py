@@ -16,12 +16,16 @@ from scipy import stats
 
 
 def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, pft, cons_data_subpft, reg,
-                trans_mat, non_exist_cells, stochastic_expansion, selection_threshold, target_change, errortol):
+                trans_mat, non_exist_cells, stochastic_expansion, selection_threshold, target_change, errortol,
+                diag_file, diagnostic):
     """
     Apply conversion to every qualifying PFT.
 
     :return:            Array of PFTs
     """
+    if diagnostic == 1:
+        diag_file.write('{},{},{},{},{}\n'.format(reg + 1, met_idx+1, pft, pft_toconv, exp_target))
+
     while notdone:
         # grid cells with both the expanding and to-convert PFT
         exist_cells = np.where(non_exist_cells & (spat_ludataharm_sub[:, pft_toconv] > 0))[0]
@@ -88,6 +92,9 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
                   & (np.sum(spat_ludataharm_sub[exist_cells, pft_toconv]) > errortol) \
                   & (len(exist_cells) > 0) \
                   & (np.sum(mean_cons_cells) != len(mean_cons_cells))
+
+        if diagnostic == 1:
+            diag_file.write('{},{},{},{},{}\n'.format(reg + 1, met_idx+1, pft, pft_toconv, exp_target))
 
     return exp_target, target_change, trans_mat
 
@@ -173,7 +180,8 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
                     exp_target, target_change, trans_mat = _convert_pft(notdone, exp_target, met_idx, pft_toconv,
                                                                         spat_ludataharm_sub, pft, cons_data_subpft, reg_idx,
                                                                         trans_mat, non_exist_cells, stochastic_expansion,
-                                                                        selection_threshold, target_change, errortol)
+                                                                        selection_threshold, target_change, errortol,
+                                                                        diag_file, diagnostic)
 
         # report how much expansion that has been achieved
         achieved = exp_target_const - target_change[reg_idx, met_idx, pft]
@@ -185,10 +193,6 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
             percent = 0
         else:
             percent = (per_numer / per_denom) * 100
-
-        if diagnostic == 1:
-            diag_file.write('{0},{1},{2},{3},{4},{5},{6},{7}\n'.format(reg_idx, met_idx, pft_ord, pft, fcs, exp_target,
-                                                                       achieved, percent))
 
     return spat_ludataharm_sub, target_change, trans_mat
 
@@ -216,7 +220,7 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
         diag_fn, diag_ext = os.path.splitext(c.expansion_diag)
         diag_fp = '{0}_{1}{2}'.format(diag_fn, yr, diag_ext)
         diag_file = open(diag_fp, 'w')
-        diag_file.write('reg,aeznumber,pftord,pft,lname,exp_target,achieved,percent\n')
+        diag_file.write('region_id,metric_id,from_pft,to_pft,target_value\n')
 
     else:
         diag_file = None
