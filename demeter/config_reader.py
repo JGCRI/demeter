@@ -42,7 +42,7 @@ class ReadConfig:
         i = self.config['INPUTS']
         self.alloc_dir = self.check_exist(os.path.join(self.in_dir, i['allocation_dir']), 'dir', self.log)
         self.base_dir = self.check_exist(os.path.join(self.in_dir, i['base_dir']), 'dir', self.log)
-        self.constraints_dir = self.check_exist(os.path.join(self.in_dir, i['constraints_dir']), 'dir', self.log)
+        self.constraints_dir = self.create_dir(os.path.join(self.in_dir, i['constraints_dir']), self.log)
         self.projected_dir = self.check_exist(os.path.join(self.in_dir, i['projected_dir']), 'dir', self.log)
         self.ref_dir = self.check_exist(os.path.join(self.in_dir, i['ref_dir']), 'dir', self.log)
 
