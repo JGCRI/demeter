@@ -109,6 +109,7 @@ class ReadConfig:
         self.year_b = int(p['year_b'])
         self.year_e = int(p['year_e'])
         self.timestep = int(p['timestep'])
+        self.proj_factor = int(p['proj_factor'])
         self.scenario = p['scenario']
         self.diagnostic = int(p['diagnostic'])
         self.intensification_ratio = float(p['intensification_ratio'])

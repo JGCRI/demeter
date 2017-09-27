@@ -257,7 +257,7 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
     """
     There are two ways to expand land covers:
     1) on grid-cells where they do exist (intensification, at the expense of contracting land covers)
-    2) on grid-cells where they dont exist, although preferentially close to grid-cells where the landcover
+    2) on grid-cells where they do not exist, although preferentially close to grid-cells where the landcover
     is found (expansion, or proximity expansion)
     There is a parameter (intensification_ratio) to control the desired ratio of intensification versus expansion.
     The downscaling first intensifies, until it reaches either that ratio, or the maximum intensification

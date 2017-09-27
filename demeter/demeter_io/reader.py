@@ -55,15 +55,15 @@ def to_list(f, header=True, delim=','):
     """
 
     l = []
-    with open(f) as get:
+    with open(f, 'rU') as get:
         for idx, line in enumerate(get):
-
-            # strip returns and split line by delimiter
-            item = line.strip().split(delim)
 
             # skip header if exists
             if header is True and idx == 0:
                 continue
+
+            # strip returns and split line by delimiter
+            item = line.strip().split(delim)
 
             # append index 1 items
             l.append(int(item[1]))
@@ -347,8 +347,8 @@ def read_base(log, c, spat_landclasses):
     if c.model.lower() == 'gcam' and c.agg_level == 2:
         spat_region[spat_region == 30] = 11
 
-    # create an array with calculated grid cell areas
-    cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 ** 2) * (c.resin ** 2)
+    # cell area from lat: lat_correction_factor * (lat_km at equator * lon_km at equator) * (resolution squred) = sqkm
+    cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 * 110.57) * (c.resin**2)
 
     # create an array with the actual percentage of the grid cell included in the data; some are cut by AEZ or Basin
     #   polygons others have no-data in land cover
