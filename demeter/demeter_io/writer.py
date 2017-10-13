@@ -8,16 +8,12 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com)
 """
 
-import csv
-import fiona
 import os
 import matplotlib.pyplot as plt
-import numpy as np
-import netCDF4 as nc
-
-from collections import OrderedDict
-from fiona.crs import from_epsg
 from matplotlib import cm
+import numpy as np
+from scipy import io as spio
+import shapefile
 
 import demeter.demeter_io.reader as rdr
 
@@ -42,60 +38,132 @@ def save_array(arr, out_file):
     np.save(out_file, arr)
 
 
-def to_shp(c, yr, final_landclasses, epsg=4326):
+def to_shp(c, yr, final_landclasses):
     """
-    Save as a shapefile file having the land area (squared-degrees) per grid cell per year.
+    Build shapefile containing landcover in km2 per grid location.
 
-    :param epsg             This is the EPSG of the projection of the data; default is WGS84 (epsg 4326)
+    :param c:                       config object
+    :param yr:                      target year
+    :param final_landclasses:       list of final land classes
     """
 
-    def _build_schema(final_landclasses, metric):
-        """
-        Build schema for shapefile output
-        """
+    # instantiate the writer object
+    w = shapefile.Writer(shapeType=shapefile.POINT)
 
-        d = {'geometry': 'Point', 'properties': {'latitude': 'float',
-                                                 'longitude': 'float',
-                                                 '{0}_id'.format(metric): 'int',
-                                                 'region_id': 'int',
-                                                 'water': 'float'}
-             }
+    # field list
+    fields = ['latitude', 'longitude', '{0}_id'.format(c.metric.lower()), 'region_id', 'water']
 
-        for i in final_landclasses:
-            d['properties'][i] = 'float'
+    # set schema
+    w.field('latitude', 'F', decimal=10)
+    w.field('longitude', 'F', decimal=10)
+    w.field('{0}_id'.format(c.metric.lower()), 'C')
+    w.field('region_id', 'C')
+    w.field('water', 'F', decimal=10)
 
-        return OrderedDict((k, v) for k, v in sorted(d.items()))
+    # prep string for record
+    s = 'w.record(lat, lon, met, reg, wat,'
 
-    def _feature(row):
-        """
-        Convert row to Fiona dict.
-        """
-        point = {
-            'type': 'Point',
-            'coordinates': [float(row['longitude']), float(row['latitude'])]
-        }
+    # add functional type fields and prepare record string
+    for idx, fci in enumerate(final_landclasses):
 
-        p = {k: ptypes[k](v) for k, v in row.items()}
+        fc = fci.lower()
 
-        return {'type': 'Feature', 'geometry': point, 'properties': p}
+        w.field(fc, 'F', decimal=10)
 
-    # create out path and file name
-    out_file = os.path.join(c.lc_per_step_shp, 'landcover_{0}_timestep.shp'.format(yr))
+        fields.append(fc)
 
-    # read in CSV
-    f = csv.DictReader(open(os.path.join(c.lc_per_step_csv, 'landcover_{0}_timestep.csv'.format(yr))), delimiter=',')
+        # append fields to record string
+        if idx+1 < len(final_landclasses):
+            s += "float(r[d['{0}']]),".format(fc)
 
-    # build shapefile schema
-    schema = _build_schema(final_landclasses, c.metric.lower())
+        else:
+            s += "float(r[d['{0}']]))".format(fc)
 
-    # make shapefile
-    with fiona.collection(out_file, 'w', driver='ESRI Shapefile', schema=schema, crs=from_epsg(epsg)) as shp:
+    # read landcover CSV
+    with open(os.path.join(c.lc_per_step_csv, 'landcover_{0}_timestep.csv'.format(yr))) as get:
 
-        # map property names to Python types
-        ptypes = {k: fiona.prop_type(v) for k, v in shp.schema['properties'].items()}
+        # get the header as a list
+        hdr = get.next().strip().split(',')
 
-        # write to shapefile
-        shp.writerecords(map(_feature, f))
+        # get the index locations of field to write in input file
+        d = {k: hdr.index(k) for k in fields}
+
+        for row in get:
+
+            # row to list
+            r = [i.lower() for i in row.strip().split(',')]
+
+            lat = float(r[d['latitude']])
+            lon = float(r[d['longitude']])
+            met = r[d['{0}_id'.format(c.metric.lower())]]
+            reg = r[d['region_id']]
+            wat = float(r[d['water']])
+
+            # add geometry to shapefile
+            w.point(lon, lat)
+
+            # add attribute to shapefile
+            eval(s)
+
+    # save output
+    out_shp = os.path.join(c.lc_per_step_shp, 'landcover_{0}_timestep.shp'.format(yr))
+    w.save(out_shp)
+
+
+# def to_shp(c, yr, final_landclasses, epsg=4326):
+#     """
+#     Save as a shapefile file having the land area (squared-degrees) per grid cell per year.
+#
+#     :param epsg             This is the EPSG of the projection of the data; default is WGS84 (epsg 4326)
+#     """
+#
+#     def _build_schema(final_landclasses, metric):
+#         """
+#         Build schema for shapefile output
+#         """
+#
+#         d = {'geometry': 'Point', 'properties': {'latitude': 'float',
+#                                                  'longitude': 'float',
+#                                                  '{0}_id'.format(metric): 'int',
+#                                                  'region_id': 'int',
+#                                                  'water': 'float'}
+#              }
+#
+#         for i in final_landclasses:
+#             d['properties'][i] = 'float'
+#
+#         return OrderedDict((k, v) for k, v in sorted(d.items()))
+#
+#     def _feature(row):
+#         """
+#         Convert row to Fiona dict.
+#         """
+#         point = {
+#             'type': 'Point',
+#             'coordinates': [float(row['longitude']), float(row['latitude'])]
+#         }
+#
+#         p = {k: ptypes[k](v) for k, v in row.items()}
+#
+#         return {'type': 'Feature', 'geometry': point, 'properties': p}
+#
+#     # create out path and file name
+#     out_file = os.path.join(c.lc_per_step_shp, 'landcover_{0}_timestep.shp'.format(yr))
+#
+#     # read in CSV
+#     f = csv.DictReader(open(os.path.join(c.lc_per_step_csv, 'landcover_{0}_timestep.csv'.format(yr))), delimiter=',')
+#
+#     # build shapefile schema
+#     schema = _build_schema(final_landclasses, c.metric.lower())
+#
+#     # make shapefile
+#     with fiona.collection(out_file, 'w', driver='ESRI Shapefile', schema=schema, crs=from_epsg(epsg)) as shp:
+#
+#         # map property names to Python types
+#         ptypes = {k: fiona.prop_type(v) for k, v in shp.schema['properties'].items()}
+#
+#         # write to shapefile
+#         shp.writerecords(map(_feature, f))
 
 
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
@@ -174,7 +242,8 @@ def to_netcdf(spat_ludataharm, cellindexresin, lat, lon, resin, final_landclasse
         if yr == user_years[0]:
 
             # create NetCDF file
-            f = nc.Dataset(out_file, 'w', format='NETCDF4')
+            f = spio.netcdf.netcdf_file(out_file, 'w')
+            # f = nc.Dataset(out_file, 'w', format='NETCDF4')
 
             # create dimensions
             f.createDimension('lat', len(lat))
@@ -190,7 +259,7 @@ def to_netcdf(spat_ludataharm, cellindexresin, lat, lon, resin, final_landclasse
             lon_bnd = f.createVariable('lon_bnds', 'f4', ('lon', 'nv'))
             tm_bnd = f.createVariable('time_bnds', 'f4', ('time', 'nv'))
 
-            lc_perc = f.createVariable('landcoverpercentage', 'f8', ('time', 'lat', 'lon', ), fill_value=-1.)
+            lc_perc = f.createVariable('landcoverpercentage', 'f8', ('time', 'lat', 'lon', )) # , fill_value=-1.)
 
             # create metadata
             lts.units = 'degrees_north'
@@ -253,7 +322,8 @@ def to_netcdf(spat_ludataharm, cellindexresin, lat, lon, resin, final_landclasse
         else:
 
             # open file
-            f = nc.Dataset(out_file, 'r+', format='NETCDF4')
+            # f = nc.Dataset(out_file, 'r+', format='NETCDF4')
+            f = spio.netcdf.netcdf_file(out_file, 'a')
 
             # get previous time steps land use percentage
             prev_lu = f.variables['landcoverpercentage'][yr - user_years[0] - np.int_(timestep), :, :]
