@@ -305,7 +305,10 @@ def read_base(log, c, spat_landclasses):
         log.error(e)
 
     # create array of latitude, longitude coordinates
-    spat_coords = df[['latcoord', 'loncoord']].as_matrix()
+    try:
+        spat_coords = df[['latcoord', 'loncoord']].as_matrix()
+    except KeyError:
+        spat_coords = df[['latitude', 'longitude']].as_matrix()
 
     # create array of metric (AEZ or basin id) per region; naming convention (regionmetric); formerly spat_aezreg
     try:
