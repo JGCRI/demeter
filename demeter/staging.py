@@ -280,8 +280,9 @@ class Stage:
         # apply constraints
         self.constrain()
 
-        # create kernel density filter
-        self.kernel_filter()
+        # create kernel density filter if not running multiple jobs
+        if self.c.shuffle == 0:
+            self.kernel_filter()
 
         # set data for step zero
         self.set_step_zero()

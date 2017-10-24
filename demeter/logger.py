@@ -16,10 +16,11 @@ class Logger:
 
     LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
-    def __init__(self, log_file, scenario):
+    def __init__(self, log_file, scenario, console_off=False):
 
         self.f = log_file
         self.scenario = scenario
+        self.console_off = console_off
 
     @staticmethod
     def get_logger(scenario):
@@ -66,11 +67,13 @@ class Logger:
         # instantiate logger
         log = self.get_logger(self.scenario)
 
-        # create console handler
-        ch = self.console_handler()
+        if self.console_off is False:
 
-        # add console handler to logger
-        log.addHandler(ch)
+            # create console handler
+            ch = self.console_handler()
+
+            # add console handler to logger
+            log.addHandler(ch)
 
         # create file logging functionality
         self.set_file(self.f)
