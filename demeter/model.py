@@ -19,7 +19,7 @@ from demeter.config_reader import ReadConfig, ReadConfigShuffle, ReadConfigIniti
 from demeter.logger import Logger
 from demeter.process import ProcessStep
 from demeter.staging import Stage
-from demeter.simulation.shuffle import RandomConfig
+from demeter.ensemble.ensemble import RandomConfig
 from demeter.weight.kernel_density import KernelDensity
 
 
@@ -116,7 +116,7 @@ class Demeter(Logger):
             self.log.info('END')
             self.log = None
 
-    def random_runs(self, jobs=-2):
+    def ensemble(self, jobs=-2):
         """
         Execute random runs in parallel.
 
@@ -254,10 +254,12 @@ def _shuffle(dir, i, oc):
         e = sys.exc_info()[0]
         t = traceback.format_exc()
 
+        print(e)
+        print(t)
+
         # log exception and traceback as error
         log.error(e)
         log.error(t)
-        log = None
 
     finally:
 

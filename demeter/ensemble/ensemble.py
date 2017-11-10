@@ -375,76 +375,48 @@ class RandomConfig:
         :return:
         """
 
+        prir = []
+        with open(self.priority_file, 'rU') as get:
+            get.next()
+            for i in get:
+                s = [int(i) for i in i.strip().split(',')[1:]]
+                prir.append(s)
+
+        pri = np.array(prir)
+
+        l = []
+        for a in self.r_treatment_order:
+            for b in self.r_intense_ratio:
+                for g in self.r_select_thresh:
+                    for k in self.r_kernel:
+                        l.append([a, b, g, int(k)])
+
         for i in range(self.perms):
 
-            # get priority order; number of these is already randomly chosen when created; there will not be duplicates
-            pri = self.r_priority[i]
+            sct = np.random.choice(len(l)-1)
+            trt, iv, st, kd = l[sct]
+            l.pop(sct)
+            self.mix.append([pri, trt, iv, st, kd, i])
 
-            # get treatment order by random choice
-            trt = self.r_treatment_order[np.random.choice(len(self.r_treatment_order))]
-
-            # get random intensification ratio
-            iv = self.r_intense_ratio[np.random.choice(len(self.r_intense_ratio))]
-
-            # get random selection threshold value
-            st = self.r_select_thresh[np.random.choice(len(self.r_select_thresh))]
-
-            # get random kernel distance value
-            kd = int(self.r_kernel[np.random.choice(len(self.r_kernel))])
-
-            # scenario suffix so jobs will not overwrite each other
-            suf = i
-
-            # add to output object
-            self.mix.append([pri, trt, iv, st, kd, suf])
-
-
-
-
-if __name__ == "__main__":
-
-    ini = '/users/ladmin/repos/github/demeter/example/config.ini'
-    lim = '/users/d3y010/repos/github/demeter/example/inputs/reference/limits.csv'
-    priority = '/users/d3y010/repos/github/demeter/example/inputs/allocation/priority_allocation_rules.csv'
-    treatment = '/users/d3y010/repos/github/demeter/example/inputs/allocation/treatment_order_allocation_rules.csv'
-
-    # s.transition_rules; use like arr[idx]
-    arr = priority_allocation(priority, n=2)
-
-    # s.order_rules used in s for kernel density window
-    trt = treatment_order(treatment)
-
-    cv = scenarios(lim)
-
-    # c.intensification_ratio; calc from limits.csv
-    ir = cv['intensification_ratio']
-
-    # c.selection_threshold; calc from limits.csv
-    sth = cv['selection_threshold']
-
-    # c.kerneldistance; calc from limits.csv
-    kd = cv['kerneldistance']
-
-    class xf:
-        def __init__(self, priority, treatment, lim):
-            self.priority_allocation = priority
-            self.treatment_order = treatment
-            self.limits_file = lim
-
-    c = xf(priority, treatment, lim)
-
-    rc = RandomConfig(c, 2)
-
-    print rc.mix
-
-    #!!!!! START by integrating the mix into staging
-
-
-
-
-
-
-
-
-
-
+        # for i in range(self.perms):
+        #
+        #     # get priority order; number of these is already randomly chosen when created; there will not be duplicates
+        #     pri = self.r_priority[i]
+        #
+        #     # get treatment order by random choice
+        #     trt = self.r_treatment_order[np.random.choice(len(self.r_treatment_order))]
+        #
+        #     # get random intensification ratio
+        #     iv = self.r_intense_ratio[np.random.choice(len(self.r_intense_ratio))]
+        #
+        #     # get random selection threshold value
+        #     st = self.r_select_thresh[np.random.choice(len(self.r_select_thresh))]
+        #
+        #     # get random kernel distance value
+        #     kd = int(self.r_kernel[np.random.choice(len(self.r_kernel))])
+        #
+        #     # scenario suffix so jobs will not overwrite each other
+        #     suf = i
+        #
+        #     # add to output object
+        #     self.mix.append([pri, trt, iv, st, kd, suf])

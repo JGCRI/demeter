@@ -117,7 +117,10 @@ class ReadConfig:
         self.kerneldistance = int(p['kerneldistance'])
         self.permutations = int(p['permutations'])
         self.map_tot_luc = int(p['map_tot_luc'])
-        self.save_netcdf = int(p['save_netcdf'])
+        self.target_years_output = self.set_target(p['target_years_output'])
+        self.save_tabular = int(p['save_tabular'])
+        self.tabular_units = p['tabular_units']
+        self.save_netcdf_pft = int(p['save_netcdf_pft'])
         self.map_constraints = int(p['map_constraints'])
         self.stochastic_expansion = int(p['stochastic_expansion'])
         self.save_transitions = int(p['save_transitions'])
@@ -161,6 +164,16 @@ class ReadConfig:
             log.error(e)
             log.error("ERROR:  Failed to create directory.")
             sys.exit()
+
+    def set_target(self, t):
+        """
+        Set target years to look for when output products.  Only the years in this list
+        will be output.  If none specified, all will be used.
+        """
+        if t.lower().strip() == 'all':
+            return range(self.year_b, self.year_e + self.timestep, self.timestep)
+        else:
+            return [int(i) for i in t.strip().split(';')]
 
     def console_logger(self):
         """
@@ -406,9 +419,12 @@ class ReadConfigShuffle:
         self.kerneldistance = int(p['kerneldistance'])
         self.permutations = int(p['permutations'])
         self.map_tot_luc = int(p['map_tot_luc'])
-        self.save_netcdf = int(p['save_netcdf'])
+        self.target_years_output = self.set_target(p['target_years_output'])
+        self.save_netcdf_pft = int(p['save_netcdf_pft'])
         self.map_constraints = int(p['map_constraints'])
         self.stochastic_expansion = int(p['stochastic_expansion'])
+        self.save_tabular = int(p['save_tabular'])
+        self.tabular_units = p['tabular_units']
         self.save_transitions = int(p['save_transitions'])
         self.save_transition_maps = int(p['map_transitions'])
         self.save_shapefile = int(p['save_shapefile'])
@@ -451,6 +467,16 @@ class ReadConfigShuffle:
             log.error("ERROR:  Failed to create directory.")
             sys.exit()
 
+    def set_target(self, t):
+        """
+        Set target years to look for when output products.  Only the years in this list
+        will be output.  If 'all' specified, all will be used.
+        """
+        if t.lower().strip() == 'all':
+            return range(self.year_b, self.year_e + self.timestep, self.timestep)
+        else:
+            return [int(i) for i in t.strip().split(';')]
+
     def console_logger(self):
         """
         Instantiate console logger to log any errors in config.ini file that the user
@@ -491,3 +517,6 @@ class ReadConfigShuffle:
 
         else:
             return list()
+
+
+ReadConfig('/users/ladmin/repos/github/demeter/example/config.ini')
