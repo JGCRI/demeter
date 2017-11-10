@@ -182,6 +182,9 @@ def _shuffle(dir, i, oc):
     # set start time
     t0 = time.time()
 
+    onumstr = ''
+
+
     try:
 
         # unpack
@@ -192,12 +195,25 @@ def _shuffle(dir, i, oc):
         kernel_distance = i[4]
         scenario_suffix = i[5]
 
+        # output number string
+        onumstr += ','.join([str(i) for i in treatment_order])
+        onumstr += ',{}'.format(intensification_ratio)
+        onumstr += ',{}'.format(selection_threshold)
+        onumstr += ',{}'.format(kernel_distance)
+
         # read in config file
         out_dir = _get_outdir(oc.out_dir, oc.scenario, scenario_suffix)
         c = ReadConfigShuffle(oc.ini_file, new_out_dir=out_dir)
 
         # build log file name with scenario suffix
         log_file = op.join(dir, '{0}/logfile_{1}_{2}_{3}.log'.format(c.log_dir, c.scenario, c.dt, scenario_suffix))
+
+        # build num string file name with scenario suffix
+
+        num_str_file = op.join(dir, '{0}/params.log'.format(c.log_dir))
+
+        with open(num_str_file, 'w') as nx:
+            nx.write(onumstr)
 
         # instantiate log file
         log = _make_logfile(log_file, c.scenario)
