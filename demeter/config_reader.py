@@ -373,21 +373,6 @@ class ReadConfigShuffle:
         self.gcam_regnamefile = self.check_exist(os.path.join(self.ref_dir, r['gcam_regnamefile']), 'file', self.log)
         self.limits_file = self.check_exist(os.path.join(self.ref_dir, r['limits_file']), 'file', self.log)
 
-        # create and validate output dir full paths
-        o = self.config['OUTPUTS']
-        self.diag_dir = self.create_dir(os.path.join(self.out_dir, o['diag_dir']), self.log)
-        self.log_dir = self.create_dir(os.path.join(self.out_dir, o['log_dir']), self.log)
-        self.kernel_map_dir = self.create_dir(os.path.join(self.out_dir, o['kernel_map_dir']), self.log)
-        self.transition_tabular_dir = self.create_dir(os.path.join(self.out_dir, o['transition_tabular']), self.log)
-        self.transiton_map_dir = self.create_dir(os.path.join(self.out_dir  , o['transition_maps']), self.log)
-        self.luc_intense_p1_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p1_dir']), self.log)
-        self.luc_intense_p2_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p2_dir']), self.log)
-        self.luc_expand_dir = self.create_dir(os.path.join(self.out_dir, o['luc_expand_dir']), self.log)
-        self.luc_ts_luc = self.create_dir(os.path.join(self.out_dir, o['luc_ts_luc']), self.log)
-        self.lc_per_step_csv = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_csv']), self.log)
-        self.lc_per_step_nc = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_nc']), self.log)
-        self.lc_per_step_shp = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_shp']), self.log)
-
         # create and validate diagnostics file full paths
         d = o['DIAGNOSTICS']
         self.harm_coeff_file = os.path.join(self.diag_dir, d['harm_coeff'])
@@ -429,6 +414,39 @@ class ReadConfigShuffle:
         self.save_transition_maps = int(p['map_transitions'])
         self.save_shapefile = int(p['save_shapefile'])
         self.shuffle = 1
+
+        # create and validate output dir full paths
+        o = self.config['OUTPUTS']
+        self.log_dir = self.create_dir(os.path.join(self.out_dir, o['log_dir']), self.log)
+
+        if self.diagnostic == 1:
+            self.diag_dir = self.create_dir(os.path.join(self.out_dir, o['diag_dir']), self.log)
+
+        if self.map_kernels == 1:
+            self.kernel_map_dir = self.create_dir(os.path.join(self.out_dir, o['kernel_map_dir']), self.log)
+
+        if self.save_transitions == 1:
+            self.transition_tabular_dir = self.create_dir(os.path.join(self.out_dir, o['transition_tabular']), self.log)
+
+        if self.transition_tabular_dir == 1:
+            self.transiton_map_dir = self.create_dir(os.path.join(self.out_dir  , o['transition_maps']), self.log)
+
+        if self.map_luc_steps == 1:
+            self.luc_intense_p1_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p1_dir']), self.log)
+            self.luc_intense_p2_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p2_dir']), self.log)
+            self.luc_expand_dir = self.create_dir(os.path.join(self.out_dir, o['luc_expand_dir']), self.log)
+
+        if self.map_luc == 1:
+            self.luc_ts_luc = self.create_dir(os.path.join(self.out_dir, o['luc_ts_luc']), self.log)
+
+        if self.save_tabular == 1:
+            self.lc_per_step_csv = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_csv']), self.log)
+
+        if self.save_netcdf_pft == 1:
+            self.lc_per_step_nc = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_nc']), self.log)
+
+        if self.save_shapefile == 1:
+            self.lc_per_step_shp = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_shp']), self.log)
 
     @staticmethod
     def check_exist(f, kind, log):
@@ -517,6 +535,3 @@ class ReadConfigShuffle:
 
         else:
             return list()
-
-
-ReadConfig('/users/ladmin/repos/github/demeter/example/config.ini')

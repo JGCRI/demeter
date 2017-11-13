@@ -167,7 +167,7 @@ def _get_outdir(pth, scenario, suffix):
     dt = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')
 
     # create unique output dir name
-    v = '{0}_{1}_{2}'.format(scenario, dt, suffix)
+    v = '{0}_{1}'.format(scenario, suffix)
 
     # create run specific directory matching the format used to create the log file
     return op.join(pth, v)
