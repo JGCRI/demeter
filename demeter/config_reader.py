@@ -165,6 +165,7 @@ class ReadConfig:
             log.error("ERROR:  Failed to create directory.")
             sys.exit()
 
+
     def set_target(self, t):
         """
         Set target years to look for when output products.  Only the years in this list
@@ -339,6 +340,7 @@ class ReadConfigShuffle:
         self.root_dir = self.check_exist(s['root_dir'], 'dir', self.log)
         self.in_dir = self.check_exist(os.path.join(self.root_dir, s['in_dir']), 'dir', self.log)
         self.out_dir = self.create_dir(new_out_dir, self.log)
+        o = self.config['OUTPUTS']
 
         # create and validate input dir full paths
         i = self.config['INPUTS']
@@ -416,7 +418,6 @@ class ReadConfigShuffle:
         self.shuffle = 1
 
         # create and validate output dir full paths
-        o = self.config['OUTPUTS']
         self.log_dir = self.create_dir(os.path.join(self.out_dir, o['log_dir']), self.log)
 
         if self.diagnostic == 1:

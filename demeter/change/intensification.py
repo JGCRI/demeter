@@ -153,12 +153,19 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
         else:
             # print("\nIntensification desired for:  {0}, {1}".format(fcs, int_target))
 
-            # retrieve expansion constraints for the PFT (e.g., soil quality, protection status, etc.)
+            # retrieve constraints for the PFT (e.g., soil quality, protection status, etc.)
             cons_rules_pft = constrain_rules[:, pft]
 
-            # add kernel density to the constraints and normalize their value (all constraints are [0 1])
+            # add kernel density to the constraints and normalize their value
             kdc = kernel_vector_sub[:, pft] / np.nanmax([0.00000001, np.nanmax(kernel_vector_sub[:, pft])])
             cons_data_sub[:, -1] = kdc
+
+            # create index order for constraints array where kernel density will be position 0
+            cons_idx_order = [0 if i == cons_data_sub.shape[1]-1 else i+1 for i in range(cons_data_sub.shape[1])]
+
+            # reorder constraint weights array
+            c_arg = np.argsort(cons_idx_order)
+            cons_data_sub = cons_data_sub[:, c_arg]
 
             # apply the weight of each constrain for the target pft
             cons_data_subpft = cons_data_sub
@@ -170,9 +177,10 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
             # multiply negative constraints weight by -1 to turn it positive
             cons_rules_pft[cons_rules_pft < 0] *= -1
 
-            # zero means that constraint does not apply to the PFT, we turn these values into NaN
+            # apply constraint to spatial data
             cons_data_subpft *= np.tile(cons_rules_pft, (len(spat_ludataharm_sub[:, pft]), 1))
 
+            # zero means that constraint does not apply to the PFT, we turn these values into NaN
             cons_data_subpft[:, cons_rules_pft == 0] = np.nan
 
             # iterate through the conversion priority rules to find other PFTs that are contracting (where expansion
@@ -192,8 +200,7 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
                 notdone = (int_target > errortol) & (tce == 1)
 
                 # identify grid cells with both expanding and to-convert PFT
-                exist_cells = np.where((spat_ludataharm_sub[:, pft] > 0)
-                                       & (spat_ludataharm_sub[:, pft_toconv] > 0))[0]
+                exist_cells = np.where((spat_ludataharm_sub[:, pft] > 0) & (spat_ludataharm_sub[:, pft_toconv] > 0))[0]
 
                 # apply conversion to every qualifying PFT
                 if len(exist_cells) > 0:

@@ -369,54 +369,59 @@ class RandomConfig:
 
         return d
 
+    def scenarios(self):
+        """
+        Create all possible values in one dimensional settings for parameters defined in the limits file.
+        :param lim              Input CSV with header containing limits:  param,min_val,max_val,interval
+        :return:                Dictionary where parameter: array([n1, ...])
+        """
+        d = {}
+        with open(self.limits_file, 'rU') as get:
+
+            # pass header
+            get.next()
+
+            for idx, i in enumerate(get):
+
+                # split row
+                r = i.strip().split(',')
+
+                mn = float(r[1])
+                mx = float(r[2])
+                st = float(r[3])
+
+                if st >= 1:
+                    mx += st
+
+                d[r[0]] = np.arange(mn, mx, st)
+
+        return d
+
     def selection(self):
         """
         Build a possible number of configurations for parameters.
         :return:
         """
 
-        prir = []
-        with open(self.priority_file, 'rU') as get:
-            get.next()
-            for i in get:
-                s = [int(i) for i in i.strip().split(',')[1:]]
-                prir.append(s)
-
-        pri = np.array(prir)
-
-        l = []
-        for a in self.r_treatment_order:
-            for b in self.r_intense_ratio:
-                for g in self.r_select_thresh:
-                    for k in self.r_kernel:
-                        l.append([a, b, g, int(k)])
-
         for i in range(self.perms):
 
-            sct = np.random.choice(len(l)-1)
-            trt, iv, st, kd = l[sct]
-            l.pop(sct)
-            self.mix.append([pri, trt, iv, st, kd, i])
+            # get priority order; number of these is already randomly chosen when created; there will not be duplicates
+            pri = self.r_priority[i]
 
-        # for i in range(self.perms):
-        #
-        #     # get priority order; number of these is already randomly chosen when created; there will not be duplicates
-        #     pri = self.r_priority[i]
-        #
-        #     # get treatment order by random choice
-        #     trt = self.r_treatment_order[np.random.choice(len(self.r_treatment_order))]
-        #
-        #     # get random intensification ratio
-        #     iv = self.r_intense_ratio[np.random.choice(len(self.r_intense_ratio))]
-        #
-        #     # get random selection threshold value
-        #     st = self.r_select_thresh[np.random.choice(len(self.r_select_thresh))]
-        #
-        #     # get random kernel distance value
-        #     kd = int(self.r_kernel[np.random.choice(len(self.r_kernel))])
-        #
-        #     # scenario suffix so jobs will not overwrite each other
-        #     suf = i
-        #
-        #     # add to output object
-        #     self.mix.append([pri, trt, iv, st, kd, suf])
+            # get treatment order by random choice
+            trt = self.r_treatment_order[np.random.choice(len(self.r_treatment_order))]
+
+            # get random intensification ratio
+            iv = self.r_intense_ratio[np.random.choice(len(self.r_intense_ratio))]
+
+            # get random selection threshold value
+            st = self.r_select_thresh[np.random.choice(len(self.r_select_thresh))]
+
+            # get random kernel distance value
+            kd = int(self.r_kernel[np.random.choice(len(self.r_kernel))])
+
+            # scenario suffix so jobs will not overwrite each other
+            suf = i
+
+            # add to output object
+            self.mix.append([pri, trt, iv, st, kd, suf])

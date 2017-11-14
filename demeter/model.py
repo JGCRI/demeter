@@ -184,7 +184,6 @@ def _shuffle(dir, i, oc):
 
     onumstr = ''
 
-
     try:
 
         # unpack
@@ -282,3 +281,26 @@ def _shuffle(dir, i, oc):
         log.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
         log.info('END')
         log = None
+
+
+if __name__ == '__main__':
+
+    # terminal option for running without installing demeter
+    args = sys.argv[1:]
+
+    if len(args) > 1:
+        print('USAGE:  One argument should be passed. Full path file name with extension for config file.')
+        print('Exiting...')
+        sys.exit(1)
+
+    ini = args[0]
+
+    if op.isfile is False:
+        print('ERROR:  Config file not found.')
+        print('You entered:  {0}'.format(ini))
+        print('Please enter a full path file name with extension to config file and retry.')
+        sys.exit(1)
+
+    dm = Demeter(config=ini)
+    dm.execute()
+    del dm
