@@ -127,13 +127,18 @@ class ReadConfig:
         self.target_years_output = self.set_target(p['target_years_output'])
         self.save_tabular = int(p['save_tabular'])
         self.tabular_units = p['tabular_units']
-        self.save_netcdf_pft = int(p['save_netcdf_pft'])
         self.map_constraints = int(p['map_constraints'])
         self.stochastic_expansion = int(p['stochastic_expansion'])
         self.save_transitions = int(p['save_transitions'])
         self.save_transition_maps = int(p['map_transitions'])
         self.save_shapefile = int(p['save_shapefile'])
         self.shuffle = 0
+
+        try:
+            self.save_netcdf_pft = int(p['save_netcdf_pft'])
+        except KeyError:
+            self.save_netcdf_pft = 0
+
 
     @staticmethod
     def check_exist(f, kind, log):
@@ -283,11 +288,11 @@ class ReadConfigInitial:
         if kind == 'file' and os.path.isfile(f) is False:
             log.error("File not found:  {0}".format(f))
             log.error("Confirm path and retry.")
-            sys.exit()
+            raise IOError('File not found: {0}. Confirm path and retry.'.format(f))
         elif kind == 'dir' and os.path.isdir(f) is False:
             log.error("Directory not found:  {0}".format(f))
             log.error("Confirm path and retry.")
-            sys.exit()
+            raise IOError('Directory not found: {0}. Confirm path and retry.'.format(f))
         else:
             return f
 
@@ -414,7 +419,6 @@ class ReadConfigShuffle:
         self.permutations = int(p['permutations'])
         self.map_tot_luc = int(p['map_tot_luc'])
         self.target_years_output = self.set_target(p['target_years_output'])
-        self.save_netcdf_pft = int(p['save_netcdf_pft'])
         self.map_constraints = int(p['map_constraints'])
         self.stochastic_expansion = int(p['stochastic_expansion'])
         self.save_tabular = int(p['save_tabular'])
@@ -423,6 +427,11 @@ class ReadConfigShuffle:
         self.save_transition_maps = int(p['map_transitions'])
         self.save_shapefile = int(p['save_shapefile'])
         self.shuffle = 1
+        try:
+            self.save_netcdf_pft = int(p['save_netcdf_pft'])
+        except KeyError:
+            self.save_netcdf_pft = 0
+
 
         # create and validate output dir full paths
         self.log_dir = self.create_dir(os.path.join(self.out_dir, o['log_dir']), self.log)
@@ -543,9 +552,3 @@ class ReadConfigShuffle:
 
         else:
             return list()
-
-
-if __name__ == '__main__':
-
-    ini = '/Users/ladmin/Desktop/yaling/basin_example/config_basins.ini'
-    ReadConfig(ini)
