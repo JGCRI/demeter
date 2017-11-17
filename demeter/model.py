@@ -19,7 +19,7 @@ from demeter.config_reader import ReadConfig, ReadConfigShuffle, ReadConfigIniti
 from demeter.logger import Logger
 from demeter.process import ProcessStep
 from demeter.staging import Stage
-from demeter.simulation.shuffle import RandomConfig
+from demeter.ensemble.ensemble import RandomConfig
 from demeter.weight.kernel_density import KernelDensity
 
 
@@ -116,7 +116,7 @@ class Demeter(Logger):
             self.log.info('END')
             self.log = None
 
-    def random_runs(self, jobs=-2):
+    def ensemble(self, jobs=-2):
         """
         Execute random runs in parallel.
 
@@ -167,7 +167,7 @@ def _get_outdir(pth, scenario, suffix):
     dt = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')
 
     # create unique output dir name
-    v = '{0}_{1}_{2}'.format(scenario, dt, suffix)
+    v = '{0}_{1}'.format(scenario, suffix)
 
     # create run specific directory matching the format used to create the log file
     return op.join(pth, v)
@@ -182,6 +182,8 @@ def _shuffle(dir, i, oc):
     # set start time
     t0 = time.time()
 
+    onumstr = ''
+
     try:
 
         # unpack
@@ -192,12 +194,25 @@ def _shuffle(dir, i, oc):
         kernel_distance = i[4]
         scenario_suffix = i[5]
 
+        # output number string
+        onumstr += ','.join([str(i) for i in treatment_order])
+        onumstr += ',{}'.format(intensification_ratio)
+        onumstr += ',{}'.format(selection_threshold)
+        onumstr += ',{}'.format(kernel_distance)
+
         # read in config file
         out_dir = _get_outdir(oc.out_dir, oc.scenario, scenario_suffix)
         c = ReadConfigShuffle(oc.ini_file, new_out_dir=out_dir)
 
         # build log file name with scenario suffix
         log_file = op.join(dir, '{0}/logfile_{1}_{2}_{3}.log'.format(c.log_dir, c.scenario, c.dt, scenario_suffix))
+
+        # build num string file name with scenario suffix
+
+        num_str_file = op.join(dir, '{0}/params.log'.format(c.log_dir))
+
+        with open(num_str_file, 'w') as nx:
+            nx.write(onumstr)
 
         # instantiate log file
         log = _make_logfile(log_file, c.scenario)
@@ -254,13 +269,38 @@ def _shuffle(dir, i, oc):
         e = sys.exc_info()[0]
         t = traceback.format_exc()
 
+        print(e)
+        print(t)
+
         # log exception and traceback as error
         log.error(e)
         log.error(t)
-        log = None
 
     finally:
 
         log.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
         log.info('END')
         log = None
+
+
+if __name__ == '__main__':
+
+    # terminal option for running without installing demeter
+    args = sys.argv[1:]
+
+    if len(args) > 1:
+        print('USAGE:  One argument should be passed. Full path file name with extension for config file.')
+        print('Exiting...')
+        sys.exit(1)
+
+    ini = args[0]
+
+    if op.isfile is False:
+        print('ERROR:  Config file not found.')
+        print('You entered:  {0}'.format(ini))
+        print('Please enter a full path file name with extension to config file and retry.')
+        sys.exit(1)
+
+    dm = Demeter(config=ini)
+    dm.execute()
+    del dm

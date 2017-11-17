@@ -110,64 +110,8 @@ def to_shp(c, yr, final_landclasses):
     w.save(out_shp)
 
 
-# def to_shp(c, yr, final_landclasses, epsg=4326):
-#     """
-#     Save as a shapefile file having the land area (squared-degrees) per grid cell per year.
-#
-#     :param epsg             This is the EPSG of the projection of the data; default is WGS84 (epsg 4326)
-#     """
-#
-#     def _build_schema(final_landclasses, metric):
-#         """
-#         Build schema for shapefile output
-#         """
-#
-#         d = {'geometry': 'Point', 'properties': {'latitude': 'float',
-#                                                  'longitude': 'float',
-#                                                  '{0}_id'.format(metric): 'int',
-#                                                  'region_id': 'int',
-#                                                  'water': 'float'}
-#              }
-#
-#         for i in final_landclasses:
-#             d['properties'][i] = 'float'
-#
-#         return OrderedDict((k, v) for k, v in sorted(d.items()))
-#
-#     def _feature(row):
-#         """
-#         Convert row to Fiona dict.
-#         """
-#         point = {
-#             'type': 'Point',
-#             'coordinates': [float(row['longitude']), float(row['latitude'])]
-#         }
-#
-#         p = {k: ptypes[k](v) for k, v in row.items()}
-#
-#         return {'type': 'Feature', 'geometry': point, 'properties': p}
-#
-#     # create out path and file name
-#     out_file = os.path.join(c.lc_per_step_shp, 'landcover_{0}_timestep.shp'.format(yr))
-#
-#     # read in CSV
-#     f = csv.DictReader(open(os.path.join(c.lc_per_step_csv, 'landcover_{0}_timestep.csv'.format(yr))), delimiter=',')
-#
-#     # build shapefile schema
-#     schema = _build_schema(final_landclasses, c.metric.lower())
-#
-#     # make shapefile
-#     with fiona.collection(out_file, 'w', driver='ESRI Shapefile', schema=schema, crs=from_epsg(epsg)) as shp:
-#
-#         # map property names to Python types
-#         ptypes = {k: fiona.prop_type(v) for k, v in shp.schema['properties'].items()}
-#
-#         # write to shapefile
-#         shp.writerecords(map(_feature, f))
-
-
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
-                    spat_ludataharm, metric):
+                    spat_ludataharm, metric, units='percent'):
     """
     Save land cover data for each time step as a CSV file.
     """
@@ -179,15 +123,32 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
     hdr = "latitude,longitude,{0}_id,region_id,water,{1}".format(metric.lower(), ','.join(final_landclasses))
 
     # format data
-    lc_ts_arr = np.hstack((
-                        spat_coords, # latitude, longitude
-                        np.reshape(metric_id_array, (-1, 1)), # metric id
-                        np.reshape(gcam_regionnumber, (-1, 1)), # region id
-                        np.reshape(spat_water / (c.resin**2) * cellarea, (-1, 1)), # water
-                        spat_ludataharm # final landcover classes
+    arr = np.hstack((
+                        # latitude, longitude
+                        spat_coords,
+
+                        # metric id
+                        np.reshape(metric_id_array, (-1, 1)),
+
+                        # region id
+                        np.reshape(gcam_regionnumber, (-1, 1)),
+
+                        # water
+                        np.reshape(spat_water / (c.resin**2) * cellarea, (-1, 1)),
+
+                        # final land cover classes
+                        spat_ludataharm
                        ))
+
+    # set output units
+    if units == 'sqkm':
+        pass
+
+    elif units == 'percent':
+        arr[:, 4:] = np.true_divide(arr[:, 4:], arr[:, 4:].sum(axis=1, keepdims=True))
+
     # save to file
-    np.savetxt(lc_ts_file, lc_ts_arr, fmt='%g', delimiter=',', header=hdr, comments='')
+    np.savetxt(lc_ts_file, arr, fmt='%g', delimiter=',', header=hdr, comments='')
 
 
 def write_transitions(s, c, step, transitions):
@@ -224,10 +185,86 @@ def write_transitions(s, c, step, transitions):
             np.savetxt(f, arr, fmt='%g', delimiter=',', header=hdr, comments='')
 
 
-def to_netcdf(spat_ludataharm, cellindexresin, lat, lon, resin, final_landclasses, yr, user_years, out_path, timestep,
+def to_netcdf_step(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model):
+    # (265852, 7)
+    # (2, 265852)
+    # (720,)
+    # (1440,)
+
+
+
+    # create out file full path
+    out_file = '/users/ladmin/Desktop/test.nc' # out_path.format(pft)
+
+    # create NetCDF file
+    with spio.netcdf.netcdf_file(out_file, 'w') as f:
+
+        # add scenario
+        f.history = 'test file'
+
+        # create dimensions
+        f.createDimension('lat', len(lat))
+        f.createDimension('lon', len(lon))
+        f.createDimension('pft', len(final_landclasses))
+        f.createDimension('nv', 2)
+
+        # create variables
+        lts = f.createVariable('lat', 'f4', ('lat',))
+        lns = f.createVariable('lon', 'f4', ('lon',))
+        lcs = f.createVariable('pft', 'i', ('pft',))
+
+        lc_perc = f.createVariable('landcoverpercentage', 'f8', ('pft', 'lat', 'lon',))
+
+        # create metadata
+        lts.units = 'degrees_north'
+        lts.standard_name = 'latitude'
+        lns.units = 'degrees_east'
+        lns.standard_name = 'longitude'
+        lcs.description = 'Land cover class'
+
+        lc_perc.units = 'percentage'
+        lc_perc.scale_factor = 1.
+        lc_perc.add_offset = 0.
+        lc_perc.projection = 'WGS84'
+        lc_perc.description = 'Percent land cover for {0} at {1} degree.'.format(yr, resin)
+        lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
+        lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
+
+        # assign data
+        lts[:] = lat
+        lns[:] = lon
+        lcs[:] = range(1, len(final_landclasses))
+
+        # set missing value to -1
+        lc_perc.missing_value = -1.
+
+        for pft in range(len(final_landclasses)):
+
+            # create land use matrix and populate with -1
+            pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
+
+            # extract base land use data for the target PFT
+            slh = spat_lc[:, pft]
+
+            # assign values to matrix
+            pft_mat[np.int_(map_idx[0, :]), np.int_(map_idx[1, :])] = slh
+
+            # multiply by scale factor for percentage
+            pft_mat *= lc_perc.scale_factor
+
+            # set negative values to -1
+            pft_mat[pft_mat < 0] = -1
+
+            # assign to variable
+            lc_perc[pft, :, :] = pft_mat
+
+
+def to_netcdf_pft(spat_ludataharm, cellindexresin, lat, lon, resin, final_landclasses, yr, user_years, out_path, timestep,
                 model):
     """
-    Save output as NetCDF file.
+    Save output as NetCDF file for each FT in the final land cover classes.
+    Output a file for each class.  File will be a yearly interpolation of the
+    5-year GCAM timestep.
 
     :return:
     """
@@ -242,81 +279,85 @@ def to_netcdf(spat_ludataharm, cellindexresin, lat, lon, resin, final_landclasse
         if yr == user_years[0]:
 
             # create NetCDF file
-            f = spio.netcdf.netcdf_file(out_file, 'w')
-            # f = nc.Dataset(out_file, 'w', format='NETCDF4')
+            with spio.netcdf.netcdf_file(out_file, 'w') as f:
 
-            # create dimensions
-            f.createDimension('lat', len(lat))
-            f.createDimension('lon', len(lon))
-            f.createDimension('time', (len(user_years) - 1) * timestep + 1)
-            f.createDimension('nv', 2)
+                # create dimensions
+                f.createDimension('lat', len(lat))
+                f.createDimension('lon', len(lon))
+                f.createDimension('time', (len(user_years) - 1) * timestep + 1)
+                f.createDimension('nv', 2)
 
-            # create variables
-            lts = f.createVariable('lat', 'f4', ('lat', ))
-            lns = f.createVariable('lon', 'f4', ('lon', ))
-            tsp = f.createVariable('time', 'i4', ('time', ))
-            lat_bnd = f.createVariable('lat_bnds', 'f4', ('lat', 'nv'))
-            lon_bnd = f.createVariable('lon_bnds', 'f4', ('lon', 'nv'))
-            tm_bnd = f.createVariable('time_bnds', 'f4', ('time', 'nv'))
+                # create variables
+                lts = f.createVariable('lat', 'f4', ('lat', ))
+                lns = f.createVariable('lon', 'f4', ('lon', ))
+                tsp = f.createVariable('time', 'i4', ('time', ))
+                lat_bnd = f.createVariable('lat_bnds', 'f4', ('lat', 'nv'))
+                lon_bnd = f.createVariable('lon_bnds', 'f4', ('lon', 'nv'))
+                tm_bnd = f.createVariable('time_bnds', 'f4', ('time', 'nv'))
 
-            lc_perc = f.createVariable('landcoverpercentage', 'f8', ('time', 'lat', 'lon', )) # , fill_value=-1.)
+                lc_perc = f.createVariable('landcoverpercentage', 'f8', ('time', 'lat', 'lon', )) # , fill_value=-1.)
 
-            # create metadata
-            lts.units = 'degrees_north'
-            lts.standard_name = 'latitude'
-            lts.bounds = 'lat_bnds'
-            lns.units = 'degrees_east'
-            lns.standard_name = 'longitude'
-            lns.bounds = 'lon_bnds'
-            lat_bnd.units = 'degrees_north'
-            lon_bnd.units = 'degrees_east'
-            tsp.units = ''  # fill in by user selection
-            tsp.calendar = 'standard'
-            tsp.bounds = 'time_bnds'
-            tsp.description = ''  # user defined
+                # create metadata
+                lts.units = 'degrees_north'
+                lts.standard_name = 'latitude'
+                lts.bounds = 'lat_bnds'
+                lns.units = 'degrees_east'
+                lns.standard_name = 'longitude'
+                lns.bounds = 'lon_bnds'
+                lat_bnd.units = 'degrees_north'
+                lon_bnd.units = 'degrees_east'
+                tsp.units = ''  # fill in by user selection
+                tsp.calendar = 'standard'
+                tsp.bounds = 'time_bnds'
+                tsp.description = ''  # user defined
 
-            lc_perc.units = 'percentage'
-            lc_perc.scale_factor = 1.
-            lc_perc.add_offset = 0.
-            lc_perc.projection = 'WGS84'
-            lc_perc.description = 'Percent {0} at {1} degree, from {2} to {3}'.format(pft, resin, user_years[0], user_years[-1])
-            lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
-            lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
+                lc_perc.units = 'percentage'
+                lc_perc.scale_factor = 1.
+                lc_perc.add_offset = 0.
+                lc_perc.projection = 'WGS84'
+                lc_perc.description = 'Percent {0} at {1} degree, from {2} to {3}'.format(pft, resin, user_years[0], user_years[-1])
+                lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
+                lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
 
-            # assign data
-            tsp[:] = np.arange(user_years[0], user_years[-1] + 1, 1)
-            lat_bnd[:, 0] = lat - resin / 2.
-            lat_bnd[:, 1] = lat + resin / 2.
-            lon_bnd[:, 0] = lon - resin / 2.
-            lon_bnd[:, 1] = lon + resin / 2.
-            tm_bnd[:, 0] = np.arange(user_years[0], user_years[-1] + 1, 1)
-            tm_bnd[:, 1] = np.arange(user_years[0], user_years[-1] + 1, 1) + 1
-            lts[:] = lat
-            lns[:] = lon
+                # assign data
+                tsp[:] = np.arange(user_years[0], user_years[-1] + 1, 1)
+                lat_bnd[:, 0] = lat - resin / 2.
+                lat_bnd[:, 1] = lat + resin / 2.
+                lon_bnd[:, 0] = lon - resin / 2.
+                lon_bnd[:, 1] = lon + resin / 2.
+                tm_bnd[:, 0] = np.arange(user_years[0], user_years[-1] + 1, 1)
+                tm_bnd[:, 1] = np.arange(user_years[0], user_years[-1] + 1, 1) + 1
+                lts[:] = lat
+                lns[:] = lon
 
-            # set missing value to -1
-            lc_perc.missing_value = -1.
+                # set missing value to -1
+                lc_perc.missing_value = -1.
 
-            # create land use matrix and populate with -1
-            pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
+                # create land use matrix and populate with -1
+                pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
 
-            # extract base land use data for the target PFT
-            slh = spat_ludataharm[:, final_landclasses.index(pft)]
+                print 1
 
-            # assign values to matrix
-            pft_mat[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :])] = slh
+                # extract base land use data for the target PFT
+                slh = spat_ludataharm[:, final_landclasses.index(pft)]
 
-            # multiply by scale factor for percentage
-            pft_mat *= lc_perc.scale_factor
+                print 2
 
-            # set negative values to -1
-            pft_mat[pft_mat < 0] = -1
+                # assign values to matrix
+                pft_mat[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :])] = slh
 
-            # assign to variable
-            lc_perc[0, :, :] = pft_mat
+                print 3
 
-            # close file
-            f.close()
+                # multiply by scale factor for percentage
+                pft_mat *= lc_perc.scale_factor
+
+                # set negative values to -1
+                pft_mat[pft_mat < 0] = -1
+
+                print 4
+
+                # assign to variable
+                lc_perc[0, :, :] = pft_mat
 
         # all other time steps interpolate the data between two steps to get annual land use and add them to the file
         else:
@@ -547,3 +588,24 @@ def map_transitions(s, c, step, transitions, dpi=150):
             # clean up
             fig.clf()
             plt.close(fig)
+
+
+if __name__ == '__main__':
+
+    root = '/users/ladmin/Desktop/min'
+    spat_lc = os.path.join(root, 'spat_lc.npy')
+    map_grid = os.path.join(root, 'map_grid.npy')
+    lat_f = os.path.join(root, 'lat.npy')
+    lon_f = os.path.join(root, 'lon.npy')
+
+    spat = np.load(spat_lc)
+    map_grd = np.load(map_grid)
+    lat = np.load(lat_f)
+    lon = np.load(lon_f)
+    res = 0.25
+    lcs = ['forest', 'shrub', 'grass', 'crops', 'urban', 'snow', 'sparse']
+    yr = 2005
+    model = 'GCAM'
+
+
+    to_netcdf_step(spat, map_grd, lat, lon, res, lcs, yr, model)

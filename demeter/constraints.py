@@ -70,8 +70,6 @@ class ApplyConstraints:
         # add constraint data to output array upon import, leave position 0 for kernel density rules
         for f in self.constraint_files:
 
-            print f
-
             # get index number from file name
             idx = int(os.path.basename(f).split('_')[0])
 

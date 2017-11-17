@@ -139,6 +139,13 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
             kdc = kernel_vector_sub[:, pft] / np.nanmax([0.00000001, np.nanmax(kernel_vector_sub[:, pft])])
             cons_data_sub[:, -1] = kdc
 
+            # create index order for constraints array where kernel density will be position 0
+            cons_idx_order = [0 if i == cons_data_sub.shape[1]-1 else i+1 for i in range(cons_data_sub.shape[1])]
+
+            # reorder constraint weights array
+            c_arg = np.argsort(cons_idx_order)
+            cons_data_sub = cons_data_sub[:, c_arg]
+
             # apply the weight of each constrain for the target pft
             cons_data_subpft = cons_data_sub
 

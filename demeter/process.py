@@ -139,7 +139,7 @@ class ProcessStep:
         """
 
         # optionally map time step
-        if self.c.map_luc == 1:
+        if (self.c.map_luc == 1) and (self.step in self.c.target_years_output):
 
             self.log.info("Mapping land cover change for time step {0}...".format(self.step))
 
@@ -152,41 +152,47 @@ class ProcessStep:
             self.s.spat_ludataharm_orig = self.s.spat_ludataharm * 1.
 
         # optionally save land cover transitions as CSV files
-        if self.c.save_transitions == 1:
+        if (self.c.save_transitions == 1) and (self.step in self.c.target_years_output):
 
             self.log.info("Saving land cover transition files for time step {0}...".format(self.step))
 
             wdr.write_transitions(self.s, self.c, self.step, self.transitions)
 
         # optionally create land cover transition maps
-        if self.c.save_transition_maps == 1:
+        if (self.c.save_transition_maps == 1) and (self.step  in self.c.target_years_output):
 
             self.log.info("Saving land cover transition maps for time step {0}...".format(self.step))
 
             wdr.map_transitions(self.s, self.c, self.step, self.transitions)
 
         # optionally save land cover data for each PFT as yearly interpolated NetCDF
-        if self.c.save_netcdf == 1:
+        if (self.c.save_netcdf_pft == 1) and (self.step in self.c.target_years_output):
 
             self.log.info("Saving output in NetCDF format for time step {0}...".format(self.step))
 
-            # create out path and file anme for NetCDF file
+            # netcdf_outfile = ''
+            #
+            # wdr.to_netcdf_step(self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T,
+            #                 self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin, self.s.final_landclasses,
+            #                 self.step, self.s.user_years, netcdf_outfile, self.c.timestep, self.c.model)
+
+            # create out path and file name for NetCDF file
             netcdf_outfile = os.path.join(self.c.lc_per_step_nc, 'landcover_{0}.nc')
 
-            # create NetCDF file
-            wdr.to_netcdf(self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk,
-                                                             (self.l_fcs, 1)).T,
-                            self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin, self.s.final_landclasses,
-                            self.step, self.s.user_years, netcdf_outfile, self.c.timestep, self.c.model)
+            # create NetCDF file for each PFT that interpolates 5-year to yearly
+            wdr.to_netcdf_pft(self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T,
+                              self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin, self.s.final_landclasses,
+                              self.step, self.s.user_years, netcdf_outfile, self.c.timestep, self.c.model)
 
         # save land cover data for the time step
-        self.log.info("Saving tabular land cover data for time step {0}...".format(self.step))
-        wdr.lc_timestep_csv(self.c, self.step, self.s.final_landclasses, self.s.spat_coords, self.s.spat_aez,
-                            self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
-                            self.c.metric)
+        if (self.c.save_tabular == 1) and (self.step in self.c.target_years_output):
+            self.log.info("Saving tabular land cover data for time step {0}...".format(self.step))
+            wdr.lc_timestep_csv(self.c, self.step, self.s.final_landclasses, self.s.spat_coords, self.s.spat_aez,
+                                self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
+                                self.c.metric, self.c.tabular_units)
 
-        # optionally save land cover data for the time step as a shapefile; for SWAT model
-        if self.c.save_shapefile == 1:
+        # optionally save land cover data for the time step as a shapefile
+        if (self.c.save_shapefile == 1) and (self.step in self.c.target_years_output):
             self.log.info("Saving land cover data for time step as a shapefile {0}".format(self.step))
             wdr.to_shp(self.c, self.step, self.s.final_landclasses)
 

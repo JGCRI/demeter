@@ -369,6 +369,34 @@ class RandomConfig:
 
         return d
 
+    def scenarios(self):
+        """
+        Create all possible values in one dimensional settings for parameters defined in the limits file.
+        :param lim              Input CSV with header containing limits:  param,min_val,max_val,interval
+        :return:                Dictionary where parameter: array([n1, ...])
+        """
+        d = {}
+        with open(self.limits_file, 'rU') as get:
+
+            # pass header
+            get.next()
+
+            for idx, i in enumerate(get):
+
+                # split row
+                r = i.strip().split(',')
+
+                mn = float(r[1])
+                mx = float(r[2])
+                st = float(r[3])
+
+                if st >= 1:
+                    mx += st
+
+                d[r[0]] = np.arange(mn, mx, st)
+
+        return d
+
     def selection(self):
         """
         Build a possible number of configurations for parameters.
@@ -397,54 +425,3 @@ class RandomConfig:
 
             # add to output object
             self.mix.append([pri, trt, iv, st, kd, suf])
-
-
-
-
-if __name__ == "__main__":
-
-    ini = '/users/ladmin/repos/github/demeter/example/config.ini'
-    lim = '/users/d3y010/repos/github/demeter/example/inputs/reference/limits.csv'
-    priority = '/users/d3y010/repos/github/demeter/example/inputs/allocation/priority_allocation_rules.csv'
-    treatment = '/users/d3y010/repos/github/demeter/example/inputs/allocation/treatment_order_allocation_rules.csv'
-
-    # s.transition_rules; use like arr[idx]
-    arr = priority_allocation(priority, n=2)
-
-    # s.order_rules used in s for kernel density window
-    trt = treatment_order(treatment)
-
-    cv = scenarios(lim)
-
-    # c.intensification_ratio; calc from limits.csv
-    ir = cv['intensification_ratio']
-
-    # c.selection_threshold; calc from limits.csv
-    sth = cv['selection_threshold']
-
-    # c.kerneldistance; calc from limits.csv
-    kd = cv['kerneldistance']
-
-    class xf:
-        def __init__(self, priority, treatment, lim):
-            self.priority_allocation = priority
-            self.treatment_order = treatment
-            self.limits_file = lim
-
-    c = xf(priority, treatment, lim)
-
-    rc = RandomConfig(c, 2)
-
-    print rc.mix
-
-    #!!!!! START by integrating the mix into staging
-
-
-
-
-
-
-
-
-
-
