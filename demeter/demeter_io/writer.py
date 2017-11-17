@@ -359,7 +359,6 @@ def to_netcdf_pft(spat_ludataharm, cellindexresin, lat, lon, resin, final_landcl
                 # assign to variable
                 lc_perc[0, :, :] = pft_mat
 
-
         # all other time steps interpolate the data between two steps to get annual land use and add them to the file
         else:
 

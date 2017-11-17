@@ -69,7 +69,14 @@ class ReadConfig:
         # create and validate reference input file full paths
         r = i['REFERENCE']
         self.gcam_regnamefile = self.check_exist(os.path.join(self.ref_dir, r['gcam_regnamefile']), 'file', self.log)
-        self.limits_file = self.check_exist(os.path.join(self.ref_dir, r['limits_file']), 'file', self.log)
+        self.region_coords = self.check_exist(os.path.join(self.ref_dir, r['region_coords']), 'file', self.log)
+        self.country_coords = self.check_exist(os.path.join(self.ref_dir, r['country_coords']), 'file', self.log)
+
+        try:
+            self.limits_file = self.check_exist(os.path.join(self.ref_dir, r['limits_file']), 'file', self.log)
+        except KeyError:
+            pass
+
 
         # create and validate output dir full paths
         o = self.config['OUTPUTS']
@@ -536,3 +543,9 @@ class ReadConfigShuffle:
 
         else:
             return list()
+
+
+if __name__ == '__main__':
+
+    ini = '/Users/ladmin/Desktop/yaling/basin_example/config_basins.ini'
+    ReadConfig(ini)
