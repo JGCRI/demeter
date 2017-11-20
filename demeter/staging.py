@@ -224,7 +224,7 @@ class Stage:
                                    self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
                                    self.gcam_agg, self.gcam_ludata, self.ngrids, self.constrain_names,
                                    self.spat_landclasses, self.spat_agg, self.spat_ludata, self.c.map_luc_steps,
-                                   self.c.map_luc, self.c.map_tot_luc, self.c.constraint_files)
+                                   self.c.map_luc, self.c.constraint_files)
 
         # apply spatial constraints
         self.spat_ludataharm, self.spat_ludataharm_orig_steps, self.spat_ludataharm_orig = self.cst.apply_spat_constraints()

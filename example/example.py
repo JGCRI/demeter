@@ -16,10 +16,10 @@ if __name__ == "__main__":
     dm = Demeter(config=ini)
 
     # run all time steps as set in config file
-    # dm.execute()
+    dm.execute()
 
     # run a random ensemble of parameters
-    dm.ensemble()
+    # dm.ensemble()
 
     # clean up
     del dm

@@ -101,7 +101,7 @@ class ReadConfig:
         self.run_desc = p['run_desc']
         self.use_constraints = int(p['use_constraints'])
         self.agg_level = self.ck_agg(p['agg_level'], self.log)
-        self.resin = float(p['resin'])
+        self.resin = float(p['spatial_resolution'])
         self.pkey = p['base_id_field']
         self.errortol = float(p['errortol'])
         self.year_b = int(p['year_b'])
@@ -113,19 +113,21 @@ class ReadConfig:
         self.intensification_ratio = float(p['intensification_ratio'])
         self.selection_threshold = float(p['selection_threshold'])
         self.map_kernels = int(p['map_kernels'])
-        self.map_luc = int(p['map_luc'])
+        self.map_luc = int(p['map_luc_pft'])
         self.map_luc_steps = int(p['map_luc_steps'])
         self.kerneldistance = int(p['kerneldistance'])
-        self.map_tot_luc = int(p['map_tot_luc'])
         self.target_years_output = self.set_target(p['target_years_output'])
         self.save_tabular = int(p['save_tabular'])
         self.tabular_units = p['tabular_units']
-        self.map_constraints = int(p['map_constraints'])
         self.stochastic_expansion = int(p['stochastic_expansion'])
         self.save_transitions = int(p['save_transitions'])
         self.save_transition_maps = int(p['map_transitions'])
         self.save_shapefile = int(p['save_shapefile'])
         self.shuffle = 0
+
+        # turn on tabular land cover data output if writing a shapefile
+        if self.save_shapefile == 1:
+            self.save_tabular = 1
 
         try:
             self.save_netcdf_pft = int(p['save_netcdf_pft'])
@@ -417,7 +419,7 @@ class ReadConfigShuffle:
         self.run_desc = p['run_desc']
         self.use_constraints = int(p['use_constraints'])
         self.agg_level = self.ck_agg(p['agg_level'], self.log)
-        self.resin = float(p['resin'])
+        self.resin = float(p['spatial_resolution'])
         self.pkey = p['base_id_field']
         self.errortol = float(p['errortol'])
         self.year_b = int(p['year_b'])
@@ -429,12 +431,10 @@ class ReadConfigShuffle:
         self.intensification_ratio = float(p['intensification_ratio'])
         self.selection_threshold = float(p['selection_threshold'])
         self.map_kernels = int(p['map_kernels'])
-        self.map_luc = int(p['map_luc'])
+        self.map_luc = int(p['map_luc_pft'])
         self.map_luc_steps = int(p['map_luc_steps'])
         self.kerneldistance = int(p['kerneldistance'])
-        self.map_tot_luc = int(p['map_tot_luc'])
         self.target_years_output = self.set_target(p['target_years_output'])
-        self.map_constraints = int(p['map_constraints'])
         self.stochastic_expansion = int(p['stochastic_expansion'])
         self.save_tabular = int(p['save_tabular'])
         self.tabular_units = p['tabular_units']
@@ -442,6 +442,10 @@ class ReadConfigShuffle:
         self.save_transition_maps = int(p['map_transitions'])
         self.save_shapefile = int(p['save_shapefile'])
         self.shuffle = 1
+
+        # turn on tabular land cover data output if writing a shapefile
+        if self.save_shapefile == 1:
+            self.save_tabular = 1
 
         try:
             self.save_netcdf_pft = int(p['save_netcdf_pft'])

@@ -99,8 +99,6 @@ class Demeter(Logger):
             # run for each time step
             for idx, step in enumerate(self.s.user_years):
 
-                print idx
-
                 ProcessStep(self.c, self.log, self.s, idx, step)
 
         except:
