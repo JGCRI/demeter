@@ -79,3 +79,16 @@ class Logger:
         self.set_file(self.f)
 
         return log
+
+    def close_logger(self, log):
+        """
+        Close filehandler.
+        :return:
+        """
+        handlers = log.handlers[:]
+        for h in handlers:
+            h.close()
+            log.removeHandler(h)
+
+
+

@@ -186,12 +186,6 @@ def write_transitions(s, c, step, transitions):
 
 
 def to_netcdf_step(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model):
-    # (265852, 7)
-    # (2, 265852)
-    # (720,)
-    # (1440,)
-
-
 
     # create out file full path
     out_file = '/users/ladmin/Desktop/test.nc' # out_path.format(pft)
@@ -336,25 +330,17 @@ def to_netcdf_pft(spat_ludataharm, cellindexresin, lat, lon, resin, final_landcl
                 # create land use matrix and populate with -1
                 pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
 
-                print 1
-
                 # extract base land use data for the target PFT
                 slh = spat_ludataharm[:, final_landclasses.index(pft)]
 
-                print 2
-
                 # assign values to matrix
                 pft_mat[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :])] = slh
-
-                print 3
 
                 # multiply by scale factor for percentage
                 pft_mat *= lc_perc.scale_factor
 
                 # set negative values to -1
                 pft_mat[pft_mat < 0] = -1
-
-                print 4
 
                 # assign to variable
                 lc_perc[0, :, :] = pft_mat
@@ -588,24 +574,3 @@ def map_transitions(s, c, step, transitions, dpi=150):
             # clean up
             fig.clf()
             plt.close(fig)
-
-
-if __name__ == '__main__':
-
-    root = '/users/ladmin/Desktop/min'
-    spat_lc = os.path.join(root, 'spat_lc.npy')
-    map_grid = os.path.join(root, 'map_grid.npy')
-    lat_f = os.path.join(root, 'lat.npy')
-    lon_f = os.path.join(root, 'lon.npy')
-
-    spat = np.load(spat_lc)
-    map_grd = np.load(map_grid)
-    lat = np.load(lat_f)
-    lon = np.load(lon_f)
-    res = 0.25
-    lcs = ['forest', 'shrub', 'grass', 'crops', 'urban', 'snow', 'sparse']
-    yr = 2005
-    model = 'GCAM'
-
-
-    to_netcdf_step(spat, map_grd, lat, lon, res, lcs, yr, model)

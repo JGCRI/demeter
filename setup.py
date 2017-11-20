@@ -1,4 +1,10 @@
-from setuptools import setup, find_packages
+import sys
+
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    sys.stdout.write('Missing Package:  setuptools not found.  Demeter requires this to install.  Please install setuptools and retry.')
+    sys.exit(1)
 
 
 def readme():

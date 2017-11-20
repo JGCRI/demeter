@@ -42,18 +42,18 @@ class ReadConfig:
         i = self.config['INPUTS']
         self.alloc_dir = self.check_exist(os.path.join(self.in_dir, i['allocation_dir']), 'dir', self.log)
         self.base_dir = self.check_exist(os.path.join(self.in_dir, i['base_dir']), 'dir', self.log)
-        self.constraints_dir = self.create_dir(os.path.join(self.in_dir, i['constraints_dir']), self.log)
         self.projected_dir = self.check_exist(os.path.join(self.in_dir, i['projected_dir']), 'dir', self.log)
         self.ref_dir = self.check_exist(os.path.join(self.in_dir, i['ref_dir']), 'dir', self.log)
+        self.constraints_dir = self.create_dir(os.path.join(self.in_dir, i['constraints_dir']), self.log)
 
         # create and validate allocation input file full paths
         a = i['ALLOCATION']
         self.spatial_allocation = self.check_exist(os.path.join(self.alloc_dir, a['spatial_allocation']), 'file', self.log)
         self.gcam_allocation = self.check_exist(os.path.join(self.alloc_dir, a['gcam_allocation']), 'file', self.log)
-        self.kernel_allocation = self.check_exist(os.path.join(self.alloc_dir, a['kernel_allocation']), 'file', self.log)
-        self.priority_allocation = self.check_exist(os.path.join(self.alloc_dir, a['priority_allocation']), 'file', self.log)
         self.treatment_order = self.check_exist(os.path.join(self.alloc_dir, a['treatment_order']), 'file', self.log)
         self.constraints = self.check_exist(os.path.join(self.alloc_dir, a['constraints']), 'file', self.log)
+        self.kernel_allocation = self.check_exist(os.path.join(self.alloc_dir, a['kernel_allocation']), 'file', self.log)
+        self.priority_allocation = self.check_exist(os.path.join(self.alloc_dir, a['priority_allocation']), 'file', self.log)
 
         # create and validate constraints input file full paths
         self.constraint_files = self.get_constraints()
@@ -71,12 +71,6 @@ class ReadConfig:
         self.gcam_regnamefile = self.check_exist(os.path.join(self.ref_dir, r['gcam_regnamefile']), 'file', self.log)
         self.region_coords = self.check_exist(os.path.join(self.ref_dir, r['region_coords']), 'file', self.log)
         self.country_coords = self.check_exist(os.path.join(self.ref_dir, r['country_coords']), 'file', self.log)
-
-        try:
-            self.limits_file = self.check_exist(os.path.join(self.ref_dir, r['limits_file']), 'file', self.log)
-        except KeyError:
-            pass
-
 
         # create and validate output dir full paths
         o = self.config['OUTPUTS']
@@ -106,7 +100,7 @@ class ReadConfig:
         self.metric = p['metric'].upper()
         self.run_desc = p['run_desc']
         self.use_constraints = int(p['use_constraints'])
-        self.agg_level = int(p['agg_level'])
+        self.agg_level = self.ck_agg(p['agg_level'], self.log)
         self.resin = float(p['resin'])
         self.pkey = p['base_id_field']
         self.errortol = float(p['errortol'])
@@ -122,7 +116,6 @@ class ReadConfig:
         self.map_luc = int(p['map_luc'])
         self.map_luc_steps = int(p['map_luc_steps'])
         self.kerneldistance = int(p['kerneldistance'])
-        self.permutations = int(p['permutations'])
         self.map_tot_luc = int(p['map_tot_luc'])
         self.target_years_output = self.set_target(p['target_years_output'])
         self.save_tabular = int(p['save_tabular'])
@@ -138,6 +131,15 @@ class ReadConfig:
             self.save_netcdf_pft = int(p['save_netcdf_pft'])
         except KeyError:
             self.save_netcdf_pft = 0
+
+        # if running ensemble
+        try:
+            ens = self.config['ENSEMBLE']
+            self.permutations = int(ens['permutations'])
+            self.limits_file = self.check_exist(ens['limits_file'], 'file', self.log)
+            self.n_jobs = int(ens['n_jobs'])
+        except KeyError:
+            pass
 
 
     @staticmethod
@@ -175,8 +177,25 @@ class ReadConfig:
         except Exception as e:
             log.error(e)
             log.error("ERROR:  Failed to create directory.")
-            sys.exit()
+            sys.exit(1)
 
+    @staticmethod
+    def ck_agg(a, log):
+        """
+        Check aggregation level.  1 if by only region, 2 if by region and Basin or AEZ.
+        """
+        try:
+            agg = int(a)
+        except TypeError:
+            log.error('"agg_level" parameter must be either  1 or 2.  Exiting...')
+            sys.exit(1)
+
+        if agg < 1 or agg > 2:
+            log.error('"agg_level" parameter must be either 1 or 2.  Exiting...')
+            sys.exit(1)
+
+        else:
+            return agg
 
     def set_target(self, t):
         """
@@ -259,6 +278,7 @@ class ReadConfigInitial:
         i = self.config['INPUTS']
         r = i['REFERENCE']
         a = i['ALLOCATION']
+        ens = self.config['ENSEMBLE']
 
         self.root_dir = s['root_dir']
         self.in_dir = os.path.join(self.root_dir, s['in_dir'])
@@ -269,12 +289,14 @@ class ReadConfigInitial:
         self.intensification_ratio = float(p['intensification_ratio'])
         self.selection_threshold = float(p['selection_threshold'])
         self.kerneldistance = int(p['kerneldistance'])
-        self.permutations = int(p['permutations'])
         self.scenario = p['scenario']
 
         self.priority_allocation = self.check_exist(os.path.join(self.alloc_dir, a['priority_allocation']), 'file', log)
         self.treatment_order = self.check_exist(os.path.join(self.alloc_dir, a['treatment_order']), 'file', log)
-        self.limits_file = self.check_exist(os.path.join(self.ref_dir, r['limits_file']), 'file', log)
+
+        self.permutations = int(ens['permutations'])
+        self.limits_file = self.check_exist(ens['limits_file'], 'file', log)
+        self.n_jobs = int(ens['n_jobs'])
 
     @staticmethod
     def check_exist(f, kind, log):
@@ -385,14 +407,8 @@ class ReadConfigShuffle:
         # create and validate reference input file full paths
         r = i['REFERENCE']
         self.gcam_regnamefile = self.check_exist(os.path.join(self.ref_dir, r['gcam_regnamefile']), 'file', self.log)
-        self.limits_file = self.check_exist(os.path.join(self.ref_dir, r['limits_file']), 'file', self.log)
-
-        # create and validate diagnostics file full paths
-        d = o['DIAGNOSTICS']
-        self.harm_coeff_file = os.path.join(self.diag_dir, d['harm_coeff'])
-        self.intense_pass1_diag = os.path.join(self.diag_dir, d['intense_pass1_diag'])
-        self.intense_pass2_diag = os.path.join(self.diag_dir, d['intense_pass2_diag'])
-        self.expansion_diag = os.path.join(self.diag_dir, d['expansion_diag'])
+        self.region_coords = self.check_exist(os.path.join(self.ref_dir, r['region_coords']), 'file', self.log)
+        self.country_coords = self.check_exist(os.path.join(self.ref_dir, r['country_coords']), 'file', self.log)
 
         # assign and type run specific parameters
         p = self.config['PARAMS']
@@ -400,7 +416,7 @@ class ReadConfigShuffle:
         self.metric = p['metric'].upper()
         self.run_desc = p['run_desc']
         self.use_constraints = int(p['use_constraints'])
-        self.agg_level = int(p['agg_level'])
+        self.agg_level = self.ck_agg(p['agg_level'], self.log)
         self.resin = float(p['resin'])
         self.pkey = p['base_id_field']
         self.errortol = float(p['errortol'])
@@ -416,7 +432,6 @@ class ReadConfigShuffle:
         self.map_luc = int(p['map_luc'])
         self.map_luc_steps = int(p['map_luc_steps'])
         self.kerneldistance = int(p['kerneldistance'])
-        self.permutations = int(p['permutations'])
         self.map_tot_luc = int(p['map_tot_luc'])
         self.target_years_output = self.set_target(p['target_years_output'])
         self.map_constraints = int(p['map_constraints'])
@@ -427,11 +442,20 @@ class ReadConfigShuffle:
         self.save_transition_maps = int(p['map_transitions'])
         self.save_shapefile = int(p['save_shapefile'])
         self.shuffle = 1
+
         try:
             self.save_netcdf_pft = int(p['save_netcdf_pft'])
         except KeyError:
             self.save_netcdf_pft = 0
 
+        # if running ensemble
+        try:
+            ens = self.config['ENSEMBLE']
+            self.permutations = int(ens['permutations'])
+            self.limits_file = self.check_exist(ens['limits_file'], 'file', self.log)
+            self.n_jobs = int(ens['n_jobs'])
+        except KeyError:
+            pass
 
         # create and validate output dir full paths
         self.log_dir = self.create_dir(os.path.join(self.out_dir, o['log_dir']), self.log)
@@ -439,19 +463,23 @@ class ReadConfigShuffle:
         if self.diagnostic == 1:
             self.diag_dir = self.create_dir(os.path.join(self.out_dir, o['diag_dir']), self.log)
 
+            # create and validate diagnostics file full paths
+            d = o['DIAGNOSTICS']
+            self.harm_coeff_file = os.path.join(self.diag_dir, d['harm_coeff'])
+            self.intense_pass1_diag = os.path.join(self.diag_dir, d['intense_pass1_diag'])
+            self.intense_pass2_diag = os.path.join(self.diag_dir, d['intense_pass2_diag'])
+            self.expansion_diag = os.path.join(self.diag_dir, d['expansion_diag'])
+
         if self.map_kernels == 1:
             self.kernel_map_dir = self.create_dir(os.path.join(self.out_dir, o['kernel_map_dir']), self.log)
+        else:
+            self.kernel_map_dir = None
 
         if self.save_transitions == 1:
             self.transition_tabular_dir = self.create_dir(os.path.join(self.out_dir, o['transition_tabular']), self.log)
 
-        if self.transition_tabular_dir == 1:
+        if self.save_transition_maps == 1:
             self.transiton_map_dir = self.create_dir(os.path.join(self.out_dir  , o['transition_maps']), self.log)
-
-        if self.map_luc_steps == 1:
-            self.luc_intense_p1_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p1_dir']), self.log)
-            self.luc_intense_p2_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p2_dir']), self.log)
-            self.luc_expand_dir = self.create_dir(os.path.join(self.out_dir, o['luc_expand_dir']), self.log)
 
         if self.map_luc == 1:
             self.luc_ts_luc = self.create_dir(os.path.join(self.out_dir, o['luc_ts_luc']), self.log)
@@ -464,6 +492,10 @@ class ReadConfigShuffle:
 
         if self.save_shapefile == 1:
             self.lc_per_step_shp = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_shp']), self.log)
+
+        self.luc_intense_p1_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p1_dir']), self.log)
+        self.luc_intense_p2_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p2_dir']), self.log)
+        self.luc_expand_dir = self.create_dir(os.path.join(self.out_dir, o['luc_expand_dir']), self.log)
 
     @staticmethod
     def check_exist(f, kind, log):
@@ -501,6 +533,23 @@ class ReadConfigShuffle:
             log.error(e)
             log.error("ERROR:  Failed to create directory.")
             sys.exit()
+
+    @staticmethod
+    def ck_agg(a, log):
+        """
+        Check aggregation level.  1 if by only region, 2 if by region and Basin or AEZ.
+        """
+        try:
+            agg = int(a)
+        except TypeError:
+            log.error('"agg_level" parameter must be either  1 or 2.  Exiting...')
+            sys.exit(1)
+
+        if agg < 1 or agg > 2:
+            log.error('"agg_level" parameter must be either 1 or 2.  Exiting...')
+            sys.exit(1)
+        else:
+            return agg
 
     def set_target(self, t):
         """
@@ -552,3 +601,9 @@ class ReadConfigShuffle:
 
         else:
             return list()
+
+if __name__ == "__main__":
+
+    ini = '/users/ladmin/repos/github/demeter/example/config.ini'
+
+    ReadConfigInitial(ini)
