@@ -1,6 +1,6 @@
 # Demeter
 
-## A land use land cover disaggregation and change detection model
+## A land-use and land-cover disaggregation and change detection model
 
 ## NOTICE:
 This repository uses Git Large File Storage (LFS). Please download and install from here: [https://github.com/git-lfs/git-lfs/wiki/Installation](https://github.com/git-lfs/git-lfs/wiki/Installation)
@@ -23,18 +23,29 @@ The following step will get Demeter ready to use:
 
 If a permissions error is encountered either run the command sudo or on Windows open cmd as an administrator.
 
-## Setting up demeter
+## Setup
+Demeter requires the setup of several input files to begin a run.  Examples of all input files can be found in the ‘examples’ directory and the expected file structure is outlined in the following:
 
-Demeter requires the user to prepare several files to conduct a run. The following describes what the input files are and how to prepare them.
+-	Example directory
+        -   Inputs directory
+            -	Allocation directory
+                    -	Constraint weighting file
+                    -	GCAM landclass allocation file
+                    -	Kernel density weighting file
+                    -	Spatial landclass allocation file
+                    -	Transition priority file
+                    -	Treatment order file
+            -	Observed spatial data directory
+                    -	Observed spatial data file
+            -	Constraint data directory
+                    -	Constraint files
+            -	Projected GCAM land allocation directory
+                    -	GCAM land allocation file
+            -	Reference data directory
+                    -	Reference files
 
-### Base layer data
+The following describes the requirements and format of each input.
 
-The base layer data file is stored in its own directory in the inputs directory.  This file represents the percentage of each land class existing within a grid cell. The latitude and longitude for the centroid of each grid cell is also required in this file to be labeled as 'latcoord' and 'loncoord' respectively.  A feature id, or 'fid', which is a unique identifier for each grid cell is also required. The 'fid' is used as a primary key to join any constraint data provided by the user during runtime. Two levels of ids relating the base layer data to the projected land allocation data zones must be provided; these were originally developed for GCAM's region/AEZ structure.  However, this will be changed in future versions so the user will have the option to spatially join provided boundaries of their projection zones to the base layer during runtime.  Currently the user must include a 'region_id' and an 'aez_id' or 'basin_id' that relates each base layer grid cell to the projected zone.  There must be no commas in the field names and these field names are to be included in the input base layer file.  The base layer file is to be saved with a '.txt' extension.  Future versions will allow the user to provide these as a shapfile or geojson file.  Each land class field in the base layer file must have it's values represented as the percentage of grid cell as a decimal (from 0.0 to 1.0).  See the input base layer file in the example setup for a reference.
+###Observed spatial data:
 
-### Projected land allocation
-
-Projected land allocation data has currently been tested with data from GCAM.  This data has been formatted to contain the following fields 'region', 'landclass', 'metric_id'. 'region' is the GCAM region name that is joined to its region id during runtime.  'landclass' is the land class name of each functional type. 'metric_id' is either the AEZ or Basin id depending upon which version of GCAM the user is running.  Each projected year must have its own header such as '1990', '2000', '2090', etc.  The values for land allocation are processed in Demeter as square kilometers though GCAM outputs as thousands of square kilometers; to handle this a factor can be defined in the configuration file.  The header must be in the first line of the file and field names should contain no commas.  See the input projected file in the example setup for a reference.
-
-### Allocation files
-
-Allocation files are stored in their own directory nested in the inputs directory. These files are used to define how Demeter will interpret and relate the base layer data and the projected land allocation data.  They are also used to describe the order by which land classes will be processed and how they are to intensify or expand over other classes.
+This file represents the area in square degrees of each land class existing within a grid cell.  The grid cell size is defined by the user.  This file must be presented as a comma-separated values (CSV) file having a header in the first row and must contain the field names and fields described in Table 1.
