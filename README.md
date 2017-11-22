@@ -46,7 +46,7 @@ Demeter requires the setup of several input files to begin a run.  Examples of a
 
 The following describes the requirements and format of each input.
 
-###Observed spatial data:
+### Observed spatial data:
 
 This file represents the area in square degrees of each land class existing within a grid cell.  The grid cell size is defined by the user.  This file must be presented as a comma-separated values (CSV) file having a header in the first row and must contain the field names and fields described in Table 1.
 
@@ -55,3 +55,8 @@ This file represents the area in square degrees of each land class existing with
 | --------- | --------------- |
 | fid | Unique integer ID for each grid cell latitude, longitude |
 | landclass | Each land class field name (e.g., shrub, grass, etc.).  Field names must not include commas. |
+| region_id	| The integer ID of the GCAM region that the grid cell is contained in.  Exact field name spelling required. |
+| metric_id	| The integer ID of the GCAM AEZ or basin that the grid cell is contained in.  Exact field name spelling required. |
+| latitude | The geographic latitude value of the grid cell centroid as a signed float.  Exact field name spelling required. |
+| longitude	| The geographic longitude value of the grid cell centroid as a signed float.  Exact field name spelling required. |
+**Table 1.**  Observed spatial data required fields and their descriptions.
