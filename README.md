@@ -175,6 +175,8 @@ Demeter’s configuration file allows the user to customize each run and define 
 
 **Table 3.**  Configuration file hierarchy, parameters, and descriptions.
 
+## Workflow
+
 Figure 1 details the Demeter’s workflow once the input files have been prepared.  The process can be outlined as follows:
 
 1.	Configuration file read and input parameters are validated
@@ -192,3 +194,35 @@ Figure 1 details the Demeter’s workflow once the input files have been prepare
 ![alt text](https://github.com/IMMM-SFA/demeter/blob/master/img/workflow.png "Figure 1")
 
 **Figure 1.** Demeter workflow diagram.
+
+## Execution
+
+Demeter has two main model level functions available to the user:  `execute()` and `ensemble()`.  The execute function allows the user to run Demeter based on the parameters defined in the configuration file and as set up in the input files.  This is the most common use of Demeter.  The ensemble function was built to allow the user to test Demeter using random configurations of the transition priorities, treatment order, intensification ratio, selection threshold, and kernel distance.  The ensemble section of the configuration file as seen in the example directory give the user the ability to define the number of permutations that they wish to evaluate as well as a limits file that gives the user the ability to set limits and the interval at which intensification ratio, selection threshold, and kernel distance will be evaluated.  The initial state of the configuration file and input files are used to create a template by which every unique combination of the aforementioned parameters can be generated.  A uniquely random sample of these configurations are then chosen based upon how many permutations the user wishes to evaluate.  Each Demeter run is then executed in parallel based on the number of jobs the user has set.
+
+### Installation
+Installing Demeter can be conducted as follows:
+
+1.	This repository uses the Git Large File Storage (LFS) extension (see https://git-lfs.github.com/ for details). Please run the following command before cloning if you do not already have Git LFS installed: git lfs install
+2.	Clone Demeter into your desired location git clone https://github.com/IMMM-SFA/demeter.git`
+3.	Install the Python package setuptools (https://pypi.python.org/pypi/setuptools) if the package is not already on your machine.
+4.	From the directory you cloned Demeter into and your setup.py file exists run python setup.py install which will install Demeter as a Python package on your machine and install of the required dependencies.
+
+### Run Preparation
+Prepare Demeter for a run as follows:
+
+1.	Setup your configuration file (.ini). Examples are located in the "example" directory. Be sure to change the root directory to the directory that holds your data (use the 'demeter/example' directory as an example).
+2.	If running Demeter from an IDE: Be sure to include the path to your config file. See the "demeter/example/example.py" script as a reference.
+3.	If running Demeter from terminal: Run model.py found in demeter/demeter/model.py passing the full path using forward slashes and having no spaces to the configuration file as the first argument and either “standard” or “ensemble” as the second argument (e.g., python model.py /users/<uname>/github/demeter/example/config.ini standard)
+
+Both the output directory and log file generated during runtime are named per the run scenario and the timestamp of when the run began.  An additional suffix of the permutation number will also be added if using the ensemble function in Demeter.  All other outputs directories are named according to what the user specifies in the configuration file.
+
+## Quality control 
+
+All possible configurations of the configuration file and input files have been tested.  Strict requirements for input files are documented.  Configuration options have set limits, values, and types and are validated during runtime. An example setup for Demeter is included in the package.  The example has a configuration file and an input directory containing all other necessary files.  To setup the provided example, the user should simply change the file paths in the configuration file and the example.py file to represent their local directories.
+
+Demeter outputs the following diagnostic files that help the user to evaluate the outputs based on how they were processed during runtime:
+- Harmonization coefficient NumPy array
+- This file contains the correction factor that was applied to each grid cell of the projected land allocation data to ensure the projected area is the same as the area actually available as represented by the base layer spatial data
+- Files for each intensification and expansion pass detailing the land change per year per grid cell from one landclass to its transition class by region and metric
+- A detailed log file
+- A suite of tabular, spatial, and mapped data.
