@@ -146,38 +146,37 @@ Demeter’s configuration file allows the user to customize each run and define 
 | OUTPUTS - DIAGNOSTICS |	intense_pass1_diag|	The file name with extension of the CSV that will hold the land allocation per time step per functional type for the first pass of intensification
 | OUTPUTS - DIAGNOSTICS |	intense_pass2_diag	|The file name with extension of the CSV that will hold the land allocation per time step per functional type for the second pass of intensification
 | OUTPUTS - DIAGNOSTICS |	expansion_diag	|The file name with extension of the CSV that will hold the land allocation per time step per functional type for the expansion pass
+| PARAMS |	model | The model name providing the projected land allocation data (e.g., GCAM)
+| PARAMS |	metric	 | Either AEZ or BASIN
+| PARAMS |	scenario	 | Scenario name
+| PARAMS |	run_desc	 | The description of the current run
+| PARAMS |	agg_level	 | 1 if only by metric, 2 if by region and metric
+| PARAMS |	observed_id_field	 | Observed spatial data unique field name (e.g. fid)
+| PARAMS |	start_year | 	First time step to process (e.g., 2005)
+| PARAMS |	end_year | 	Last time step to process (e.g., 2100)
+| PARAMS |	use_constraints	 | 1 to use constraints, 0 to ignore constraints
+| PARAMS |	spatial_resolution | 	Spatial resolution of the observed spatial data in decimal degrees (e.g. 0.25)
+| PARAMS |	errortol	 | Allowable error tolerance in square kilometres for non-accomplished change
+| PARAMS |	timestep	 | Time step interval (e.g., 5)
+| PARAMS |	proj_factor	 | Factor to multiply the projected land allocation by
+| PARAMS |	diagnostic	 | 0 to not output diagnostics, 1 to output
+| PARAMS |	intensification_ratio | 	Ideal fraction of land change that will occur during intensification.  The remainder will be through expansion.  Value from 0.0 to 1.0.
+| PARAMS |	stochastic_expansion	 | 0 to not conduct stochastic expansion of grid cells, 1 to conduct
+| PARAMS |	selection_threshold | 	Threshold above which grid cells are selected to receive expansion for a target functional type from the kernel density filter.  Value from 0.0 to 1.0; where 0 lets all land cells receive expansion and 1 only lets only the grid cells with the maximum likelihood expand.
+| PARAMS |	kernel_distance | 	Radius in grid cells used to build the kernel density convolution filter used during expansion
+| PARAMS |	map_kernels | 	0 to not map kernel density, 1 to map
+| PARAMS |	map_luc_pft	 | 0 to not map land change per land class per time step, 1 to map
+| PARAMS |	map_luc_steps | 	0 to not map land change per time step per land class for intensification and expansion, 1 to map
+| PARAMS |	map_transitions | 	0 to not map land transitions, 1 to map
+| PARAMS |	target_years_output | 	Years to save data for; default is ‘all’; otherwise a semicolon delimited string (e.g., 2005; 2020)
+| PARAMS |	save_tabular | 	Save tabular spatial land cover as a CSV; define tabular units in tabular_units param
+| PARAMS |	tabular_units | 	Units to output the spatial land cover data in; either ‘sqkm’ or ‘percent’
+| PARAMS |	save_transitions | 	0 to not write CSV files for each land transitions per land type, 1 to write
+| PARAMS |	save_shapefile | 	0 to not write a Shapefile for each time step containing for all functional types, 1 to write; output units will be same as tabular data
+| PARAMS |	save_netcdf_yr | 	0 to not write a NetCDF file of land cover percent for each year by grid cell containing each class; 1 to write
+| PARAMS |	save_netcdf_lc | 	0 to not write a NetCDF file of land cover percent by land class by grid cell containing each year interpolated to one-year intervals; 1 to write
+| ENSEMBLE |	permutations	 | If running an ensemble of configurations, this is the number of permutations to process
+| ENSEMBLE |	limits_file	 | If running an ensemble of configurations, this is the full path to a CSV file containing limits to generate ensembles of certain parameters.
+| ENSEMBLE |	n_jobs	 | If running an ensemble of configurations, this is the number of CPU’s to spread the parallel processing over.  -1 is all, -2 is all but one, 4 is four, etc.
 
-
-[PARAMS]	model	The model name providing the projected land allocation data (e.g., GCAM)
-[PARAMS]	metric	Either AEZ or BASIN
-[PARAMS]	scenario	Scenario name
-[PARAMS]	run_desc	The description of the current run
-[PARAMS]	agg_level	1 if only by metric, 2 if by region and metric
-[PARAMS]	observed_id_field	Observed spatial data unique field name (e.g. fid)
-[PARAMS]	start_year	First time step to process (e.g., 2005)
-[PARAMS]	end_year	Last time step to process (e.g., 2100)
-[PARAMS]	use_constraints	1 to use constraints, 0 to ignore constraints
-[PARAMS]	spatial_resolution	Spatial resolution of the observed spatial data in decimal degrees (e.g. 0.25)
-[PARAMS]	errortol	Allowable error tolerance in square kilometres for non-accomplished change
-[PARAMS]	timestep	Time step interval (e.g., 5)
-[PARAMS]	proj_factor	Factor to multiply the projected land allocation by
-[PARAMS]	diagnostic	0 to not output diagnostics, 1 to output
-[PARAMS]	intensification_ratio	Ideal fraction of land change that will occur during intensification.  The remainder will be through expansion.  Value from 0.0 to 1.0.
-[PARAMS]	stochastic_expansion	0 to not conduct stochastic expansion of grid cells, 1 to conduct
-[PARAMS]	selection_threshold	Threshold above which grid cells are selected to receive expansion for a target functional type from the kernel density filter.  Value from 0.0 to 1.0; where 0 lets all land cells receive expansion and 1 only lets only the grid cells with the maximum likelihood expand.
-[PARAMS]	kernel_distance	Radius in grid cells used to build the kernel density convolution filter used during expansion
-[PARAMS]	map_kernels	0 to not map kernel density, 1 to map
-[PARAMS]	map_luc_pft	0 to not map land change per land class per time step, 1 to map
-[PARAMS]	map_luc_steps	0 to not map land change per time step per land class for intensification and expansion, 1 to map
-[PARAMS]	map_transitions	0 to not map land transitions, 1 to map
-[PARAMS]	target_years_output	Years to save data for; default is ‘all’; otherwise a semicolon delimited string (e.g., 2005; 2020)
-[PARAMS]	save_tabular	Save tabular spatial land cover as a CSV; define tabular units in tabular_units param
-[PARAMS]	tabular_units	Units to output the spatial land cover data in; either ‘sqkm’ or ‘percent’
-[PARAMS]	save_transitions	0 to not write CSV files for each land transitions per land type, 1 to write
-[PARAMS]	save_shapefile	0 to not write a Shapefile for each time step containing for all functional types, 1 to write; output units will be same as tabular data
-[PARAMS]	save_netcdf_yr	0 to not write a NetCDF file of land cover percent for each year by grid cell containing each class; 1 to write
-[PARAMS]	save_netcdf_lc	0 to not write a NetCDF file of land cover percent by land class by grid cell containing each year interpolated to one-year intervals; 1 to write
-[ENSEMBLE]	permutations	If running an ensemble of configurations, this is the number of permutations to process
-[ENSEMBLE]	limits_file	If running an ensemble of configurations, this is the full path to a CSV file containing limits to generate ensembles of certain parameters.
-[ENSEMBLE]	n_jobs	If running an ensemble of configurations, this is the number of CPU’s to spread the parallel processing over.  -1 is all, -2 is all but one, 4 is four, etc.
-Table 3.  Configuration file hierarchy, parameters, and descriptions.
+**Table 3.**  Configuration file hierarchy, parameters, and descriptions.
