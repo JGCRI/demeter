@@ -21,22 +21,22 @@ If a permissions error is encountered either run the command sudo or on Windows 
 Demeter requires the setup of several input files to begin a run.  Examples of all input files can be found in the ‘examples’ directory and the expected file structure is outlined in the following:
 
 -	Example directory
-        -   Inputs directory
-            -	Allocation directory
-                    -	Constraint weighting file
-                    -	GCAM landclass allocation file
-                    -	Kernel density weighting file
-                    -	Spatial landclass allocation file
-                    -	Transition priority file
-                    -	Treatment order file
-            -	Observed spatial data directory
-                    -	Observed spatial data file
-            -	Constraint data directory
-                    -	Constraint files
-            -	Projected GCAM land allocation directory
-                    -	GCAM land allocation file
-            -	Reference data directory
-                    -	Reference files
+    -   Inputs directory
+        -	Allocation directory
+            -	Constraint weighting file
+                -	GCAM landclass allocation file
+                -	Kernel density weighting file
+                -	Spatial landclass allocation file
+                -	Transition priority file
+                -	Treatment order file
+        -	Observed spatial data directory
+            -	Observed spatial data file
+        -	Constraint data directory
+            -	Constraint files
+        -	Projected GCAM land allocation directory
+            -	GCAM land allocation file
+        -	Reference data directory
+            -	Reference files
 
 The following describes the requirements and format of each input.
 
