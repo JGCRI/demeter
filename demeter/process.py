@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Processes the calculation, map creation, and logging of statistical methods used in determining land use change.
 
@@ -9,7 +7,6 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (PNNL); Yannick le Page (niquya@gmail.com)
 """
-
 import numpy as np
 import os
 
@@ -148,10 +145,10 @@ class ProcessStep:
                         self.s.cellindexresin, self.s.lat, self.s.lon, self.s.final_landclasses, self.step,
                         self.c.region_coords, self.c.country_coords, self.c.luc_ts_luc, 'timestep_luc')
 
-            # set prev year array to current year
+            # set prev year array to current year for next time step iteration
             self.s.spat_ludataharm_orig = self.s.spat_ludataharm * 1.
 
-        # optionally save land cover transitions as CSV files
+        # optionally save land cover transitions as a CSV
         if (self.c.save_transitions == 1) and (self.step in self.c.target_years_output):
 
             self.log.info("Saving land cover transition files for time step {0}...".format(self.step))
@@ -165,24 +162,27 @@ class ProcessStep:
 
             wdr.map_transitions(self.s, self.c, self.step, self.transitions)
 
-        # optionally save land cover data for each PFT as yearly interpolated NetCDF
-        if (self.c.save_netcdf_pft == 1) and (self.step in self.c.target_years_output):
+        # create a NetCDF file of land cover percent by land class by grid cell containing each year interpolated to one-year intervals
+        if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
 
-            self.log.info("Saving output in NetCDF format for time step {0}...".format(self.step))
+            pass
 
-            # netcdf_outfile = ''
-            #
-            # wdr.to_netcdf_step(self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T,
-            #                 self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin, self.s.final_landclasses,
-            #                 self.step, self.s.user_years, netcdf_outfile, self.c.timestep, self.c.model)
+            # self.log.info("Saving output in NetCDF format for time step {0}...".format(self.step))
 
-            # create out path and file name for NetCDF file
-            netcdf_outfile = os.path.join(self.c.lc_per_step_nc, 'landcover_{0}.nc')
+            # # create out path and file name for NetCDF file
+            # netcdf_outfile = os.path.join(self.c.lc_per_step_nc, 'landcover_{0}.nc')
 
-            # create NetCDF file for each PFT that interpolates 5-year to yearly
-            wdr.to_netcdf_pft(self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T,
-                              self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin, self.s.final_landclasses,
-                              self.step, self.s.user_years, netcdf_outfile, self.c.timestep, self.c.model)
+            # # create NetCDF file for each PFT that interpolates 5-year to yearly
+            # wdr.to_netcdf_lc(self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T,
+            #                   self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin, self.s.final_landclasses,
+            #                   self.step, self.s.user_years, netcdf_outfile, self.c.timestep, self.c.model)
+
+        # create a NetCDF file of land cover percent for each year by grid cell containing each land class
+        if (self.c.save_netcdf_yr == 1) and (self.step in self.c.target_years_output):
+
+            pass
+
+            # self.log.info("Saving output in NetCDF format for time step {0}...".format(self.step))
 
         # save land cover data for the time step
         if (self.c.save_tabular == 1) and (self.step in self.c.target_years_output):

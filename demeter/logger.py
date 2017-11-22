@@ -7,7 +7,6 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (PNNL)
 """
-
 import logging
 import sys
 
@@ -89,6 +88,3 @@ class Logger:
         for h in handlers:
             h.close()
             log.removeHandler(h)
-
-
-

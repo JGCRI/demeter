@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Land use intensification algorithm.
 

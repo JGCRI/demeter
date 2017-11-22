@@ -5,9 +5,8 @@ Copyright (c) 2017, Battelle Memorial Institute
 
 Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
-@author:  Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com)
+@author:  Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com); Caleb J. Braun (caleb.braun@pnnl.gov)
 """
-
 import os
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -185,10 +184,22 @@ def write_transitions(s, c, step, transitions):
             np.savetxt(f, arr, fmt='%g', delimiter=',', header=hdr, comments='')
 
 
-def to_netcdf_step(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model):
+def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model, out_file):
+    """
+    Build a NetCDF file for each time step that contains the gridded percent
+    land cover for each land class.
 
-    # create out file full path
-    out_file = '/users/ladmin/Desktop/test.nc' # out_path.format(pft)
+    :param spat_lc:                 An array of gridded data as percent land cover (n_grids, n_landclasses)
+    :param map_idx:                 An array of cell index positions for spatially mapping the gridded data (n_grids, n_landclasses)
+    :param lat:                     An array of latitude values for mapping (n)
+    :param lon:                     An array of longitude values for mapping (n)
+    :param resin:                   The input spatial resolution in geographic degrees (float)
+    :param final_landclasses:       An array of land classes (n_classes)
+    :param yr:                      The target time step (int)
+    :param model:                   The name of the model running (str)
+    :param out_file:                A full path string of the output file with extension (str)
+    :return:                        A NetCDF classic file.
+    """
 
     # create NetCDF file
     with spio.netcdf.netcdf_file(out_file, 'w') as f:
@@ -253,14 +264,24 @@ def to_netcdf_step(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, mod
             lc_perc[pft, :, :] = pft_mat
 
 
-def to_netcdf_pft(spat_ludataharm, cellindexresin, lat, lon, resin, final_landclasses, yr, user_years, out_path, timestep,
-                model):
+def to_netcdf_lc(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, user_years, out_path,
+                  timestep, model):
     """
-    Save output as NetCDF file for each FT in the final land cover classes.
-    Output a file for each class.  File will be a yearly interpolation of the
-    5-year GCAM timestep.
+    Save output as NetCDF file for each land class.  Output a file for each class.
+    File will be a yearly interpolation of the 5-year GCAM timestep.
 
-    :return:
+    :param spat_lc:                 An array of gridded data as percent land cover (n_grids, n_landclasses)
+    :param map_idx:                 An array of cell index positions for spatially mapping the gridded data (n_grids, n_landclasses)
+    :param lat:                     An array of latitude values for mapping (n)
+    :param lon:                     An array of longitude values for mapping (n)
+    :param resin:                   The input spatial resolution in geographic degrees (float)
+    :param final_landclasses:       An array of land classes (n_classes)
+    :param yr:                      The target time step (int)
+    :param user_years:              An array of time steps to process (n)
+    :param out_path                 A full path string of the output file with extension (str)
+    :param timestep:                The increment between time steps (int)
+    :param model:                   The name of the model running (str)
+    :return:                        A NetCDF classic file.
     """
 
     # iterate through each PFT in the final land cover classes
@@ -331,10 +352,10 @@ def to_netcdf_pft(spat_ludataharm, cellindexresin, lat, lon, resin, final_landcl
                 pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
 
                 # extract base land use data for the target PFT
-                slh = spat_ludataharm[:, final_landclasses.index(pft)]
+                slh = spat_lc[:, final_landclasses.index(pft)]
 
                 # assign values to matrix
-                pft_mat[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :])] = slh
+                pft_mat[np.int_(map_idx[0, :]), np.int_(map_idx[1, :])] = slh
 
                 # multiply by scale factor for percentage
                 pft_mat *= lc_perc.scale_factor
@@ -359,10 +380,10 @@ def to_netcdf_pft(spat_ludataharm, cellindexresin, lat, lon, resin, final_landcl
             pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
 
             # extract base land use data for the target PFT
-            slh = spat_ludataharm[:, final_landclasses.index(pft)]
+            slh = spat_lc[:, final_landclasses.index(pft)]
 
             # assign values to matrix
-            pft_mat[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :])] = slh
+            pft_mat[np.int_(map_idx[0, :]), np.int_(map_idx[1, :])] = slh
 
             # multiply by scale factor for percentage
             pft_mat *= f.variables['landcoverpercentage'].scale_factor

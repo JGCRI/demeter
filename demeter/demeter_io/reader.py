@@ -7,7 +7,6 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov)
 """
-
 import numpy as np
 import os
 import pandas as pd

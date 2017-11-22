@@ -18,7 +18,10 @@ from configobj import ConfigObj
 
 class ReadConfig:
 
-    def __init__(self, ini_file):
+    def __init__(self, config_file):
+
+        # check ini file
+        ini_file = config_file
 
         # initialize console logger for model initialization
         self.log = self.console_logger()
@@ -41,7 +44,7 @@ class ReadConfig:
         # create and validate input dir full paths
         i = self.config['INPUTS']
         self.alloc_dir = self.check_exist(os.path.join(self.in_dir, i['allocation_dir']), 'dir', self.log)
-        self.base_dir = self.check_exist(os.path.join(self.in_dir, i['base_dir']), 'dir', self.log)
+        self.base_dir = self.check_exist(os.path.join(self.in_dir, i['observed_dir']), 'dir', self.log)
         self.projected_dir = self.check_exist(os.path.join(self.in_dir, i['projected_dir']), 'dir', self.log)
         self.ref_dir = self.check_exist(os.path.join(self.in_dir, i['ref_dir']), 'dir', self.log)
         self.constraints_dir = self.create_dir(os.path.join(self.in_dir, i['constraints_dir']), self.log)
@@ -53,14 +56,14 @@ class ReadConfig:
         self.treatment_order = self.check_exist(os.path.join(self.alloc_dir, a['treatment_order']), 'file', self.log)
         self.constraints = self.check_exist(os.path.join(self.alloc_dir, a['constraints']), 'file', self.log)
         self.kernel_allocation = self.check_exist(os.path.join(self.alloc_dir, a['kernel_allocation']), 'file', self.log)
-        self.priority_allocation = self.check_exist(os.path.join(self.alloc_dir, a['priority_allocation']), 'file', self.log)
+        self.priority_allocation = self.check_exist(os.path.join(self.alloc_dir, a['transition_order']), 'file', self.log)
 
         # create and validate constraints input file full paths
         self.constraint_files = self.get_constraints()
 
         # create and validate base lulc input file full path
-        c = i['BASE']
-        self.first_mod_file = self.check_exist(os.path.join(self.base_dir, c['base_lu_data']), 'file', self.log)
+        c = i['OBSERVED']
+        self.first_mod_file = self.check_exist(os.path.join(self.base_dir, c['observed_lu_data']), 'file', self.log)
 
         # create and validate projected lulc input file full path
         g = i['PROJECTED']
@@ -82,7 +85,7 @@ class ReadConfig:
         self.luc_intense_p1_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p1_dir']), self.log)
         self.luc_intense_p2_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p2_dir']), self.log)
         self.luc_expand_dir = self.create_dir(os.path.join(self.out_dir, o['luc_expand_dir']), self.log)
-        self.luc_ts_luc = self.create_dir(os.path.join(self.out_dir, o['luc_ts_luc']), self.log)
+        self.luc_ts_luc = self.create_dir(os.path.join(self.out_dir, o['luc_timestep']), self.log)
         self.lc_per_step_csv = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_csv']), self.log)
         self.lc_per_step_nc = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_nc']), self.log)
         self.lc_per_step_shp = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_shp']), self.log)
@@ -96,53 +99,156 @@ class ReadConfig:
 
         # assign and type run specific parameters
         p = self.config['PARAMS']
-        self.model = p['model']
-        self.metric = p['metric'].upper()
-        self.run_desc = p['run_desc']
-        self.use_constraints = int(p['use_constraints'])
+        self.model = self.ck_len(p['model'], 'model')
+        self.metric = self.ck_vals(p['metric'].upper(), 'metric', ['BASIN', 'AEZ'])
+        self.run_desc = self.ck_len(p['run_desc'], 'run_desc')
+        self.use_constraints = self.ck_vals(int(p['use_constraints']), 'use_constraints', [0, 1])
         self.agg_level = self.ck_agg(p['agg_level'], self.log)
-        self.resin = float(p['spatial_resolution'])
-        self.pkey = p['base_id_field']
-        self.errortol = float(p['errortol'])
-        self.year_b = int(p['year_b'])
-        self.year_e = int(p['year_e'])
-        self.timestep = int(p['timestep'])
-        self.proj_factor = int(p['proj_factor'])
-        self.scenario = p['scenario']
-        self.diagnostic = int(p['diagnostic'])
-        self.intensification_ratio = float(p['intensification_ratio'])
-        self.selection_threshold = float(p['selection_threshold'])
-        self.map_kernels = int(p['map_kernels'])
-        self.map_luc = int(p['map_luc_pft'])
-        self.map_luc_steps = int(p['map_luc_steps'])
-        self.kerneldistance = int(p['kerneldistance'])
+        self.resin = self.ck_limit(float(p['spatial_resolution']), 'spatial_resolution', [0, 1])
+        self.pkey = p['observed_id_field']
+        self.errortol = self.ck_limit(float(p['errortol']), 'errortol', [0, 1])
+        self.year_b = self.ck_yr(p['start_year'], 'start_year')
+        self.year_e = self.ck_yr(p['end_year'], 'end_year')
+        self.timestep = self.ck_ts(p['timestep'], self.year_b, self.year_e)
+        self.proj_factor = self.ck_type(p['proj_factor'], 'proj_factor', 'int')
+        self.scenario = self.ck_len(p['scenario'], 'scenario')
+        self.diagnostic = self.ck_vals(int(p['diagnostic']), 'diagnostic', [0, 1])
+        self.intensification_ratio = self.ck_limit(float(p['intensification_ratio']), 'intensification_ratio', [0, 1])
+        self.selection_threshold = self.ck_limit(float(p['selection_threshold']), 'selection_threshold', [0, 1])
+        self.map_kernels = self.ck_limit(int(p['map_kernels']), 'map_kernels', [0, 1])
+        self.map_luc = self.ck_limit(int(p['map_luc_pft']), 'map_luc_pft', [0, 1])
+        self.map_luc_steps = self.ck_limit(int(p['map_luc_steps']), 'map_luc_steps', [0, 1])
+
+        # 180 is the max longitude value
+        self.kerneldistance = self.ck_limit(int(p['kernel_distance']), 'kernel_distance', [0, (180 / self.resin)])
+
         self.target_years_output = self.set_target(p['target_years_output'])
-        self.save_tabular = int(p['save_tabular'])
-        self.tabular_units = p['tabular_units']
-        self.stochastic_expansion = int(p['stochastic_expansion'])
-        self.save_transitions = int(p['save_transitions'])
-        self.save_transition_maps = int(p['map_transitions'])
-        self.save_shapefile = int(p['save_shapefile'])
+        self.save_tabular = self.ck_limit(int(p['save_tabular']), 'save_tabular', [0, 1])
+        self.tabular_units = self.ck_vals(p['tabular_units'].lower(), 'tabular_units', ['percent', 'sqkm'])
+        self.stochastic_expansion = self.ck_vals(int(p['stochastic_expansion']), 'stochastic_expansion', [0, 1])
+        self.save_transitions = self.ck_vals(int(p['save_transitions']), 'save_transitions', [0, 1])
+        self.save_transition_maps = self.ck_vals(int(p['map_transitions']), 'map_transitions', [0, 1])
+        self.save_shapefile = self.ck_vals(int(p['save_shapefile']), 'save_shapefile', [0, 1])
+        self.save_netcdf_yr = self.ck_vals(int(p['save_netcdf_yr']), 'save_netcdf_yr', [0, 1])
+        self.save_netcdf_lc = self.ck_vals(int(p['save_netcdf_lc']), 'save_netcdf_lc', [0, 1])
         self.shuffle = 0
 
         # turn on tabular land cover data output if writing a shapefile
         if self.save_shapefile == 1:
             self.save_tabular = 1
 
-        try:
-            self.save_netcdf_pft = int(p['save_netcdf_pft'])
-        except KeyError:
-            self.save_netcdf_pft = 0
-
         # if running ensemble
         try:
             ens = self.config['ENSEMBLE']
-            self.permutations = int(ens['permutations'])
+            self.permutations = self.ck_limit(int(ens['permutations']), 'permutations', [0, 10000000])
             self.limits_file = self.check_exist(ens['limits_file'], 'file', self.log)
-            self.n_jobs = int(ens['n_jobs'])
+            self.n_jobs = self.ck_limit(int(ens['n_jobs']), 'n_jobs', [-10000, 10000])
         except KeyError:
             pass
 
+    @staticmethod
+    def ck_type(v, p, tp):
+        """
+        Ensure desired type conversion can be achieved.
+
+        :param v:           value
+        :param p:           name of parameter
+        :return:            value
+        """
+        if tp == 'int':
+            try:
+                return int(v)
+            except ValueError:
+                raise ValueError('Value "{0}" for parameter "{1}" shoud be an integer.  Exiting...'.format(v, p))
+        elif tp == 'float':
+            try:
+                return float(v)
+            except ValueError:
+                raise ValueError('Value "{0}" for parameter "{1}" shoud be a decimal.  Exiting...'.format(v, p))
+
+    @staticmethod
+    def ck_ts(t, st_y, ed_y):
+        """
+        Make sure time step fits in year bounds.
+
+        :param t:           time step
+        :param st_y:        start year
+        :param ed_y:        end year
+        :return:            time step
+        """
+        rng = (ed_y - st_y)
+        ts = int(t)
+
+        if (rng == 0) and (ts != 1):
+            raise RuntimeError('Parameter "timestep" value must be 1 if only running one year.  Your start year and end year are the same in your config file.  Exiting...')
+        elif (rng == 0) and (ts == 1):
+            return ts
+
+        ck = rng / ts
+
+        if ck == 0:
+            raise RuntimeError('Parameter "timestep" value "{0}" is too large for start year of "{1}" and end year of "{2}".  Max time step available based on year range is "{3}".  Exiting...'.format(t, st_y, ed_y, ed_y - st_y))
+        else:
+            return ts
+
+    @staticmethod
+    def ck_yr(y, p):
+        """
+        Make sure year is four digits.
+
+        :param y:           year
+        :param p:           name of parameter
+        :return:            int
+        """
+        if len(y) != 4:
+            raise RuntimeError('Year must be in four digit format (e.g., 2005) for parameter "{}". Value entered was "{}". Exiting...'.format(p, y))
+        else:
+            return int(y)
+
+    @staticmethod
+    def ck_len(s, p, l=20):
+        """
+        Ensure len of string is less than or equal to value.
+
+        :param s:           string
+        :param p:           name of parameter
+        :param l:           int of max length
+        :return:            string
+        """
+        if len(s) > l:
+            raise RuntimeError('Length of "{}" exceeds the max length of 20.  Please revise.  Exiting...'.format(p))
+        else:
+            return s
+
+    @staticmethod
+    def ck_vals(v, p, l):
+        """
+        Ensure target value is an available option.
+
+        :param v:           value
+        :param p:           name of parameter
+        :param l:           list or tuple of available options for parameter
+        :return:            value
+        """
+        if v in l:
+            return v
+        else:
+            raise RuntimeError('Value "{0}" not in acceptable values for parameter "{1}".  Acceptable values are:  {2}.  Exiting...'.format(v, p, l))
+
+    @staticmethod
+    def ck_limit(v, p, l):
+        """
+        Ensure target value falls within limits.
+
+        :param v:           value
+        :param p:           name of parameter
+        :param l:           list of start and end range of acceptable values
+        :return:            value
+        """
+        if (v >= l[0]) and (v <= l[1]):
+            return v
+        else:
+            raise RuntimeError('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(v, p, l[0], l[1]))
 
     @staticmethod
     def check_exist(f, kind, log):
@@ -156,11 +262,11 @@ class ReadConfig:
         if kind == 'file' and os.path.isfile(f) is False:
             log.error("File not found:  {0}".format(f))
             log.error("Confirm path and retry.")
-            sys.exit()
+            raise IOError('File not found: {0}. Confirm path and retry.'.format(f))
         elif kind == 'dir' and os.path.isdir(f) is False:
             log.error("Directory not found:  {0}".format(f))
             log.error("Confirm path and retry.")
-            sys.exit()
+            raise IOError('Directory not found: {0}. Confirm path and retry.'.format(f))
         else:
             return f
 
@@ -278,7 +384,6 @@ class ReadConfigInitial:
         s = self.config['STRUCTURE']
         p = self.config['PARAMS']
         i = self.config['INPUTS']
-        r = i['REFERENCE']
         a = i['ALLOCATION']
         ens = self.config['ENSEMBLE']
 
@@ -288,17 +393,51 @@ class ReadConfigInitial:
         self.alloc_dir = os.path.join(self.in_dir, i['allocation_dir'])
         self.ref_dir = os.path.join(self.in_dir, i['ref_dir'])
 
-        self.intensification_ratio = float(p['intensification_ratio'])
-        self.selection_threshold = float(p['selection_threshold'])
-        self.kerneldistance = int(p['kerneldistance'])
-        self.scenario = p['scenario']
+        self.intensification_ratio = self.ck_limit(float(p['intensification_ratio']), 'intensification_ratio', [0, 1])
+        self.selection_threshold = self.ck_limit(float(p['selection_threshold']), 'selection_threshold', [0, 1])
+        self.resin = self.ck_limit(float(p['spatial_resolution']), 'spatial_resolution', [0, 1])
 
-        self.priority_allocation = self.check_exist(os.path.join(self.alloc_dir, a['priority_allocation']), 'file', log)
+        # 180 is the max longitude value
+        self.kerneldistance = self.ck_limit(int(p['kernel_distance']), 'kernel_distance', [0, (180 / self.resin)])
+
+        self.scenario = self.ck_len(p['scenario'], 'scenario')
+
+        self.priority_allocation = self.check_exist(os.path.join(self.alloc_dir, a['transition_order']), 'file', log)
         self.treatment_order = self.check_exist(os.path.join(self.alloc_dir, a['treatment_order']), 'file', log)
 
-        self.permutations = int(ens['permutations'])
+        self.permutations = self.ck_limit(int(ens['permutations']), 'permutations', [0, 10000000])
         self.limits_file = self.check_exist(ens['limits_file'], 'file', log)
-        self.n_jobs = int(ens['n_jobs'])
+        self.n_jobs = self.ck_limit(int(ens['n_jobs']), 'n_jobs', [-10000, 10000])
+
+    @staticmethod
+    def ck_limit(v, p, l):
+        """
+        Ensure target value falls within limits.
+
+        :param v:           value
+        :param p:           name of parameter
+        :param l:           list of start and end range of acceptable values
+        :return:            value
+        """
+        if (v >= l[0]) and (v <= l[1]):
+            return v
+        else:
+            raise RuntimeError('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(v, p, l[0], l[1]))
+
+    @staticmethod
+    def ck_len(s, p, l=20):
+        """
+        Ensure len of string is less than or equal to value.
+
+        :param s:           string
+        :param p:           name of parameter
+        :param l:           int of max length
+        :return:            string
+        """
+        if len(s) > l:
+            raise RuntimeError('Length of "{}" exceeds the max length of 20.  Please revise.  Exiting...'.format(p))
+        else:
+            return s
 
     @staticmethod
     def check_exist(f, kind, log):
@@ -381,7 +520,7 @@ class ReadConfigShuffle:
         # create and validate input dir full paths
         i = self.config['INPUTS']
         self.alloc_dir = self.check_exist(os.path.join(self.in_dir, i['allocation_dir']), 'dir', self.log)
-        self.base_dir = self.check_exist(os.path.join(self.in_dir, i['base_dir']), 'dir', self.log)
+        self.base_dir = self.check_exist(os.path.join(self.in_dir, i['observed_dir']), 'dir', self.log)
         self.constraints_dir = self.create_dir(os.path.join(self.in_dir, i['constraints_dir']), self.log)
         self.projected_dir = self.check_exist(os.path.join(self.in_dir, i['projected_dir']), 'dir', self.log)
         self.ref_dir = self.check_exist(os.path.join(self.in_dir, i['ref_dir']), 'dir', self.log)
@@ -391,7 +530,7 @@ class ReadConfigShuffle:
         self.spatial_allocation = self.check_exist(os.path.join(self.alloc_dir, a['spatial_allocation']), 'file', self.log)
         self.gcam_allocation = self.check_exist(os.path.join(self.alloc_dir, a['gcam_allocation']), 'file', self.log)
         self.kernel_allocation = self.check_exist(os.path.join(self.alloc_dir, a['kernel_allocation']), 'file', self.log)
-        self.priority_allocation = self.check_exist(os.path.join(self.alloc_dir, a['priority_allocation']), 'file', self.log)
+        self.priority_allocation = self.check_exist(os.path.join(self.alloc_dir, a['transition_order']), 'file', self.log)
         self.treatment_order = self.check_exist(os.path.join(self.alloc_dir, a['treatment_order']), 'file', self.log)
         self.constraints = self.check_exist(os.path.join(self.alloc_dir, a['constraints']), 'file', self.log)
 
@@ -399,8 +538,8 @@ class ReadConfigShuffle:
         self.constraint_files = self.get_constraints()
 
         # create and validate base lulc input file full path
-        c = i['BASE']
-        self.first_mod_file = self.check_exist(os.path.join(self.base_dir, c['base_lu_data']), 'file', self.log)
+        c = i['OBSERVED']
+        self.first_mod_file = self.check_exist(os.path.join(self.base_dir, c['observed_lu_data']), 'file', self.log)
 
         # create and validate projected lulc input file full path
         g = i['PROJECTED']
@@ -414,50 +553,50 @@ class ReadConfigShuffle:
 
         # assign and type run specific parameters
         p = self.config['PARAMS']
-        self.model = p['model']
-        self.metric = p['metric'].upper()
-        self.run_desc = p['run_desc']
-        self.use_constraints = int(p['use_constraints'])
+        self.model = self.ck_len(p['model'], 'model')
+        self.metric = self.ck_vals(p['metric'].upper(), 'metric', ['BASIN', 'AEZ'])
+        self.run_desc = self.ck_len(p['run_desc'], 'run_desc')
+        self.use_constraints = self.ck_vals(int(p['use_constraints']), 'use_constraints', [0, 1])
         self.agg_level = self.ck_agg(p['agg_level'], self.log)
-        self.resin = float(p['spatial_resolution'])
-        self.pkey = p['base_id_field']
-        self.errortol = float(p['errortol'])
-        self.year_b = int(p['year_b'])
-        self.year_e = int(p['year_e'])
-        self.timestep = int(p['timestep'])
-        self.proj_factor = int(p['proj_factor'])
-        self.scenario = p['scenario']
-        self.diagnostic = int(p['diagnostic'])
-        self.intensification_ratio = float(p['intensification_ratio'])
-        self.selection_threshold = float(p['selection_threshold'])
-        self.map_kernels = int(p['map_kernels'])
-        self.map_luc = int(p['map_luc_pft'])
-        self.map_luc_steps = int(p['map_luc_steps'])
-        self.kerneldistance = int(p['kerneldistance'])
+        self.resin = self.ck_limit(float(p['spatial_resolution']), 'spatial_resolution', [0, 1])
+        self.pkey = p['observed_id_field']
+        self.errortol = self.ck_limit(float(p['errortol']), 'errortol', [0, 1])
+        self.year_b = self.ck_yr(p['start_year'], 'start_year')
+        self.year_e = self.ck_yr(p['end_year'], 'end_year')
+        self.timestep = self.ck_ts(p['timestep'], self.year_b, self.year_e)
+        self.proj_factor = self.ck_type(p['proj_factor'], 'proj_factor', 'int')
+        self.scenario = self.ck_len(p['scenario'], 'scenario')
+        self.diagnostic = self.ck_vals(int(p['diagnostic']), 'diagnostic', [0, 1])
+        self.intensification_ratio = self.ck_limit(float(p['intensification_ratio']), 'intensification_ratio', [0, 1])
+        self.selection_threshold = self.ck_limit(float(p['selection_threshold']), 'selection_threshold', [0, 1])
+        self.map_kernels = self.ck_limit(int(p['map_kernels']), 'map_kernels', [0, 1])
+        self.map_luc = self.ck_limit(int(p['map_luc_pft']), 'map_luc_pft', [0, 1])
+        self.map_luc_steps = self.ck_limit(int(p['map_luc_steps']), 'map_luc_steps', [0, 1])
+
+        # 180 is the max longitude value
+        self.kerneldistance = self.ck_limit(int(p['kernel_distance']), 'kernel_distance', [0, (180 / self.resin)])
+
         self.target_years_output = self.set_target(p['target_years_output'])
-        self.stochastic_expansion = int(p['stochastic_expansion'])
-        self.save_tabular = int(p['save_tabular'])
-        self.tabular_units = p['tabular_units']
-        self.save_transitions = int(p['save_transitions'])
-        self.save_transition_maps = int(p['map_transitions'])
-        self.save_shapefile = int(p['save_shapefile'])
-        self.shuffle = 1
+        self.save_tabular = self.ck_limit(int(p['save_tabular']), 'save_tabular', [0, 1])
+        self.tabular_units = self.ck_vals(p['tabular_units'].lower(), 'tabular_units', ['percent', 'sqkm'])
+        self.stochastic_expansion = self.ck_vals(int(p['stochastic_expansion']), 'stochastic_expansion', [0, 1])
+        self.save_transitions = self.ck_vals(int(p['save_transitions']), 'save_transitions', [0, 1])
+        self.save_transition_maps = self.ck_vals(int(p['map_transitions']), 'map_transitions', [0, 1])
+        self.save_shapefile = self.ck_vals(int(p['save_shapefile']), 'save_shapefile', [0, 1])
+        self.save_netcdf_yr = self.ck_vals(int(p['save_netcdf_yr']), 'save_netcdf_yr', [0, 1])
+        self.save_netcdf_lc = self.ck_vals(int(p['save_netcdf_lc']), 'save_netcdf_lc', [0, 1])
+        self.shuffle = 0
 
         # turn on tabular land cover data output if writing a shapefile
         if self.save_shapefile == 1:
             self.save_tabular = 1
 
-        try:
-            self.save_netcdf_pft = int(p['save_netcdf_pft'])
-        except KeyError:
-            self.save_netcdf_pft = 0
-
         # if running ensemble
         try:
             ens = self.config['ENSEMBLE']
-            self.permutations = int(ens['permutations'])
+            self.permutations = self.ck_limit(int(ens['permutations']), 'permutations', [0, 10000000])
             self.limits_file = self.check_exist(ens['limits_file'], 'file', self.log)
-            self.n_jobs = int(ens['n_jobs'])
+            self.n_jobs = self.ck_limit(int(ens['n_jobs']), 'n_jobs', [-10000, 10000])
         except KeyError:
             pass
 
@@ -486,12 +625,12 @@ class ReadConfigShuffle:
             self.transiton_map_dir = self.create_dir(os.path.join(self.out_dir  , o['transition_maps']), self.log)
 
         if self.map_luc == 1:
-            self.luc_ts_luc = self.create_dir(os.path.join(self.out_dir, o['luc_ts_luc']), self.log)
+            self.luc_ts_luc = self.create_dir(os.path.join(self.out_dir, o['luc_timestep']), self.log)
 
         if self.save_tabular == 1:
             self.lc_per_step_csv = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_csv']), self.log)
 
-        if self.save_netcdf_pft == 1:
+        if (self.save_netcdf_yr == 1) or (self.save_netcdf_lc == 1):
             self.lc_per_step_nc = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_nc']), self.log)
 
         if self.save_shapefile == 1:
@@ -500,6 +639,111 @@ class ReadConfigShuffle:
         self.luc_intense_p1_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p1_dir']), self.log)
         self.luc_intense_p2_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p2_dir']), self.log)
         self.luc_expand_dir = self.create_dir(os.path.join(self.out_dir, o['luc_expand_dir']), self.log)
+
+    @staticmethod
+    def ck_type(v, p, tp):
+        """
+        Ensure desired type conversion can be achieved.
+
+        :param v:           value
+        :param p:           name of parameter
+        :return:            value
+        """
+        if tp == 'int':
+            try:
+                return int(v)
+            except ValueError:
+                raise ValueError('Value "{0}" for parameter "{1}" shoud be an integer.  Exiting...'.format(v, p))
+        elif tp == 'float':
+            try:
+                return float(v)
+            except ValueError:
+                raise ValueError('Value "{0}" for parameter "{1}" shoud be a decimal.  Exiting...'.format(v, p))
+
+    @staticmethod
+    def ck_ts(t, st_y, ed_y):
+        """
+        Make sure time step fits in year bounds.
+
+        :param t:           time step
+        :param st_y:        start year
+        :param ed_y:        end year
+        :return:            time step
+        """
+        rng = (ed_y - st_y)
+        ts = int(t)
+
+        if (rng == 0) and (ts != 1):
+            raise RuntimeError('Parameter "timestep" value must be 1 if only running one year.  Your start year and end year are the same in your config file.  Exiting...')
+        elif (rng == 0) and (ts == 1):
+            return ts
+
+        ck = rng / ts
+
+        if ck == 0:
+            raise RuntimeError('Parameter "timestep" value "{0}" is too large for start year of "{1}" and end year of "{2}".  Max time step available based on year range is "{3}".  Exiting...'.format(t, st_y, ed_y, ed_y - st_y))
+        else:
+            return ts
+
+    @staticmethod
+    def ck_yr(y, p):
+        """
+        Make sure year is four digits.
+
+        :param y:           year
+        :param p:           name of parameter
+        :return:            int
+        """
+        if len(y) != 4:
+            raise RuntimeError('Year must be in four digit format (e.g., 2005) for parameter "{}". Value entered was "{}". Exiting...'.format(p, y))
+        else:
+            return int(y)
+
+    @staticmethod
+    def ck_len(s, p, l=20):
+        """
+        Ensure len of string is less than or equal to value.
+
+        :param s:           string
+        :param p:           name of parameter
+        :param l:           int of max length
+        :return:            string
+        """
+        if len(s) > l:
+            raise RuntimeError('Length of "{}" exceeds the max length of 20.  Please revise.  Exiting...'.format(p))
+        else:
+            return s
+
+    @staticmethod
+    def ck_vals(v, p, l):
+        """
+        Ensure target value is an available option.
+
+        :param v:           value
+        :param p:           name of parameter
+        :param l:           list or tuple of available options for parameter
+        :return:            value
+        """
+        if v in l:
+            return v
+        else:
+            raise RuntimeError('Value "{0}" not in acceptable values for parameter "{1}".  Acceptable values are:  {2}.  Exiting...'.format(v, p, l))
+
+    @staticmethod
+    def ck_limit(v, p, l):
+        """
+        Ensure target value falls within limits.
+
+        :param v:           value
+        :param p:           name of parameter
+        :param l:           list of start and end range of acceptable values
+        :return:            value
+        """
+        if (v >= l[0]) and (v <= l[1]):
+            return v
+        else:
+            raise RuntimeError('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(v, p, l[0], l[1]))
+
 
     @staticmethod
     def check_exist(f, kind, log):
@@ -605,9 +849,3 @@ class ReadConfigShuffle:
 
         else:
             return list()
-
-if __name__ == "__main__":
-
-    ini = '/users/ladmin/repos/github/demeter/example/config.ini'
-
-    ReadConfigInitial(ini)

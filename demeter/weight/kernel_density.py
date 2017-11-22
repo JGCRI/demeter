@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Kernel density algorithm.
 
