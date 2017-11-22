@@ -111,9 +111,10 @@ Demeter’s configuration file allows the user to customize each run and define 
 
 | Level | Parameter | Description |
 | --- | --- | --- |
-| [STRUCTURE |	root_dir | The full path of the root directory where the inputs and outputs directory are stored |
-| [STRUCTURE |	in_dir	| The name of the input directory |
-| [STRUCTURE |	out_dir	 | The name of the output directory |
+|  STRUCTURE |	root_dir | The full path of the root directory where the inputs and outputs directory are stored |
+|  STRUCTURE |	in_dir	| The name of the input directory |
+|  STRUCTURE |	out_dir	 | The name of the output directory |
+
 [INPUTS]	allocation_dir	The name of the directory that holds the allocation files
 [INPUTS]	observed_dir	The name of the directory that holds the observed spatial data file
 [INPUTS]	constraints_dir	The name of the directory that holds the constraints files
