@@ -59,4 +59,5 @@ This file represents the area in square degrees of each land class existing with
 | metric_id	| The integer ID of the GCAM AEZ or basin that the grid cell is contained in.  Exact field name spelling required. |
 | latitude | The geographic latitude value of the grid cell centroid as a signed float.  Exact field name spelling required. |
 | longitude	| The geographic longitude value of the grid cell centroid as a signed float.  Exact field name spelling required. |
+
 **Table 1.**  Observed spatial data required fields and their descriptions.
