@@ -49,3 +49,9 @@ The following describes the requirements and format of each input.
 ###Observed spatial data:
 
 This file represents the area in square degrees of each land class existing within a grid cell.  The grid cell size is defined by the user.  This file must be presented as a comma-separated values (CSV) file having a header in the first row and must contain the field names and fields described in Table 1.
+
+
+|   Field	|   Description   |         
+| --------- | --------------- |
+| fid | Unique integer ID for each grid cell latitude, longitude |
+| landclass | Each land class field name (e.g., shrub, grass, etc.).  Field names must not include commas. |
