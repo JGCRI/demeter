@@ -114,39 +114,38 @@ Demeter’s configuration file allows the user to customize each run and define 
 |  STRUCTURE |	root_dir | The full path of the root directory where the inputs and outputs directory are stored |
 |  STRUCTURE |	in_dir	| The name of the input directory |
 |  STRUCTURE |	out_dir	 | The name of the output directory |
-
-[INPUTS]	allocation_dir	The name of the directory that holds the allocation files
-[INPUTS]	observed_dir	The name of the directory that holds the observed spatial data file
-[INPUTS]	constraints_dir	The name of the directory that holds the constraints files
-[INPUTS]	projected_dir	The name of the directory that holds the GCAM projected land allocation file
-[INPUTS]	ref_dir	The name of the directory that holds the reference files
-[INPUTS][ALLOCATION]	spatial_allocation	The file name with extension of the observed spatial data class allocation 
-[INPUTS][ALLOCATION]	gcam_allocation	The file name with extension of the projected land class allocation
-[INPUTS][ALLOCATION]	kernel_allocation	The file name with extension of the kernel density weighting
-[INPUTS][ALLOCATION]	priority_allocation	The file name with extension of the priority allocation
-[INPUTS][ALLOCATION]	treatment_order	The file name with extension of the treatment order
-[INPUTS][ALLOCATION]	constraints	The file name with extension of the constraint weighting
-[INPUTS][OBSERVED]	observed_lu_data	The file name with extension of the observational spatial data
-[INPUTS][PROJECTED]	projected_lu_data	The file name with extension of the projected land allocation data from GCAM
-[INPUTS][REFERENCE]	gcam_regnamefile	The file name with extension of the GCAM region name to region id lookup 
-[INPUTS][REFERENCE]	region_coords	A CSV file of GCAM region coordinates for each grid cell
-[INPUTS][REFERENCE]	country_coords	A CSV file of GCAM country coordinates for each grid cell
-[OUTPUTS]	diag_dir	The name of the directory that diagnostics outputs will be kept
-[OUTPUTS]	log_dir	The name of the directory that the log file outputs will be kept
-[OUTPUTS]	kernel_map_dir	The name of the directory that kernel density map outputs will be kept
-[OUTPUTS]	transition_tabular	The name of the directory that tabular land transition outputs will be kept
-[OUTPUTS]	transition_maps	The name of the directory that land transition map outputs will be kept
-[OUTPUTS]	luc_intense_p1_dir	The name of the directory that the land intensification first pass map outputs will be kept
-[OUTPUTS]	luc_intense_p2_dir	The name of the directory that the land intensification second pass map outputs will be kept
-[OUTPUTS]	luc_expand_dir	The name of the directory that the land expansion map outputs will be kept
-[OUTPUTS]	luc_ts_luc	The name of the directory that the land use change per time step map outputs will be kept
-[OUTPUTS]	lc_per_step_csv	The name of the directory that the tabular land change per time step outputs will be kept
-[OUTPUTS]	lc_per_step_nc	The name of the directory that the NetCDF land change per time step outputs will be kept
-[OUTPUTS]	lc_per_step_shp	The name of the directory that the Shapefile land change per time step outputs will be kept
-[OUTPUTS][DIAGNOSTICS]	harm_coeff	The file name with extension of the NumPy array that will hold the harmonization coefficient data
-[OUTPUTS][DIAGNOSTICS]	intense_pass1_diag	The file name with extension of the CSV that will hold the land allocation per time step per functional type for the first pass of intensification
-[OUTPUTS][DIAGNOSTICS]	intense_pass2_diag	The file name with extension of the CSV that will hold the land allocation per time step per functional type for the second pass of intensification
-[OUTPUTS][DIAGNOSTICS]	expansion_diag	The file name with extension of the CSV that will hold the land allocation per time step per functional type for the expansion pass
+| INPUTS | allocation_dir |	The name of the directory that holds the allocation files
+| INPUTS | observed_dir	| The name of the directory that holds the observed spatial data file
+| INPUTS | constraints_dir | The name of the directory that holds the constraints files
+| INPUTS | projected_dir |	The name of the directory that holds the GCAM projected land allocation file
+| INPUTS | ref_dir | The name of the directory that holds the reference files
+| INPUTS - ALLOCATION |	spatial_allocation	|The file name with extension of the observed spatial data class allocation 
+| INPUTS - ALLOCATION |	gcam_allocation	|The file name with extension of the projected land class allocation
+| INPUTS - ALLOCATION |	kernel_allocation	|The file name with extension of the kernel density weighting
+| INPUTS - ALLOCATION |	priority_allocation|	The file name with extension of the priority allocation
+| INPUTS - ALLOCATION |	treatment_order	|The file name with extension of the treatment order
+| INPUTS - ALLOCATION |	constraints|	The file name with extension of the constraint weighting
+| INPUTS - OBSERVED |	observed_lu_data	|The file name with extension of the observational spatial data
+| INPUTS - PROJECTED |	projected_lu_data|	The file name with extension of the projected land allocation data from GCAM
+| INPUTS - REFERENCE |	gcam_regnamefile	|The file name with extension of the GCAM region name to region id lookup 
+| INPUTS - REFERENCE |	region_coords|	A CSV file of GCAM region coordinates for each grid cell
+| INPUTS - REFERENCE |	country_coords	|A CSV file of GCAM country coordinates for each grid cell
+| OUTPUTS | diag_dir|	The name of the directory that diagnostics outputs will be kept
+| OUTPUTS  |	log_dir|	The name of the directory that the log file outputs will be kept
+| OUTPUTS  |	kernel_map_dir|	The name of the directory that kernel density map outputs will be kept
+| OUTPUTS  |	transition_tabular|	The name of the directory that tabular land transition outputs will be kept
+| OUTPUTS  |	transition_maps	|The name of the directory that land transition map outputs will be kept
+| OUTPUTS  |	luc_intense_p1_dir	|The name of the directory that the land intensification first pass map outputs will be kept
+| OUTPUTS  |	luc_intense_p2_dir|	The name of the directory that the land intensification second pass map outputs will be kept
+| OUTPUTS  |	luc_expand_dir|	The name of the directory that the land expansion map outputs will be kept
+| OUTPUTS  |	luc_ts_luc	|The name of the directory that the land use change per time step map outputs will be kept
+| OUTPUTS  |	lc_per_step_csv	|The name of the directory that the tabular land change per time step outputs will be kept
+| OUTPUTS  |	lc_per_step_nc	|The name of the directory that the NetCDF land change per time step outputs will be kept
+| OUTPUTS  |	lc_per_step_shp	|The name of the directory that the Shapefile land change per time step outputs will be kept
+| OUTPUTS - DIAGNOSTICS |	harm_coeff|	The file name with extension of the NumPy array that will hold the harmonization coefficient data
+| OUTPUTS - DIAGNOSTICS |	intense_pass1_diag|	The file name with extension of the CSV that will hold the land allocation per time step per functional type for the first pass of intensification
+| OUTPUTS - DIAGNOSTICS |	intense_pass2_diag	|The file name with extension of the CSV that will hold the land allocation per time step per functional type for the second pass of intensification
+| OUTPUTS - DIAGNOSTICS |	expansion_diag	|The file name with extension of the CSV that will hold the land allocation per time step per functional type for the expansion pass
 [PARAMS]	model	The model name providing the projected land allocation data (e.g., GCAM)
 [PARAMS]	metric	Either AEZ or BASIN
 [PARAMS]	scenario	Scenario name
