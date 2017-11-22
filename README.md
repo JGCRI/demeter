@@ -146,6 +146,8 @@ Demeter’s configuration file allows the user to customize each run and define 
 | OUTPUTS - DIAGNOSTICS |	intense_pass1_diag|	The file name with extension of the CSV that will hold the land allocation per time step per functional type for the first pass of intensification
 | OUTPUTS - DIAGNOSTICS |	intense_pass2_diag	|The file name with extension of the CSV that will hold the land allocation per time step per functional type for the second pass of intensification
 | OUTPUTS - DIAGNOSTICS |	expansion_diag	|The file name with extension of the CSV that will hold the land allocation per time step per functional type for the expansion pass
+
+
 [PARAMS]	model	The model name providing the projected land allocation data (e.g., GCAM)
 [PARAMS]	metric	Either AEZ or BASIN
 [PARAMS]	scenario	Scenario name
