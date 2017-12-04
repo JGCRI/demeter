@@ -130,8 +130,19 @@ class ReadConfig:
         self.save_transition_maps = self.ck_vals(int(p['map_transitions']), 'map_transitions', [0, 1])
         self.save_shapefile = self.ck_vals(int(p['save_shapefile']), 'save_shapefile', [0, 1])
         self.save_netcdf_yr = self.ck_vals(int(p['save_netcdf_yr']), 'save_netcdf_yr', [0, 1])
-        self.save_netcdf_lc = self.ck_vals(int(p['save_netcdf_lc']), 'save_netcdf_lc', [0, 1])
         self.shuffle = 0
+
+        # --------- NEW OUTPUT PARAM HERE --------- #
+        # Enter your new output parameter here in the following format, substituting 'lc_max_grid' with
+        #   your parameter name and 'self.lc_max_grid' with your param.
+
+        try:
+            self.save_ascii_max = self.ck_vals(int(p['save_ascii_max']), 'save_ascii_max', [0, 1])
+
+        except KeyError:
+            self.save_ascii_max = 0
+
+        # --------- END OUTPUT EXTENSION --------- #
 
         # turn on tabular land cover data output if writing a shapefile
         if self.save_shapefile == 1:
@@ -206,7 +217,7 @@ class ReadConfig:
             return int(y)
 
     @staticmethod
-    def ck_len(s, p, l=20):
+    def ck_len(s, p, l=30):
         """
         Ensure len of string is less than or equal to value.
 
@@ -584,7 +595,6 @@ class ReadConfigShuffle:
         self.save_transition_maps = self.ck_vals(int(p['map_transitions']), 'map_transitions', [0, 1])
         self.save_shapefile = self.ck_vals(int(p['save_shapefile']), 'save_shapefile', [0, 1])
         self.save_netcdf_yr = self.ck_vals(int(p['save_netcdf_yr']), 'save_netcdf_yr', [0, 1])
-        self.save_netcdf_lc = self.ck_vals(int(p['save_netcdf_lc']), 'save_netcdf_lc', [0, 1])
         self.shuffle = 0
 
         # turn on tabular land cover data output if writing a shapefile
@@ -635,6 +645,18 @@ class ReadConfigShuffle:
 
         if self.save_shapefile == 1:
             self.lc_per_step_shp = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_shp']), self.log)
+
+        # --------- NEW OUTPUT PARAM HERE --------- #
+        # Enter your new output parameter here in the following format, substituting 'lc_max_grid' with
+        #   your parameter name and 'self.lc_max_grid' with your param.
+
+        try:
+            self.save_ascii_max = self.ck_vals(int(p['save_ascii_max']), 'save_ascii_max', [0, 1])
+
+        except KeyError:
+            self.save_ascii_max = 0
+
+        # --------- END OUTPUT EXTENSION --------- #
 
         self.luc_intense_p1_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p1_dir']), self.log)
         self.luc_intense_p2_dir = self.create_dir(os.path.join(self.out_dir, o['luc_intense_p2_dir']), self.log)

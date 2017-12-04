@@ -11,7 +11,7 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
-from scipy import io as spio
+from scipy import io as sio
 import shapefile
 
 import demeter.demeter_io.reader as rdr
@@ -39,7 +39,7 @@ def save_array(arr, out_file):
 
 def to_shp(c, yr, final_landclasses):
     """
-    Build shapefile containing landcover in km2 per grid location.
+    Build shapefile containing landcover per grid location.
 
     :param c:                       config object
     :param yr:                      target year
@@ -202,7 +202,7 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
     """
 
     # create NetCDF file
-    with spio.netcdf.netcdf_file(out_file, 'w') as f:
+    with sio.netcdf_file(out_file, 'w') as f:
 
         # add scenario
         f.history = 'test file'
@@ -243,7 +243,7 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
         # set missing value to -1
         lc_perc.missing_value = -1.
 
-        for pft in range(len(final_landclasses)):
+        for pft in range(0, len(final_landclasses), 1):
 
             # create land use matrix and populate with -1
             pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
@@ -262,145 +262,6 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
 
             # assign to variable
             lc_perc[pft, :, :] = pft_mat
-
-
-def to_netcdf_lc(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, user_years, out_path,
-                  timestep, model):
-    """
-    Save output as NetCDF file for each land class.  Output a file for each class.
-    File will be a yearly interpolation of the 5-year GCAM timestep.
-
-    :param spat_lc:                 An array of gridded data as percent land cover (n_grids, n_landclasses)
-    :param map_idx:                 An array of cell index positions for spatially mapping the gridded data (n_grids, n_landclasses)
-    :param lat:                     An array of latitude values for mapping (n)
-    :param lon:                     An array of longitude values for mapping (n)
-    :param resin:                   The input spatial resolution in geographic degrees (float)
-    :param final_landclasses:       An array of land classes (n_classes)
-    :param yr:                      The target time step (int)
-    :param user_years:              An array of time steps to process (n)
-    :param out_path                 A full path string of the output file with extension (str)
-    :param timestep:                The increment between time steps (int)
-    :param model:                   The name of the model running (str)
-    :return:                        A NetCDF classic file.
-    """
-
-    # iterate through each PFT in the final land cover classes
-    for pft in final_landclasses:
-
-        # create out file full path
-        out_file = out_path.format(pft)
-
-        # if first time step, create file, then populate
-        if yr == user_years[0]:
-
-            # create NetCDF file
-            with spio.netcdf.netcdf_file(out_file, 'w') as f:
-
-                # create dimensions
-                f.createDimension('lat', len(lat))
-                f.createDimension('lon', len(lon))
-                f.createDimension('time', (len(user_years) - 1) * timestep + 1)
-                f.createDimension('nv', 2)
-
-                # create variables
-                lts = f.createVariable('lat', 'f4', ('lat', ))
-                lns = f.createVariable('lon', 'f4', ('lon', ))
-                tsp = f.createVariable('time', 'i4', ('time', ))
-                lat_bnd = f.createVariable('lat_bnds', 'f4', ('lat', 'nv'))
-                lon_bnd = f.createVariable('lon_bnds', 'f4', ('lon', 'nv'))
-                tm_bnd = f.createVariable('time_bnds', 'f4', ('time', 'nv'))
-
-                lc_perc = f.createVariable('landcoverpercentage', 'f8', ('time', 'lat', 'lon', )) # , fill_value=-1.)
-
-                # create metadata
-                lts.units = 'degrees_north'
-                lts.standard_name = 'latitude'
-                lts.bounds = 'lat_bnds'
-                lns.units = 'degrees_east'
-                lns.standard_name = 'longitude'
-                lns.bounds = 'lon_bnds'
-                lat_bnd.units = 'degrees_north'
-                lon_bnd.units = 'degrees_east'
-                tsp.units = ''  # fill in by user selection
-                tsp.calendar = 'standard'
-                tsp.bounds = 'time_bnds'
-                tsp.description = ''  # user defined
-
-                lc_perc.units = 'percentage'
-                lc_perc.scale_factor = 1.
-                lc_perc.add_offset = 0.
-                lc_perc.projection = 'WGS84'
-                lc_perc.description = 'Percent {0} at {1} degree, from {2} to {3}'.format(pft, resin, user_years[0], user_years[-1])
-                lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
-                lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
-
-                # assign data
-                tsp[:] = np.arange(user_years[0], user_years[-1] + 1, 1)
-                lat_bnd[:, 0] = lat - resin / 2.
-                lat_bnd[:, 1] = lat + resin / 2.
-                lon_bnd[:, 0] = lon - resin / 2.
-                lon_bnd[:, 1] = lon + resin / 2.
-                tm_bnd[:, 0] = np.arange(user_years[0], user_years[-1] + 1, 1)
-                tm_bnd[:, 1] = np.arange(user_years[0], user_years[-1] + 1, 1) + 1
-                lts[:] = lat
-                lns[:] = lon
-
-                # set missing value to -1
-                lc_perc.missing_value = -1.
-
-                # create land use matrix and populate with -1
-                pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
-
-                # extract base land use data for the target PFT
-                slh = spat_lc[:, final_landclasses.index(pft)]
-
-                # assign values to matrix
-                pft_mat[np.int_(map_idx[0, :]), np.int_(map_idx[1, :])] = slh
-
-                # multiply by scale factor for percentage
-                pft_mat *= lc_perc.scale_factor
-
-                # set negative values to -1
-                pft_mat[pft_mat < 0] = -1
-
-                # assign to variable
-                lc_perc[0, :, :] = pft_mat
-
-        # all other time steps interpolate the data between two steps to get annual land use and add them to the file
-        else:
-
-            # open file
-            # f = nc.Dataset(out_file, 'r+', format='NETCDF4')
-            f = spio.netcdf.netcdf_file(out_file, 'a')
-
-            # get previous time steps land use percentage
-            prev_lu = f.variables['landcoverpercentage'][yr - user_years[0] - np.int_(timestep), :, :]
-
-            # create land use matrix and populate with -1
-            pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
-
-            # extract base land use data for the target PFT
-            slh = spat_lc[:, final_landclasses.index(pft)]
-
-            # assign values to matrix
-            pft_mat[np.int_(map_idx[0, :]), np.int_(map_idx[1, :])] = slh
-
-            # multiply by scale factor for percentage
-            pft_mat *= f.variables['landcoverpercentage'].scale_factor
-
-            # set negative values to -1
-            pft_mat[pft_mat < 0] = -1
-
-            # interpolation between both time steps for annual value
-            lu_change = (pft_mat - prev_lu) / float(timestep)
-
-            for i in range(np.int_(timestep)):
-
-                pc = prev_lu + lu_change * (i + 1)
-                f.variables['landcoverpercentage'][yr - user_years[0] - np.int_(timestep) + i + 1, :, :] = pc
-
-            # close file
-            f.close()
 
 
 def map_kernel_density(spatdata, kerneldata, lat, lon, pft_name, yr, out_path):
@@ -595,3 +456,87 @@ def map_transitions(s, c, step, transitions, dpi=150):
             # clean up
             fig.clf()
             plt.close(fig)
+
+
+def arr_to_ascii(arr, r_ascii, xll=-180, yll=-90, cellsize=0.25, nodata=-9999):
+    """
+    Convert a numpy array to an ASCII raster.
+
+    :@param arr:            2D array
+    :@param r_ascii:        Full path to outfile with extension
+    :@param xll:            Longitude coordinate for lower left corner
+    :@param yll:            Latitude coordinate for lower left corner
+    :@param cellsize:       Cell size in geographic degrees
+    :@param nodata:         Value representing NODATA
+    """
+
+    # get number of rows and columns of array
+    nrows = arr.shape[0]
+    ncols = arr.shape[1]
+
+    # create ASCII raster file
+    with open(r_ascii, 'w') as rast:
+
+        # write header
+        rast.write('ncols {}\n'.format(ncols))
+        rast.write('nrows {}\n'.format(nrows))
+        rast.write('xllcorner {}\n'.format(xll))
+        rast.write('yllcorner {}\n'.format(yll))
+        rast.write('cellsize {}\n'.format(cellsize))
+        rast.write('nodata_value {}\n'.format(nodata))
+
+        # write array
+        np.savetxt(rast, arr, fmt='%.15g')
+
+
+def max_ascii_rast(arr, out_rast, alg='max', nodata=-9999, xll=-180, yll=-90, cellsize=0.25):
+    """
+    Return the land class index containing the maximum value in the array axis.
+
+    NOTE:
+    Replace NaN with your nodata value.
+    If all classes 0, then -9999
+    If multiple classes have the same max value, get class with largest index
+
+    :@param arr:            3D array (landclass, col, row)
+    :@param alg:            Algorithm to extract the land class index from values
+    :@param out_rast:       Full path to outfile with extension
+    :@param xll:            Longitude coordinate for lower left corner
+    :@param yll:            Latitude coordinate for lower left corner
+    :@param cellsize:       Cell size in geographic degrees
+    :@param nodata:         Value representing NODATA
+    """
+
+    # create a mask of where values are NaN for all land class indices
+    lc_all_nan = np.all(np.isnan(arr), axis=0)
+
+    # convert array by selection type
+    if alg == 'max':
+        # Reverse the array before finding the max. This is done because we
+        # want the class with the largest index, however np.nanargmax() returns
+        # the first (smallest) index it comes across.
+        arr_rev = arr[::-1]
+
+        # replace NaN with zero
+        arr_rev = np.nan_to_num(arr_rev)
+
+        # get land class index containing the max value (ignoring NaNs)
+        arr_max = np.nanargmax(arr_rev, axis=0)
+
+        # flip the indices back to represent their position in the original array
+        final_arr = (arr.shape[0] - 1) - arr_max
+
+    elif alg == 'min':
+        arr_rev = arr[::-1]
+        arr_rev[np.where(np.isnan(arr_rev))] = np.inf # replace NaN with inf
+        arr_min = np.nanargmin(arr_rev, axis=0)
+        final_arr = (arr.shape[0] - 1) - arr_min
+
+    else:
+        raise ValueError('Value "{}" for parameter "alg" not a valid option'.format(alg))
+
+    # replace indices where all values were NaN with nodata value
+    final_arr = np.where(lc_all_nan, nodata, final_arr)
+
+    # create output raster
+    arr_to_ascii(final_arr, out_rast, xll=-xll, yll=-yll, cellsize=cellsize, nodata=nodata)
