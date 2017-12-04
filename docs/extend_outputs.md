@@ -7,6 +7,7 @@
 ![config_reader](https://github.com/IMMM-SFA/demeter/blob/master/img/extend_config_reader.png "extend config reader")
 4. Add your function to demeter/demeter/demeter_io/writer.py 
 5. Parameterize and call your function in the output method of the ProcessStep class here:  demeter/demeter/process.py
+![process](https://github.com/IMMM-SFA/demeter/blob/master/img/extend_process.png "extend process")
 6. Make sure it works!
 7. Submit a pull request and the admin will review your work and integrate the output format into Demeter!
     
