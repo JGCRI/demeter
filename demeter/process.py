@@ -150,22 +150,28 @@ class ProcessStep:
         :param user_years:              a list of user selected years to process
 
         """
-
-        # convert land cover from sqkm per grid cell per land class to percent for mapping (n_grids, n_landclasses)
-        map_percent_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea, (self.l_fcs, 1)).T
+        # convert land cover from sqkm per grid cell per land class to fraction for mapping (n_grids, n_landclasses)
+        map_fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea, (self.l_fcs, 1)).T
 
         # do the same for the previous or starting step for mapping
-        map_precent_lu_prev = self.s.spat_ludataharm_orig / np.tile(self.s.cellarea, (self.l_fcs, 1)).T
+        map_fraction_lu_prev = self.s.spat_ludataharm_orig / np.tile(self.s.cellarea, (self.l_fcs, 1)).T
 
-        # convert land cover from sqkm per grid cell per land class to percent (n_grids, n_landclasses)
-        percent_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T
+        # convert land cover from sqkm per grid cell per land class to fraction (n_grids, n_landclasses)
+        fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T
+
+        # create map grids of spatial data in grid cell fraction; -9999 is NODATA; (lat_val, lon_val, n_landclasses)
+        map_grid_prev = np.zeros((len(self.s.lat), len(self.s.lon), len(self.s.final_landclasses))) + -9999
+        map_grid_now = np.zeros((len(self.s.lat), len(self.s.lon), len(self.s.final_landclasses))) + -9999
+        map_grid_prev[np.int_(self.s.cellindexresin[0, :]), np.int_(self.s.cellindexresin[1, :]), :] = map_fraction_lu_prev
+        map_grid_now[np.int_(self.s.cellindexresin[0, :]), np.int_(self.s.cellindexresin[1, :]), :] = map_fraction_lu
+        map_grid_chg = map_grid_now - map_grid_prev
 
         # optionally map time step
         if (self.c.map_luc == 1) and (self.step in self.c.target_years_output):
 
             self.log.info("Mapping land cover change for time step {0}...".format(self.step))
 
-            wdr.map_luc(map_percent_lu, map_precent_lu_prev, self.s.cellindexresin, self.s.lat, self.s.lon,
+            wdr.map_luc(map_fraction_lu, map_fraction_lu_prev, self.s.cellindexresin, self.s.lat, self.s.lon,
                         self.s.final_landclasses, self.step, self.c.region_coords, self.c.country_coords,
                         self.c.luc_ts_luc, 'timestep_luc')
 
@@ -180,13 +186,13 @@ class ProcessStep:
             wdr.write_transitions(self.s, self.c, self.step, self.transitions)
 
         # optionally create land cover transition maps
-        if (self.c.save_transition_maps == 1) and (self.step  in self.c.target_years_output):
+        if (self.c.save_transition_maps == 1) and (self.step in self.c.target_years_output):
 
             self.log.info("Saving land cover transition maps for time step {0}...".format(self.step))
 
             wdr.map_transitions(self.s, self.c, self.step, self.transitions)
 
-        # create a NetCDF file of land cover percent for each year by grid cell containing each land class
+        # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
         if (self.c.save_netcdf_yr == 1) and (self.step in self.c.target_years_output):
 
             self.log.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
@@ -194,7 +200,7 @@ class ProcessStep:
             # create out path and file name for NetCDF file
             netcdf_yr_out = os.path.join(self.c.lc_per_step_nc, 'lc_yearly_{0}.nc'.format(self.step))
 
-            wdr.to_netcdf_yr(percent_lu, self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin,
+            wdr.to_netcdf_yr(fraction_lu, self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin,
                              self.s.final_landclasses, self.step, self.c.model, netcdf_yr_out)
 
         # save land cover data for the time step
@@ -219,11 +225,8 @@ class ProcessStep:
         if (self.c.save_ascii_max == 1) and (self.step in self.c.target_years_output):
             self.log.info("Saving output in ASCII raster format for time step {0}...".format(self.step))
 
-            # create out path and file name for the output file
-            ascii_max_out = os.path.join(self.c.lc_per_step_nc, 'lc_maxarea_{0}.asc'.format(self.step))
-
             # call function for output object using available data detailed in this methods docstring
-            wdr.max_ascii_rast(percent_lu, ascii_max_out, cellsize=self.c.resin)
+            wdr.max_ascii_rast(map_grid_now, self.c.out_dir, self.step, cellsize=self.c.resin)
 
         # --------- END OUTPUT EXTENSION --------- #
 

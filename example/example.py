@@ -17,7 +17,6 @@ if __name__ == "__main__":
 
     # config file in example directory
     ini = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.ini')
-    # ini = '/users/ladmin/Desktop/demeter/luh_demeter/config_luh.ini'
 
     # instantiate Demeter
     dm = Demeter(config=ini)

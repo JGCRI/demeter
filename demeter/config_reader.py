@@ -124,7 +124,7 @@ class ReadConfig:
 
         self.target_years_output = self.set_target(p['target_years_output'])
         self.save_tabular = self.ck_limit(int(p['save_tabular']), 'save_tabular', [0, 1])
-        self.tabular_units = self.ck_vals(p['tabular_units'].lower(), 'tabular_units', ['percent', 'sqkm'])
+        self.tabular_units = self.ck_vals(p['tabular_units'].lower(), 'tabular_units', ['fraction', 'sqkm'])
         self.stochastic_expansion = self.ck_vals(int(p['stochastic_expansion']), 'stochastic_expansion', [0, 1])
         self.save_transitions = self.ck_vals(int(p['save_transitions']), 'save_transitions', [0, 1])
         self.save_transition_maps = self.ck_vals(int(p['map_transitions']), 'map_transitions', [0, 1])
@@ -589,7 +589,7 @@ class ReadConfigShuffle:
 
         self.target_years_output = self.set_target(p['target_years_output'])
         self.save_tabular = self.ck_limit(int(p['save_tabular']), 'save_tabular', [0, 1])
-        self.tabular_units = self.ck_vals(p['tabular_units'].lower(), 'tabular_units', ['percent', 'sqkm'])
+        self.tabular_units = self.ck_vals(p['tabular_units'].lower(), 'tabular_units', ['fraction', 'sqkm'])
         self.stochastic_expansion = self.ck_vals(int(p['stochastic_expansion']), 'stochastic_expansion', [0, 1])
         self.save_transitions = self.ck_vals(int(p['save_transitions']), 'save_transitions', [0, 1])
         self.save_transition_maps = self.ck_vals(int(p['map_transitions']), 'map_transitions', [0, 1])
@@ -647,8 +647,8 @@ class ReadConfigShuffle:
             self.lc_per_step_shp = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_shp']), self.log)
 
         # --------- NEW OUTPUT PARAM HERE --------- #
-        # Enter your new output parameter here in the following format, substituting 'lc_max_grid' with
-        #   your parameter name and 'self.lc_max_grid' with your param.
+        # Enter your new output parameter here in the following format, substituting 'save_ascii_max' with
+        #   your parameter name and 'self.save_ascii_max' with your param.
 
         try:
             self.save_ascii_max = self.ck_vals(int(p['save_ascii_max']), 'save_ascii_max', [0, 1])

@@ -110,7 +110,7 @@ def to_shp(c, yr, final_landclasses):
 
 
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
-                    spat_ludataharm, metric, units='percent'):
+                    spat_ludataharm, metric, units='fraction'):
     """
     Save land cover data for each time step as a CSV file.
     """
@@ -143,7 +143,7 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
     if units == 'sqkm':
         pass
 
-    elif units == 'percent':
+    elif units == 'fraction':
         arr[:, 4:] = np.true_divide(arr[:, 4:], arr[:, 4:].sum(axis=1, keepdims=True))
 
     # save to file
@@ -489,7 +489,7 @@ def arr_to_ascii(arr, r_ascii, xll=-180, yll=-90, cellsize=0.25, nodata=-9999):
         np.savetxt(rast, arr, fmt='%.15g')
 
 
-def max_ascii_rast(arr, out_rast, alg='max', nodata=-9999, xll=-180, yll=-90, cellsize=0.25):
+def max_ascii_rast(arr, out_dir, step, alg='max', nodata=-9999, xll=-180, yll=-90, cellsize=0.25):
     """
     Return the land class index containing the maximum value in the array axis.
 
@@ -506,16 +506,32 @@ def max_ascii_rast(arr, out_rast, alg='max', nodata=-9999, xll=-180, yll=-90, ce
     :@param cellsize:       Cell size in geographic degrees
     :@param nodata:         Value representing NODATA
     """
+    # create out path and file name for the output file
+    ascii_max_dir = os.path.join(out_dir, 'ascii_max_raster')
+
+    # create output dir if it does not exist
+    if os.path.isdir(ascii_max_dir):
+        pass
+    else:
+        os.mkdir(ascii_max_dir)
+
+    # create empty ascii grid array
+    ascii_grd = np.zeros(shape=(arr.shape[2], arr.shape[0], arr.shape[1]))
+
+    for x in range(arr.shape[2]):
+        ascii_grd[x, :, :] = arr[:, :, x]
+
+    out_rast = os.path.join(ascii_max_dir, 'lc_maxarea_{0}.asc'.format(step))
 
     # create a mask of where values are NaN for all land class indices
-    lc_all_nan = np.all(np.isnan(arr), axis=0)
+    lc_all_nan = np.all(np.isnan(ascii_grd), axis=0)
 
     # convert array by selection type
     if alg == 'max':
         # Reverse the array before finding the max. This is done because we
         # want the class with the largest index, however np.nanargmax() returns
         # the first (smallest) index it comes across.
-        arr_rev = arr[::-1]
+        arr_rev = ascii_grd[::-1]
 
         # replace NaN with zero
         arr_rev = np.nan_to_num(arr_rev)
@@ -524,13 +540,13 @@ def max_ascii_rast(arr, out_rast, alg='max', nodata=-9999, xll=-180, yll=-90, ce
         arr_max = np.nanargmax(arr_rev, axis=0)
 
         # flip the indices back to represent their position in the original array
-        final_arr = (arr.shape[0] - 1) - arr_max
+        final_arr = (ascii_grd.shape[0] - 1) - arr_max
 
     elif alg == 'min':
-        arr_rev = arr[::-1]
+        arr_rev = ascii_grd[::-1]
         arr_rev[np.where(np.isnan(arr_rev))] = np.inf # replace NaN with inf
         arr_min = np.nanargmin(arr_rev, axis=0)
-        final_arr = (arr.shape[0] - 1) - arr_min
+        final_arr = (ascii_grd.shape[0] - 1) - arr_min
 
     else:
         raise ValueError('Value "{}" for parameter "alg" not a valid option'.format(alg))
