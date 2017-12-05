@@ -640,7 +640,7 @@ class ReadConfigShuffle:
         if self.save_tabular == 1:
             self.lc_per_step_csv = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_csv']), self.log)
 
-        if (self.save_netcdf_yr == 1) or (self.save_netcdf_lc == 1):
+        if (self.save_netcdf_yr == 1):
             self.lc_per_step_nc = self.create_dir(os.path.join(self.out_dir, o['lc_per_step_nc']), self.log)
 
         if self.save_shapefile == 1:
@@ -871,3 +871,9 @@ class ReadConfigShuffle:
 
         else:
             return list()
+
+if __name__ == "__main__":
+
+    ini = '/users/ladmin/repos/github/demeter/example/config.ini'
+
+    ReadConfigShuffle(ini, '/users/ladmin/Desktop')
