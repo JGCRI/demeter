@@ -109,13 +109,13 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
     trans_mat = np.zeros((l_shs, l_ord, l_ord))
 
     # process PFTs in order
-    for pft_ord in np.unique(order_rules):
+    for pft_ord in sorted(order_rules):
 
         # create a copy of the cons_data_sub array
         cons_data_sub = cons_data_sub_o.copy()
 
-        # lookup PFT and final land class
-        pft = np.where(order_rules == pft_ord)[0][0]
+        # lookup PFT and land class name
+        pft = order_rules.index(pft_ord)
         fcs = final_landclasses[pft]
 
         # define intensification targets
@@ -237,8 +237,8 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
 
         # get region and metric from index
         regnumber = allregnumber[reg_idx]
-        metnumber = allregmet[reg_idx][met_idx]
-        metnum_idx = metnumber - 1
+        metnumber = np.unique(spat_met)[met_idx]
+        met_ref = met_idx
 
         # create data subset
         spat_ludataharm_sub = spat_ludataharm[(spat_region == regnumber) & (spat_met == metnumber)]
@@ -247,7 +247,7 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
 
         # calculate expansion for each PFT
         exp = _expansion(c.diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub, reg_idx,
-                         metnum_idx, order_rules, final_landclasses, c.errortol, constrain_rules, transition_rules,
+                         met_ref, order_rules, final_landclasses, c.errortol, constrain_rules, transition_rules,
                          c.stochastic_expansion, c.selection_threshold, land_mismatch, target_change)
 
         # apply expansion and update transitions
