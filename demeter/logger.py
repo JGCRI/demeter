@@ -86,5 +86,6 @@ class Logger:
         """
         handlers = log.handlers[:]
         for h in handlers:
+            h.flush()
             h.close()
             log.removeHandler(h)

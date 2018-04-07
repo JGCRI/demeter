@@ -16,6 +16,11 @@ import sys
 from configobj import ConfigObj
 
 
+class ValidationException(Exception):
+    def __init__(self,*args,**kwargs):
+        Exception.__init__(self,*args,**kwargs)
+
+
 class ReadConfig:
 
     def __init__(self, config_file):
@@ -191,14 +196,14 @@ class ReadConfig:
         ts = int(t)
 
         if (rng == 0) and (ts != 1):
-            raise RuntimeError('Parameter "timestep" value must be 1 if only running one year.  Your start year and end year are the same in your config file.  Exiting...')
+            raise ValidationException('Parameter "timestep" value must be 1 if only running one year.  Your start year and end year are the same in your config file.  Exiting...')
         elif (rng == 0) and (ts == 1):
             return ts
 
         ck = rng / ts
 
         if ck == 0:
-            raise RuntimeError('Parameter "timestep" value "{0}" is too large for start year of "{1}" and end year of "{2}".  Max time step available based on year range is "{3}".  Exiting...'.format(t, st_y, ed_y, ed_y - st_y))
+            raise ValidationException('Parameter "timestep" value "{0}" is too large for start year of "{1}" and end year of "{2}".  Max time step available based on year range is "{3}".  Exiting...'.format(t, st_y, ed_y, ed_y - st_y))
         else:
             return ts
 
@@ -212,7 +217,7 @@ class ReadConfig:
         :return:            int
         """
         if len(y) != 4:
-            raise RuntimeError('Year must be in four digit format (e.g., 2005) for parameter "{}". Value entered was "{}". Exiting...'.format(p, y))
+            raise ValidationException('Year must be in four digit format (e.g., 2005) for parameter "{}". Value entered was "{}". Exiting...'.format(p, y))
         else:
             return int(y)
 
@@ -227,7 +232,7 @@ class ReadConfig:
         :return:            string
         """
         if len(s) > l:
-            raise RuntimeError('Length of "{}" exceeds the max length of 20.  Please revise.  Exiting...'.format(p))
+            raise ValidationException('Length of "{}" exceeds the max length of 20.  Please revise.  Exiting...'.format(p))
         else:
             return s
 
@@ -244,7 +249,7 @@ class ReadConfig:
         if v in l:
             return v
         else:
-            raise RuntimeError('Value "{0}" not in acceptable values for parameter "{1}".  Acceptable values are:  {2}.  Exiting...'.format(v, p, l))
+            raise ValidationException('Value "{0}" not in acceptable values for parameter "{1}".  Acceptable values are:  {2}.  Exiting...'.format(v, p, l))
 
     @staticmethod
     def ck_limit(v, p, l):
@@ -259,7 +264,7 @@ class ReadConfig:
         if (v >= l[0]) and (v <= l[1]):
             return v
         else:
-            raise RuntimeError('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(v, p, l[0], l[1]))
+            raise ValidationException('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(v, p, l[0], l[1]))
 
     @staticmethod
     def check_exist(f, kind, log):
@@ -296,7 +301,7 @@ class ReadConfig:
         except Exception as e:
             log.error(e)
             log.error("ERROR:  Failed to create directory.")
-            sys.exit(1)
+            raise
 
     @staticmethod
     def ck_agg(a, log):
@@ -307,11 +312,11 @@ class ReadConfig:
             agg = int(a)
         except TypeError:
             log.error('"agg_level" parameter must be either  1 or 2.  Exiting...')
-            sys.exit(1)
+            raise
 
         if agg < 1 or agg > 2:
             log.error('"agg_level" parameter must be either 1 or 2.  Exiting...')
-            sys.exit(1)
+            raise ValidationException
 
         else:
             return agg
@@ -433,7 +438,7 @@ class ReadConfigInitial:
         if (v >= l[0]) and (v <= l[1]):
             return v
         else:
-            raise RuntimeError('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(v, p, l[0], l[1]))
+            raise ValidationException('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(v, p, l[0], l[1]))
 
     @staticmethod
     def ck_len(s, p, l=20):
@@ -446,7 +451,7 @@ class ReadConfigInitial:
         :return:            string
         """
         if len(s) > l:
-            raise RuntimeError('Length of "{}" exceeds the max length of 20.  Please revise.  Exiting...'.format(p))
+            raise ValidationException('Length of "{}" exceeds the max length of 20.  Please revise.  Exiting...'.format(p))
         else:
             return s
 
@@ -696,14 +701,14 @@ class ReadConfigShuffle:
         ts = int(t)
 
         if (rng == 0) and (ts != 1):
-            raise RuntimeError('Parameter "timestep" value must be 1 if only running one year.  Your start year and end year are the same in your config file.  Exiting...')
+            raise ValidationException('Parameter "timestep" value must be 1 if only running one year.  Your start year and end year are the same in your config file.  Exiting...')
         elif (rng == 0) and (ts == 1):
             return ts
 
         ck = rng / ts
 
         if ck == 0:
-            raise RuntimeError('Parameter "timestep" value "{0}" is too large for start year of "{1}" and end year of "{2}".  Max time step available based on year range is "{3}".  Exiting...'.format(t, st_y, ed_y, ed_y - st_y))
+            raise ValidationException('Parameter "timestep" value "{0}" is too large for start year of "{1}" and end year of "{2}".  Max time step available based on year range is "{3}".  Exiting...'.format(t, st_y, ed_y, ed_y - st_y))
         else:
             return ts
 
@@ -717,7 +722,7 @@ class ReadConfigShuffle:
         :return:            int
         """
         if len(y) != 4:
-            raise RuntimeError('Year must be in four digit format (e.g., 2005) for parameter "{}". Value entered was "{}". Exiting...'.format(p, y))
+            raise ValidationException('Year must be in four digit format (e.g., 2005) for parameter "{}". Value entered was "{}". Exiting...'.format(p, y))
         else:
             return int(y)
 
@@ -732,7 +737,7 @@ class ReadConfigShuffle:
         :return:            string
         """
         if len(s) > l:
-            raise RuntimeError('Length of "{}" exceeds the max length of 20.  Please revise.  Exiting...'.format(p))
+            raise ValidationException('Length of "{}" exceeds the max length of 20.  Please revise.  Exiting...'.format(p))
         else:
             return s
 
@@ -749,7 +754,7 @@ class ReadConfigShuffle:
         if v in l:
             return v
         else:
-            raise RuntimeError('Value "{0}" not in acceptable values for parameter "{1}".  Acceptable values are:  {2}.  Exiting...'.format(v, p, l))
+            raise ValidationException('Value "{0}" not in acceptable values for parameter "{1}".  Acceptable values are:  {2}.  Exiting...'.format(v, p, l))
 
     @staticmethod
     def ck_limit(v, p, l):
@@ -764,7 +769,7 @@ class ReadConfigShuffle:
         if (v >= l[0]) and (v <= l[1]):
             return v
         else:
-            raise RuntimeError('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(v, p, l[0], l[1]))
+            raise ValidationException('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(v, p, l[0], l[1]))
 
 
     @staticmethod
@@ -779,11 +784,11 @@ class ReadConfigShuffle:
         if kind == 'file' and os.path.isfile(f) is False:
             log.error("File not found:  {0}".format(f))
             log.error("Confirm path and retry.")
-            sys.exit()
+            raise IOError
         elif kind == 'dir' and os.path.isdir(f) is False:
             log.error("Directory not found:  {0}".format(f))
             log.error("Confirm path and retry.")
-            sys.exit()
+            raise IOError
         else:
             return f
 
@@ -802,7 +807,7 @@ class ReadConfigShuffle:
         except Exception as e:
             log.error(e)
             log.error("ERROR:  Failed to create directory.")
-            sys.exit()
+            raise ValidationException
 
     @staticmethod
     def ck_agg(a, log):
@@ -813,11 +818,11 @@ class ReadConfigShuffle:
             agg = int(a)
         except TypeError:
             log.error('"agg_level" parameter must be either  1 or 2.  Exiting...')
-            sys.exit(1)
+            raise ValidationException
 
         if agg < 1 or agg > 2:
             log.error('"agg_level" parameter must be either 1 or 2.  Exiting...')
-            sys.exit(1)
+            raise ValidationException
         else:
             return agg
 
@@ -871,9 +876,3 @@ class ReadConfigShuffle:
 
         else:
             return list()
-
-if __name__ == "__main__":
-
-    ini = '/users/ladmin/repos/github/demeter/example/config.ini'
-
-    ReadConfigShuffle(ini, '/users/ladmin/Desktop')

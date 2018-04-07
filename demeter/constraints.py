@@ -9,9 +9,13 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 """
 import os
 import numpy as np
-import sys
 
 import demeter.demeter_io.reader as rdr
+
+
+class ValidationException(Exception):
+    def __init__(self,*args,**kwargs):
+        Exception.__init__(self,*args,**kwargs)
 
 
 class ApplyConstraints:
@@ -97,7 +101,7 @@ class ApplyConstraints:
                 print("\nERROR: Aggregation numbers for PFT {0} in spatial allocation file sum up to more than 1.".format(i))
                 print("Please correct and try again.")
                 print("Exiting...\n")
-                sys.exit()
+                raise ValidationException
 
             # if individual values sum to greater than 1
             if np.sum(t > 0) > 1:
@@ -193,7 +197,7 @@ class ApplyConstraints:
                 print("\nERROR: No aggregation class defined for PFT {0} in the GCAM allocation file".format(self.gcam_landclasses(gix)))
                 print("Please correct and try again.")
                 print("Exiting...\n")
-                sys.exit()
+                raise ValidationException
 
             # Examine the case of one-to-many recombination (e.g., rockicedesert to snow and sparse). Data is split into
             #   the new categories following their share in the base land use layer within the considered region,

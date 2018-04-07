@@ -22,6 +22,11 @@ from demeter.ensemble.ensemble import RandomConfig
 from demeter.weight.kernel_density import KernelDensity
 
 
+class ValidationException(Exception):
+    def __init__(self,*args,**kwargs):
+        Exception.__init__(self,*args,**kwargs)
+
+
 class Demeter(Logger):
 
     def __init__(self,
@@ -301,7 +306,7 @@ if __name__ == '__main__':
                         2) the type of run you wish to conduct "standard" or "ensemble"
                     """)
         print('Exiting...')
-        sys.exit(1)
+        raise ValidationException
 
     # explode args
     ini = args[0]
@@ -313,12 +318,12 @@ if __name__ == '__main__':
         print('ERROR:  Config file not found.')
         print('You entered:  {0}'.format(ini))
         print('Please enter a full path file name with extension to config file and retry.')
-        sys.exit(1)
+        raise ValidationException
 
     if mode.lower() not in ('standard', 'ensemble'):
         print("""ERROR:  Run mode passed '{0}' not a valid option.  Either select 'standard' or 'ensemble' """.format(mode))
         print('Exiting...')
-        sys.exit(1)
+        raise ValidationException
 
     # instantiate demeter
     dm = Demeter(config=ini)
