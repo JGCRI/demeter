@@ -556,3 +556,55 @@ def max_ascii_rast(arr, out_dir, step, alg='max', nodata=-9999, xll=-180, yll=-9
 
     # create output raster
     arr_to_ascii(final_arr, out_rast, xll=-xll, yll=-yll, cellsize=cellsize, nodata=nodata)
+
+
+def stack_crops(arr, out_ncdf='crops.nc', grid_size=0.25, years = None, step = None ):
+    """
+    Produce stacked crops per year output in NetCDF format.
+
+    :@param arr:            3D array (landclass, col, row)
+    :@param alg:            Algorithm to extract the land class index from values
+    :@param out_rast:       Full path to outfile with extension
+    :@param xll:            Longitude coordinate for lower left corner
+    :@param yll:            Latitude coordinate for lower left corner
+    :@param cellsize:       Cell size in geographic degrees
+    :@param nodata:         Value representing NODATA
+    """
+
+    if step != years[-1]:
+        np.save('{0}/tmp_lc_{1}.np'.format(out_ncdf, step), arr)
+        return
+
+    print years
+    print out_ncdf
+    print arr.shape
+    # create NetCDF file
+    # with sio.netcdf_file(out_file, 'w') as f:
+    #
+    #     # create dimensions
+    #     f.createDimension('lat', len(lat))
+    #     f.createDimension('lon', len(lon))
+    #     f.createDimension('pft', len(final_landclasses))
+    #     f.createDimension('nv', 2)
+    #
+    #     # create variables
+    #     lts = f.createVariable('lat', 'f4', ('lat',))
+    #     lns = f.createVariable('lon', 'f4', ('lon',))
+    #     lcs = f.createVariable('pft', 'i', ('pft',))
+    #
+    #     lc_perc = f.createVariable('landcoverpercentage', 'f8', ('pft', 'lat', 'lon',))
+    #
+    #     # create metadata
+    #     lts.units = 'degrees_north'
+    #     lts.standard_name = 'latitude'
+    #     lns.units = 'degrees_east'
+    #     lns.standard_name = 'longitude'
+    #     lcs.description = 'Land cover class'
+    #
+    #     lc_perc.units = 'percentage'
+    #     lc_perc.scale_factor = 1.
+    #     lc_perc.add_offset = 0.
+    #     lc_perc.projection = 'WGS84'
+    #     lc_perc.description = 'Percent land cover for {0} at {1} degree.'.format(yr, resin)
+    #     lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
+    #     lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)

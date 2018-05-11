@@ -148,7 +148,6 @@ class ProcessStep:
         :param luc_ts_luc:              path to luc_timestep output dir
         :param transitions:             area in sqkm of each transition from one land class to another (n_cells, n_landclasses, n_landclasses)
         :param user_years:              a list of user selected years to process
-
         """
         # convert land cover from sqkm per grid cell per land class to fraction for mapping (n_grids, n_landclasses)
         map_fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea, (self.l_fcs, 1)).T
@@ -227,6 +226,10 @@ class ProcessStep:
 
             # call function for output object using available data detailed in this methods docstring
             wdr.max_ascii_rast(map_grid_now, self.c.out_dir, self.step, cellsize=self.c.resin)
+
+        if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
+            self.log.info("Saving stacked crops for time step {0}...".format(self.step))
+            wdr.stack_crops(map_grid_now, self.c.out_dir, step=self.step, years=self.s.user_years, grid_size=self.c.resin)
 
         # --------- END OUTPUT EXTENSION --------- #
 
