@@ -148,7 +148,6 @@ class ProcessStep:
         :param luc_ts_luc:              path to luc_timestep output dir
         :param transitions:             area in sqkm of each transition from one land class to another (n_cells, n_landclasses, n_landclasses)
         :param user_years:              a list of user selected years to process
-
         """
         # convert land cover from sqkm per grid cell per land class to fraction for mapping (n_grids, n_landclasses)
         map_fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea, (self.l_fcs, 1)).T
@@ -203,6 +202,13 @@ class ProcessStep:
             wdr.to_netcdf_yr(fraction_lu, self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin,
                              self.s.final_landclasses, self.step, self.c.model, netcdf_yr_out)
 
+        # create a NetCDF file of land cover fraction for each land class by grid cell containing each year
+        if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
+            self.log.info("Saving stacked land class for time step {0}...".format(self.step))
+            wdr.to_netcdf_lc(map_grid_now, self.s.lat, self.s.lon, self.c.resin,
+                             self.s.final_landclasses, self.s.user_years, self.step,
+                             self.c.model, self.c.lc_per_step_nc)
+
         # save land cover data for the time step
         if (self.c.save_tabular == 1) and (self.step in self.c.target_years_output):
             self.log.info("Saving tabular land cover data for time step {0}...".format(self.step))
@@ -215,18 +221,18 @@ class ProcessStep:
             self.log.info("Saving land cover data for time step as a shapefile {0}".format(self.step))
             wdr.to_shp(self.c, self.step, self.s.final_landclasses)
 
-        # --------- NEW OUTPUT PARAM HERE --------- #
-        # Create a conditional statement after the following for your extended format where
-        #   your parameter created in config_reader.py is in the place of 'self.c.save_ascii_max' with the same
-        #   'self.c.' prefix.  Then call your function from writer.py using wdr as the prefix
-        #   alias (e.g., wdr.your_function).
-
         # create an ASCII raster with the land class number having the maximum area for each grid cell
         if (self.c.save_ascii_max == 1) and (self.step in self.c.target_years_output):
             self.log.info("Saving output in ASCII raster format for time step {0}...".format(self.step))
 
             # call function for output object using available data detailed in this methods docstring
             wdr.max_ascii_rast(map_grid_now, self.c.out_dir, self.step, cellsize=self.c.resin)
+
+        # --------- NEW OUTPUT PARAM HERE --------- #
+        # Create a conditional statement after the following for your extended format where
+        #   your parameter created in config_reader.py is in the place of 'self.c.save_ascii_max' with the same
+        #   'self.c.' prefix.  Then call your function from writer.py using wdr as the prefix
+        #   alias (e.g., wdr.your_function).
 
         # --------- END OUTPUT EXTENSION --------- #
 
