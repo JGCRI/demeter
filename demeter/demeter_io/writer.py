@@ -186,10 +186,10 @@ def write_transitions(s, c, step, transitions):
 
 def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model, out_file):
     """
-    Build a NetCDF file for each time step that contains the gridded percent
-    land cover for each land class.
+    Build a NetCDF file for each time step that contains the gridded fraction
+    of land cover for each land class.
 
-    :param spat_lc:                 An array of gridded data as percent land cover (n_grids, n_landclasses)
+    :param spat_lc:                 An array of gridded data as fraction land cover (n_grids, n_landclasses)
     :param map_idx:                 An array of cell index positions for spatially mapping the gridded data (n_grids, n_landclasses)
     :param lat:                     An array of latitude values for mapping (n)
     :param lon:                     An array of longitude values for mapping (n)
@@ -218,7 +218,7 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
         lns = f.createVariable('lon', 'f4', ('lon',))
         lcs = f.createVariable('pft', 'i', ('pft',))
 
-        lc_perc = f.createVariable('landcoverpercentage', 'f8', ('pft', 'lat', 'lon',))
+        lc_frac = f.createVariable('landcoverfraction', 'f8', ('pft', 'lat', 'lon',))
 
         # create metadata
         lts.units = 'degrees_north'
@@ -227,13 +227,13 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
         lns.standard_name = 'longitude'
         lcs.description = 'Land cover class'
 
-        lc_perc.units = 'percentage'
-        lc_perc.scale_factor = 1.
-        lc_perc.add_offset = 0.
-        lc_perc.projection = 'WGS84'
-        lc_perc.description = 'Percent land cover for {0} at {1} degree.'.format(yr, resin)
-        lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
-        lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
+        lc_frac.units = 'fraction'
+        lc_frac.scale_factor = 1.
+        lc_frac.add_offset = 0.
+        lc_frac.projection = 'WGS84'
+        lc_frac.description = 'Fraction land cover for {0} at {1} degree.'.format(yr, resin)
+        lc_frac.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
+        lc_frac.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
 
         # assign data
         lts[:] = lat
@@ -241,7 +241,7 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
         lcs[:] = range(1, len(final_landclasses) + 1)
 
         # set missing value to -1
-        lc_perc.missing_value = -1.
+        lc_frac.missing_value = -1.
 
         for pft in range(0, len(final_landclasses), 1):
 
@@ -254,22 +254,19 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
             # assign values to matrix
             pft_mat[np.int_(map_idx[0, :]), np.int_(map_idx[1, :])] = slh
 
-            # multiply by scale factor for percentage
-            pft_mat *= lc_perc.scale_factor
-
             # set negative values to -1
             pft_mat[pft_mat < 0] = -1
 
             # assign to variable
-            lc_perc[pft, :, :] = pft_mat
+            lc_frac[pft, :, :] = pft_mat
 
 
 def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step, model, out_dir):
     """
-    Build a NetCDF file for each land class that contains the gridded percent
-    land cover of that land class over all simulation years.
+    Build a NetCDF file for each land class that contains the gridded fraction
+    of land cover of that land class over all simulation years.
 
-    :param spat_lc:            A 3D array of gridded data as percent land cover (lat, lon, pct landclass)
+    :param spat_lc:            A 3D array representing fraction of land cover (lat, lon, fraction landclass)
     :param lat:                An array of latitude values for mapping (n)
     :param lon:                An array of longitude values for mapping (n)
     :param resin:              The input spatial resolution in geographic degrees (float)
@@ -320,7 +317,7 @@ def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step, model
             lns = f.createVariable('lon', 'f4', ('lon',))
             times = f.createVariable('time', 'i4', ('time',))
 
-            lc_perc = f.createVariable('landcoverpercentage', 'f8', ('lat', 'lon', 'time'))
+            lc_frac = f.createVariable('landcoverfraction', 'f8', ('lat', 'lon', 'time'))
 
             # create metadata
             lts.units = 'degrees_north'
@@ -329,21 +326,21 @@ def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step, model
             lns.standard_name = 'longitude'
             times.description = 'years'
 
-            lc_perc.units = 'percentage'
-            lc_perc.scale_factor = 1.
-            lc_perc.add_offset = 0.
-            lc_perc.projection = 'WGS84'
-            lc_perc.description = 'Percent land cover for {0} at {1} degree.'.format(lc, resin)
-            lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
-            lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
+            lc_frac.units = 'fraction'
+            lc_frac.scale_factor = 1.
+            lc_frac.add_offset = 0.
+            lc_frac.projection = 'WGS84'
+            lc_frac.description = 'Fraction land cover for {0} at {1} degree.'.format(lc, resin)
+            lc_frac.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
+            lc_frac.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
 
-            lc_perc.missing_value = -1.
+            lc_frac.missing_value = -1.
 
             # Add data to netcdf object
             lts[:] = lat
             lns[:] = lon
             times[:] = years
-            lc_perc[:] = lc_yearly[:, :, :, lc_index]
+            lc_frac[:] = lc_yearly[:, :, :, lc_index]
 
 
 def map_kernel_density(spatdata, kerneldata, lat, lon, pft_name, yr, out_path):
