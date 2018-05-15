@@ -601,6 +601,7 @@ class ReadConfigShuffle:
         self.save_transition_maps = self.ck_vals(int(p['map_transitions']), 'map_transitions', [0, 1])
         self.save_shapefile = self.ck_vals(int(p['save_shapefile']), 'save_shapefile', [0, 1])
         self.save_netcdf_yr = self.ck_vals(int(p['save_netcdf_yr']), 'save_netcdf_yr', [0, 1])
+        self.save_netcdf_lc = self.ck_vals(int(p['save_netcdf_lc']), 'save_netcdf_lc', [0, 1])
         self.shuffle = 0
 
         # turn on tabular land cover data output if writing a shapefile

@@ -204,13 +204,10 @@ class ProcessStep:
 
         # create a NetCDF file of land cover fraction for each land class by grid cell containing each year
         if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
-            self.log.info("Saving stacked crops for time step {0}...".format(self.step))
-            # create out path and file name for NetCDF file
-            netcdf_lc_out = os.path.join(self.c.lc_per_step_nc, 'lc_yearly_flipped_{0}.nc'.format(self.step))
-
+            self.log.info("Saving stacked land class for time step {0}...".format(self.step))
             wdr.to_netcdf_lc(map_grid_now, self.s.lat, self.s.lon, self.c.resin,
                              self.s.final_landclasses, self.s.user_years, self.step,
-                             self.c.model, self.c.lc_per_step_nc, self.c.save_netcdf_yr)
+                             self.c.model, self.c.lc_per_step_nc)
 
         # save land cover data for the time step
         if (self.c.save_tabular == 1) and (self.step in self.c.target_years_output):
@@ -224,18 +221,18 @@ class ProcessStep:
             self.log.info("Saving land cover data for time step as a shapefile {0}".format(self.step))
             wdr.to_shp(self.c, self.step, self.s.final_landclasses)
 
-        # --------- NEW OUTPUT PARAM HERE --------- #
-        # Create a conditional statement after the following for your extended format where
-        #   your parameter created in config_reader.py is in the place of 'self.c.save_ascii_max' with the same
-        #   'self.c.' prefix.  Then call your function from writer.py using wdr as the prefix
-        #   alias (e.g., wdr.your_function).
-
         # create an ASCII raster with the land class number having the maximum area for each grid cell
         if (self.c.save_ascii_max == 1) and (self.step in self.c.target_years_output):
             self.log.info("Saving output in ASCII raster format for time step {0}...".format(self.step))
 
             # call function for output object using available data detailed in this methods docstring
             wdr.max_ascii_rast(map_grid_now, self.c.out_dir, self.step, cellsize=self.c.resin)
+
+        # --------- NEW OUTPUT PARAM HERE --------- #
+        # Create a conditional statement after the following for your extended format where
+        #   your parameter created in config_reader.py is in the place of 'self.c.save_ascii_max' with the same
+        #   'self.c.' prefix.  Then call your function from writer.py using wdr as the prefix
+        #   alias (e.g., wdr.your_function).
 
         # --------- END OUTPUT EXTENSION --------- #
 

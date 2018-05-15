@@ -238,7 +238,7 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
         # assign data
         lts[:] = lat
         lns[:] = lon
-        lcs[:] = range(1, len(final_landclasses))
+        lcs[:] = range(1, len(final_landclasses) + 1)
 
         # set missing value to -1
         lc_perc.missing_value = -1.
@@ -264,8 +264,7 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
             lc_perc[pft, :, :] = pft_mat
 
 
-def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step,
-                 model, out_dir, flip_year_out):
+def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step, model, out_dir):
     """
     Build a NetCDF file for each land class that contains the gridded percent
     land cover of that land class over all simulation years.
@@ -279,27 +278,34 @@ def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step,
     :param step:               The current time step (int)
     :param model:              The name of the model running (str)
     :param out_dir:            A full path string of the output directory (str)
-    :param flip_year_out:      Use the output of to_netcdf_yr? (boolean)
     :return:                   A NetCDF classic file.
     """
 
-    if not flip_year_out and step != years[-1]:
-        np.save('{0}/tmp_lc_{1}'.format(out_dir, step), spat_lc)
+    temp_file_prefix = 'tmp_lc_'
+    out_file_prefix = 'lc_yearly_'
+
+    # just save yearly data until the final year
+    if step != years[-1]:
+        np.save('{0}/{1}{2}'.format(out_dir, temp_file_prefix, step), spat_lc)
         return
 
-    if flip_year_out:
-        tmp_files = os.listdir(out_dir)
-        print "not supported yet"
-        return
-    else:
-        tmp_files = ['{0}/{1}'.format(out_dir, f) for f in os.listdir(out_dir) if 'tmp_lc_' in f]
-
+    # at the final year, gather data from all temporary files into one 4D array
+    # with dimensions (lat, lon, year, landclass)
+    tmp_files = ['{0}/{1}'.format(out_dir, f) for f in os.listdir(out_dir) if 'tmp_lc_' in f]
     lc_yearly = [np.load(f) for f in tmp_files]
     lc_yearly = np.stack(lc_yearly + [spat_lc], 2)
-    print lc_yearly.shape
 
+    # set negative values to -1
+    lc_yearly[lc_yearly < 0] = -1
+
+    # remove temporary files
+    for tf in tmp_files:
+        os.remove(tf)
+
+    # output NetCDF file for each land class over all years
     for lc_index, lc in enumerate(final_landclasses):
-        out_fname = '{0}/lc_yearly_{1}.nc'.format(out_dir, lc)
+
+        out_fname = '{0}/{1}{2}.nc'.format(out_dir, out_file_prefix, lc)
 
         # create NetCDF file
         with sio.netcdf_file(out_fname, 'w') as f:
@@ -321,7 +327,7 @@ def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step,
             lts.standard_name = 'latitude'
             lns.units = 'degrees_east'
             lns.standard_name = 'longitude'
-            times.description = 'Years'
+            times.description = 'years'
 
             lc_perc.units = 'percentage'
             lc_perc.scale_factor = 1.
@@ -331,14 +337,13 @@ def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step,
             lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
             lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
 
+            lc_perc.missing_value = -1.
+
             # Add data to netcdf object
             lts[:] = lat
             lns[:] = lon
             times[:] = years
             lc_perc[:] = lc_yearly[:, :, :, lc_index]
-
-    for tf in tmp_files:
-        os.remove(tf)
 
 
 def map_kernel_density(spatdata, kerneldata, lat, lon, pft_name, yr, out_path):

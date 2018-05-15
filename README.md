@@ -170,7 +170,8 @@ Demeter’s configuration file allows the user to customize each run and define 
 | PARAMS |	tabular_units | 	Units to output the spatial land cover data in; either ‘sqkm’ or 'fraction'
 | PARAMS |	save_transitions | 	0 to not write CSV files for each land transitions per land type, 1 to write
 | PARAMS |	save_shapefile | 	0 to not write a Shapefile for each time step containing for all functional types, 1 to write; output units will be same as tabular data
-| PARAMS |	save_netcdf_yr | 	0 to not write a NetCDF file of land cover percent for each year by grid cell containing each class; 1 to write
+| PARAMS |	save_netcdf_yr | 	0 to not write a NetCDF file of land cover percent for each year by grid cell containing each land class; 1 to write
+| PARAMS |	save_netcdf_lc | 	0 to not write a NetCDF file of land cover percent for each land class by grid cell containing each year; 1 to write
 | PARAMS |	save_ascii_max | 	0 to not create an ASCII raster of the land class with the maximum area for each grid cell per 1 to write
 | ENSEMBLE |	permutations	 | If running an ensemble of configurations, this is the number of permutations to process
 | ENSEMBLE |	limits_file	 | If running an ensemble of configurations, this is the full path to a CSV file containing limits to generate ensembles of certain parameters.
