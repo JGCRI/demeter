@@ -264,6 +264,83 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
             lc_perc[pft, :, :] = pft_mat
 
 
+def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step,
+                 model, out_dir, flip_year_out):
+    """
+    Build a NetCDF file for each land class that contains the gridded percent
+    land cover of that land class over all simulation years.
+
+    :param spat_lc:            A 3D array of gridded data as percent land cover (lat, lon, pct landclass)
+    :param lat:                An array of latitude values for mapping (n)
+    :param lon:                An array of longitude values for mapping (n)
+    :param resin:              The input spatial resolution in geographic degrees (float)
+    :param final_landclasses:  An array of land classes (n_classes)
+    :param years:              A list of output years (int)
+    :param step:               The current time step (int)
+    :param model:              The name of the model running (str)
+    :param out_dir:            A full path string of the output directory (str)
+    :param flip_year_out:      Use the output of to_netcdf_yr? (boolean)
+    :return:                   A NetCDF classic file.
+    """
+
+    if not flip_year_out and step != years[-1]:
+        np.save('{0}/tmp_lc_{1}'.format(out_dir, step), spat_lc)
+        return
+
+    if flip_year_out:
+        tmp_files = os.listdir(out_dir)
+        print "not supported yet"
+        return
+    else:
+        tmp_files = ['{0}/{1}'.format(out_dir, f) for f in os.listdir(out_dir) if 'tmp_lc_' in f]
+
+    lc_yearly = [np.load(f) for f in tmp_files]
+    lc_yearly = np.stack(lc_yearly + [spat_lc], 2)
+    print lc_yearly.shape
+
+    for lc_index, lc in enumerate(final_landclasses):
+        out_fname = '{0}/lc_yearly_{1}.nc'.format(out_dir, lc)
+
+        # create NetCDF file
+        with sio.netcdf_file(out_fname, 'w') as f:
+
+            # create dimensions
+            f.createDimension('lat', len(lat))
+            f.createDimension('lon', len(lon))
+            f.createDimension('time', len(years))
+
+            # create variables
+            lts = f.createVariable('lat', 'f4', ('lat',))
+            lns = f.createVariable('lon', 'f4', ('lon',))
+            times = f.createVariable('time', 'i4', ('time',))
+
+            lc_perc = f.createVariable('landcoverpercentage', 'f8', ('lat', 'lon', 'time'))
+
+            # create metadata
+            lts.units = 'degrees_north'
+            lts.standard_name = 'latitude'
+            lns.units = 'degrees_east'
+            lns.standard_name = 'longitude'
+            times.description = 'Years'
+
+            lc_perc.units = 'percentage'
+            lc_perc.scale_factor = 1.
+            lc_perc.add_offset = 0.
+            lc_perc.projection = 'WGS84'
+            lc_perc.description = 'Percent land cover for {0} at {1} degree.'.format(lc, resin)
+            lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
+            lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(resin, model)
+
+            # Add data to netcdf object
+            lts[:] = lat
+            lns[:] = lon
+            times[:] = years
+            lc_perc[:] = lc_yearly[:, :, :, lc_index]
+
+    for tf in tmp_files:
+        os.remove(tf)
+
+
 def map_kernel_density(spatdata, kerneldata, lat, lon, pft_name, yr, out_path):
     """
     Maps kernel density computed through convolution filter
@@ -556,73 +633,3 @@ def max_ascii_rast(arr, out_dir, step, alg='max', nodata=-9999, xll=-180, yll=-9
 
     # create output raster
     arr_to_ascii(final_arr, out_rast, xll=-xll, yll=-yll, cellsize=cellsize, nodata=nodata)
-
-
-def stack_crops(arr, lat, lon, out_ncdf='crops.nc', grid_size=0.25, years = None, step = None, out_file = None,
-                flip_year_out=False, final_landclasses = None, model=None):
-    """
-    Produce stacked crops per year output in NetCDF format.
-
-    :@param arr:                3D array (landclass, col, row)
-    :@param alg:                Algorithm to extract the land class index from values
-    :@param out_rast:           Full path to outfile with extension
-    :@param xll:                Longitude coordinate for lower left corner
-    :@param yll:                Latitude coordinate for lower left corner
-    :@param final_landclasses
-    :@param cellsize:           Cell size in geographic degrees
-    :@param nodata:             Value representing NODATA
-    """
-
-    if not flip_year_out and step != years[-1]:
-        np.save('{0}/tmp_lc_{1}'.format(out_ncdf, step), arr)
-        return
-
-    if flip_year_out:
-        tmp_files = os.listdir(out_ncdf + '../spatial_landcover_netcdf')
-        print "not supported yet"
-        return
-    else:
-        tmp_files = [f for f in os.listdir(out_ncdf) if 'tmp_lc_' in f]
-
-    lc_yearly = [np.load('{0}/{1}'.format(out_ncdf, f)) for f in tmp_files]
-    lc_yearly = np.stack(lc_yearly + [arr], 2)
-    print lc_yearly.shape
-
-    for lc_index, lc in enumerate(final_landclasses):
-        out_fname = '{0}/lc_yearly_{1}.nc'.format(out_ncdf, lc)
-
-        # create NetCDF file
-        with sio.netcdf_file(out_fname, 'w') as f:
-
-            # create dimensions
-            f.createDimension('lat', len(lat))
-            f.createDimension('lon', len(lon))
-            f.createDimension('time', len(years))
-
-            # create variables
-            lts = f.createVariable('lat', 'f4', ('lat',))
-            lns = f.createVariable('lon', 'f4', ('lon',))
-            times = f.createVariable('time', 'i4', ('time',))
-
-            lc_perc = f.createVariable('landcoverpercentage', 'f8', ('lat', 'lon', 'time'))
-
-            # create metadata
-            lts.units = 'degrees_north'
-            lts.standard_name = 'latitude'
-            lns.units = 'degrees_east'
-            lns.standard_name = 'longitude'
-            times.description = 'Years'
-
-            lc_perc.units = 'percentage'
-            lc_perc.scale_factor = 1.
-            lc_perc.add_offset = 0.
-            lc_perc.projection = 'WGS84'
-            lc_perc.description = 'Percent land cover for {0} at {1} degree.'.format(lc, grid_size)
-            lc_perc.comment = 'See scale_factor (divide by 100 to get percentage, offset is zero)'
-            lc_perc.title = 'Downscaled land use projections at {0} degree, downscaled from {1}'.format(grid_size, model)
-
-            # Add data to netcdf object
-            lts[:] = lat
-            lns[:] = lon
-            times[:] = years
-            lc_perc[:] = lc_yearly[:, :, :, lc_index]

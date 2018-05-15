@@ -208,8 +208,9 @@ class ProcessStep:
             # create out path and file name for NetCDF file
             netcdf_lc_out = os.path.join(self.c.lc_per_step_nc, 'lc_yearly_flipped_{0}.nc'.format(self.step))
 
-            wdr.stack_crops(map_grid_now, self.s.lat, self.s.lon, self.c.out_dir, step=self.step, years=self.s.user_years, grid_size=self.c.resin, out_file=netcdf_lc_out,
-                            flip_year_out=self.c.save_netcdf_yr, final_landclasses=self.s.final_landclasses, model=self.c.model)
+            wdr.to_netcdf_lc(map_grid_now, self.s.lat, self.s.lon, self.c.resin,
+                             self.s.final_landclasses, self.s.user_years, self.step,
+                             self.c.model, self.c.lc_per_step_nc, self.c.save_netcdf_yr)
 
         # save land cover data for the time step
         if (self.c.save_tabular == 1) and (self.step in self.c.target_years_output):
