@@ -202,6 +202,15 @@ class ProcessStep:
             wdr.to_netcdf_yr(fraction_lu, self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin,
                              self.s.final_landclasses, self.step, self.c.model, netcdf_yr_out)
 
+        # create a NetCDF file of land cover fraction for each land class by grid cell containing each year
+        if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
+            self.log.info("Saving stacked crops for time step {0}...".format(self.step))
+            # create out path and file name for NetCDF file
+            netcdf_lc_out = os.path.join(self.c.lc_per_step_nc, 'lc_yearly_flipped_{0}.nc'.format(self.step))
+
+            wdr.stack_crops(map_grid_now, self.s.lat, self.s.lon, self.c.out_dir, step=self.step, years=self.s.user_years, grid_size=self.c.resin, out_file=netcdf_lc_out,
+                            flip_year_out=self.c.save_netcdf_yr, final_landclasses=self.s.final_landclasses, model=self.c.model)
+
         # save land cover data for the time step
         if (self.c.save_tabular == 1) and (self.step in self.c.target_years_output):
             self.log.info("Saving tabular land cover data for time step {0}...".format(self.step))
@@ -226,10 +235,6 @@ class ProcessStep:
 
             # call function for output object using available data detailed in this methods docstring
             wdr.max_ascii_rast(map_grid_now, self.c.out_dir, self.step, cellsize=self.c.resin)
-
-        if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
-            self.log.info("Saving stacked crops for time step {0}...".format(self.step))
-            wdr.stack_crops(map_grid_now, self.c.out_dir, step=self.step, years=self.s.user_years, grid_size=self.c.resin)
 
         # --------- END OUTPUT EXTENSION --------- #
 
