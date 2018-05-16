@@ -177,7 +177,7 @@ def _get_steps(df, start_step, end_step):
     return l
 
 
-def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name):
+def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name, subreg, keep_water_src):
     """
     Query GCAM database for irrigated land area per region, subregion, and crop type.
 
@@ -186,6 +186,9 @@ def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name):
     :param f_queries:       full path to the XML query file
     :param d_reg_name:      a dictionary of 'region_name': region_id
     :param d_basin_name:    a dictionary of 'basin_name' : basin_id
+    :param subreg:          Agg level of GCAM database: either 0 (AEZ) or 1 (BASIN)
+    :param keep_water_src:  True to keep land use split into irrigated vs
+                            rainfed; False to aggregate
     :return:                a pandas DataFrame containing region, subregion,
                             crop type, and irrigated area per year in thousands
                             km2
@@ -200,30 +203,40 @@ def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name):
     # assume target query is first in query list
     land_alloc = conn.runQuery(q[0])
 
+    # replace region name with region number
+    land_alloc['region'] = land_alloc['region'].map(d_reg_name)
+
     # split 'land-allocation' column into components
     alloc_info = land_alloc['land-allocation']
-    land_alloc['landclass'] = alloc_info.apply(lambda x: '_'.join(x.split('_')[:-3]))
-    land_alloc['metric_id'] = alloc_info.apply(lambda x: x.split('_')[-3])
-    land_alloc['use'] = alloc_info.apply(lambda x: x.split('_')[-2])
-    land_alloc['mgmt'] = alloc_info.apply(lambda x: x.split('_')[-1])
 
-    # replace region and basin names with id numbers
-    land_alloc['region'] = land_alloc['region'].map(d_reg_name)
-    land_alloc['metric_id'] = land_alloc['metric_id'].map(d_basin_name)
+    if subreg == 0:
+        # create crop type column, AEZ number column, and use column
+        land_alloc['landclass'] = alloc_info.apply(lambda x: x.split('AEZ')[0])
+        land_alloc['metric_id'] = alloc_info.apply(lambda x: int(x.split('AEZ')[1][:2]))
+        land_alloc['use'] = alloc_info.apply(lambda x: x.split('AEZ')[1][-3:])
 
-    # only keep irrigated crops
-    land_alloc = land_alloc[land_alloc['use'] == 'IRR']
+    elif subreg == 1:
+        land_alloc['landclass'] = alloc_info.apply(lambda x: '_'.join(x.split('_')[:-3]))
+        land_alloc['metric_id'] = alloc_info.apply(lambda x: x.split('_')[-3])
+        land_alloc['use'] = alloc_info.apply(lambda x: x.split('_')[-2])
+        # land_alloc['mgmt'] = alloc_info.apply(lambda x: x.split('_')[-1])
+
+        # replace basin name with basin number
+        land_alloc['metric_id'] = land_alloc['metric_id'].map(d_basin_name)
 
     # simplify biomass_type to just 'biomass'
     land_alloc['landclass'] = land_alloc['landclass'].apply(lambda x: 'biomass' if 'biomass' in x else x)
 
     # drop unused columns
-    land_alloc.drop(['Units', 'scenario', 'land-allocation', 'use'], axis=1, inplace=True)
+    drop_cols = ['Units', 'scenario', 'land-allocation']
+    if not keep_water_src:
+        drop_cols.append('use')
+    land_alloc.drop(drop_cols, axis=1, inplace=True)
 
     # sum hi and lo management allocation
     land_alloc = land_alloc.groupby(['region', 'landclass', 'metric_id', 'Year']).sum(axis=1)
     land_alloc.reset_index(inplace=True)
-    land_alloc.drop('mgmt', axis=1, inplace=True)
+    # land_alloc.drop('mgmt', axis=1, inplace=True)
 
     # convert shape
     piv = pd.pivot_table(land_alloc, values='value',
@@ -234,18 +247,21 @@ def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name):
     return piv
 
 
-def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_dict,
-                   agg_level, area_factor=1000, dbpath=None, dbname=None, dbqueries=None):
+def read_gcam(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_dict,
+              agg_level, area_factor=1000):
     """
-    Read and process the GCAM land allocation output file.
+    Read and process GCAM land allocation output.
 
-    :param f:                   GCAM land allocation file
-    :param name_col:            Field name of the column containing the region and either AEZ or basin number
-    :param metric:              AEZ or Basin
+    :param log:                 Logger object
+    :param f:                   GCAM land allocation pandas DataFrame or .csv file name
+    :param gcam_landclasses     Allowed landclass categories
     :param start_yr:            User-defined GCAM start year to process from configuration file
     :param end_yr:              User-defined GCAM end year to process from configuration file
-    :param scenario:            GCAM scenario name contained in file that the user wishes to process; set in config.ini
+    :param scenario:            GCAM scenario name contained in file that the user wishes to
+                                process; set in config.ini
     :param region_dict:         The reference dictionary for GCAM region_name: region_id
+    :param agg_level:           Aggregate level; 1 if input has no region information, 2 if it
+                                is by both region and AEZ or basin; set in config.ini
     :param area_factor:         The factor that will be a multiplier to the land use area that is in thousands km
     :return:                    A list of the following (represents the target user-defined scenario):
                                     user_years:             a list of target GCAM years as int
@@ -258,11 +274,9 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
                                     allregaez:              List of lists, metric ids per region
     """
 
-    if dbpath is None:
-        # read GCAM output file as a dataframe; skip title row
-        gdf = pd.read_csv(f, header=0)
-    else:
-        gdf = read_gcam_land(dbpath, dbname, dbqueries, region_dict)
+    # if land allocation data is not already a DataFrame, read GCAM output file
+    # and skip title row
+    gdf = f if isinstance(f, pd.DataFrame) else pd.read_csv(f, header=0)
 
     # make sure all land classes in the projected file are in the allocation file and vice versa
     _check_constraints(log, gcam_landclasses, gdf['landclass'].tolist())

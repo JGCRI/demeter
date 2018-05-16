@@ -27,6 +27,7 @@ class Stage:
 
         self.c = c
         self.log = log
+        self.d_bsnnm_id = None
         self.d_regnm_id = None
         self.d_reg_nm = None
         self.final_landclasses = None
@@ -98,6 +99,9 @@ class Stage:
         # GCAM region_id: region_name as dictionary
         self.d_regid_nm = rdr.to_dict(self.c.gcam_regnamefile, header=True, swap=False)
 
+        # GCAM basin_id: basin_name as dictionary
+        self.d_bsnnm_id = rdr.to_dict(self.c.gcam_bsnnamefile, header=True, swap=False)
+
     def read_allocation(self):
         """
         Read in allocation files.
@@ -151,8 +155,15 @@ class Stage:
         # set start time
         t0 = time.time()
 
+        if self.c.db_path is None:
+            lu = self.c.lu_file
+        else:
+            lu = rdr.read_gcam_land(self.c.db_path, self.c.db_file, self.c.db_queries,
+                                    self.d_regnm_id, self.d_bsnnm_id, self.c.metric,
+                                    self.c.crop_water_src)
+
         # extract and process data contained from the land allocation GCAM output file
-        gcam_data = rdr.read_gcam_file(self.log, self.c.lu_file, self.gcam_landclasses, start_yr=self.c.year_b,
+        gcam_data = rdr.read_gcam_file(self.log, lu, self.gcam_landclasses, start_yr=self.c.year_b,
                                        end_yr=self.c.year_e, scenario=self.c.scenario, region_dict=self.d_regnm_id,
                                        agg_level=self.c.agg_level, area_factor=self.c.proj_factor)
 
