@@ -10,6 +10,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import numpy as np
 import os
 import pandas as pd
+import gcam_reader
 
 
 def to_dict(f, header=False, delim=',', swap=False):
@@ -176,7 +177,65 @@ def _get_steps(df, start_step, end_step):
     return l
 
 
-def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_dict, agg_level, area_factor=1000):
+def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name):
+    """
+    Query GCAM database for irrigated land area per region, subregion, and crop type.
+
+    :param db_path:         full path to the directory containing the input GCAM database
+    :param db_file:         directory name of the GCAM database
+    :param f_queries:       full path to the XML query file
+    :param d_reg_name:      a dictionary of 'region_name': region_id
+    :param d_basin_name:    a dictionary of 'basin_name' : basin_id
+    :return:                a pandas DataFrame containing region, subregion,
+                            crop type, and irrigated area per year in thousands
+                            km2
+    """
+
+    # instantiate GCAM db
+    conn = gcam_reader.LocalDBConn(db_path, db_file, suppress_gabble=False)
+
+    # get queries
+    q = gcam_reader.parse_batch_query(f_queries)
+
+    # assume target query is first in query list
+    land_alloc = conn.runQuery(q[0])
+
+    # split 'land-allocation' column into components
+    alloc_info = land_alloc['land-allocation']
+    land_alloc['landclass'] = alloc_info.apply(lambda x: '_'.join(x.split('_')[:-3]))
+    land_alloc['metric_id'] = alloc_info.apply(lambda x: x.split('_')[-3])
+    land_alloc['use'] = alloc_info.apply(lambda x: x.split('_')[-2])
+    land_alloc['mgmt'] = alloc_info.apply(lambda x: x.split('_')[-1])
+
+    # replace region and basin names with id numbers
+    land_alloc['region'] = land_alloc['region'].map(d_reg_name)
+    land_alloc['metric_id'] = land_alloc['metric_id'].map(d_basin_name)
+
+    # only keep irrigated crops
+    land_alloc = land_alloc[land_alloc['use'] == 'IRR']
+
+    # simplify biomass_type to just 'biomass'
+    land_alloc['landclass'] = land_alloc['landclass'].apply(lambda x: 'biomass' if 'biomass' in x else x)
+
+    # drop unused columns
+    land_alloc.drop(['Units', 'scenario', 'land-allocation', 'use'], axis=1, inplace=True)
+
+    # sum hi and lo management allocation
+    land_alloc = land_alloc.groupby(['region', 'landclass', 'metric_id', 'Year']).sum(axis=1)
+    land_alloc.reset_index(inplace=True)
+    land_alloc.drop('mgmt', axis=1, inplace=True)
+
+    # convert shape
+    piv = pd.pivot_table(land_alloc, values='value',
+                         index=['region', 'landclass', 'metric_id'],
+                         columns='Year', fill_value=0)
+    piv.reset_index(inplace=True)
+
+    return piv
+
+
+def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_dict,
+                   agg_level, area_factor=1000, dbpath=None, dbname=None, dbqueries=None):
     """
     Read and process the GCAM land allocation output file.
 
@@ -199,8 +258,11 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
                                     allregaez:              List of lists, metric ids per region
     """
 
-    # read GCAM output file as a dataframe; skip title row
-    gdf = pd.read_csv(f, header=0)
+    if dbpath is None:
+        # read GCAM output file as a dataframe; skip title row
+        gdf = pd.read_csv(f, header=0)
+    else:
+        gdf = read_gcam_land(dbpath, dbname, dbqueries, region_dict)
 
     # make sure all land classes in the projected file are in the allocation file and vice versa
     _check_constraints(log, gcam_landclasses, gdf['landclass'].tolist())
@@ -232,7 +294,7 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
         gdf['gcam_regionnumber'] = gdf['region'].map(lambda x: int(region_dict[x]))
 
     # create an array of AEZ or Basin positions
-    gcam_metric  = gdf['gcam_metric'].as_matrix()
+    gcam_metric = gdf['gcam_metric'].as_matrix()
 
     # create an array of AEZ or Basin ids; formerly gcam_aez; this has the original metric values - not sequential
     metric_id_array = gdf['metric_id'].as_matrix()
