@@ -13,7 +13,7 @@ import pandas as pd
 import gcam_reader
 
 
-def to_dict(f, header=False, delim=',', swap=False):
+def to_dict(f, header=False, delim=',', swap=False, value_col=1):
     """
     Return a dictionary of key: value pairs.  Supports only key to one value.
 
@@ -21,6 +21,7 @@ def to_dict(f, header=False, delim=',', swap=False):
     :param header:      If header exists True, else False (default)
     :param delim:       Set delimiter as string; default is comma
     :param swap:        Change the order of the key, value pair
+    :param value_col:   Column index of dict values (or keys if swap is True)
     :return:            Key: value pair dictionary
     """
     d = {}
@@ -36,9 +37,9 @@ def to_dict(f, header=False, delim=',', swap=False):
 
             # add key: value pair to dict
             if swap:
-                d[item[1]] = item[0]
+                d[item[value_col]] = item[0]
             else:
-                d[item[0]] = item[1]
+                d[item[0]] = item[value_col]
 
     return d
 
@@ -177,7 +178,7 @@ def _get_steps(df, start_step, end_step):
     return l
 
 
-def read_gcam_land(db_path, db_file, f_queries, basin_name, subreg, keep_water_src):
+def read_gcam_land(db_path, db_file, f_queries, d_basin_name, subreg, keep_water_src):
     """
     Query GCAM database for irrigated land area per region, subregion, and crop type.
 

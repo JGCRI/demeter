@@ -576,6 +576,7 @@ class ReadConfigShuffle:
         # create and validate reference input file full paths
         r = i['REFERENCE']
         self.gcam_regnamefile = self.check_exist(os.path.join(self.ref_dir, r['gcam_regnamefile']), 'file', self.log)
+        self.gcam_bsnnamefile = self.check_exist(os.path.join(self.ref_dir, r['gcam_bsnnamefile']), 'file', self.log)
         self.region_coords = self.check_exist(os.path.join(self.ref_dir, r['region_coords']), 'file', self.log)
         self.country_coords = self.check_exist(os.path.join(self.ref_dir, r['country_coords']), 'file', self.log)
 
