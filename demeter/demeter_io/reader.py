@@ -177,16 +177,15 @@ def _get_steps(df, start_step, end_step):
     return l
 
 
-def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name, subreg, keep_water_src):
+def read_gcam_land(db_path, db_file, f_queries, basin_name, subreg, keep_water_src):
     """
     Query GCAM database for irrigated land area per region, subregion, and crop type.
 
     :param db_path:         full path to the directory containing the input GCAM database
     :param db_file:         directory name of the GCAM database
     :param f_queries:       full path to the XML query file
-    :param d_reg_name:      a dictionary of 'region_name': region_id
     :param d_basin_name:    a dictionary of 'basin_name' : basin_id
-    :param subreg:          Agg level of GCAM database: either 0 (AEZ) or 1 (BASIN)
+    :param subreg:          Agg level of GCAM database: either AEZ or BASIN
     :param keep_water_src:  True to keep land use split into irrigated vs
                             rainfed; False to aggregate
     :return:                a pandas DataFrame containing region, subregion,
@@ -194,6 +193,7 @@ def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name, subreg
                             km2
     """
 
+    db_file = db_file.split('/')[-1]
     # instantiate GCAM db
     conn = gcam_reader.LocalDBConn(db_path, db_file, suppress_gabble=False)
 
@@ -204,18 +204,18 @@ def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name, subreg
     land_alloc = conn.runQuery(q[0])
 
     # replace region name with region number
-    land_alloc['region'] = land_alloc['region'].map(d_reg_name)
+    # land_alloc['region'] = land_alloc['region'].map(d_reg_name)
 
     # split 'land-allocation' column into components
     alloc_info = land_alloc['land-allocation']
 
-    if subreg == 0:
+    if subreg == 'AEZ':
         # create crop type column, AEZ number column, and use column
         land_alloc['landclass'] = alloc_info.apply(lambda x: x.split('AEZ')[0])
         land_alloc['metric_id'] = alloc_info.apply(lambda x: int(x.split('AEZ')[1][:2]))
         land_alloc['use'] = alloc_info.apply(lambda x: x.split('AEZ')[1][-3:])
 
-    elif subreg == 1:
+    elif subreg == 'BASIN':
         land_alloc['landclass'] = alloc_info.apply(lambda x: '_'.join(x.split('_')[:-3]))
         land_alloc['metric_id'] = alloc_info.apply(lambda x: x.split('_')[-3])
         land_alloc['use'] = alloc_info.apply(lambda x: x.split('_')[-2])
@@ -227,15 +227,21 @@ def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name, subreg
     # simplify biomass_type to just 'biomass'
     land_alloc['landclass'] = land_alloc['landclass'].apply(lambda x: 'biomass' if 'biomass' in x else x)
 
+    # filter out irrigated or rainfed crops, as specified in the config file
+    if keep_water_src != 'BOTH':
+        land_alloc = land_alloc[land_alloc['use'] == keep_water_src]
+
     # drop unused columns
-    drop_cols = ['Units', 'scenario', 'land-allocation']
-    if not keep_water_src:
-        drop_cols.append('use')
-    land_alloc.drop(drop_cols, axis=1, inplace=True)
+    land_alloc.drop(['Units', 'scenario', 'land-allocation', 'use'], axis=1, inplace=True)
 
     # sum hi and lo management allocation
-    land_alloc = land_alloc.groupby(['region', 'landclass', 'metric_id', 'Year']).sum(axis=1)
+    print(land_alloc.values)
+    print(land_alloc.columns)
+    print('aboutta group')
+    land_alloc = land_alloc.groupby(['region', 'landclass', 'metric_id', 'Year']).sum()
     land_alloc.reset_index(inplace=True)
+    print(land_alloc.values)
+    print(land_alloc.columns)
     # land_alloc.drop('mgmt', axis=1, inplace=True)
 
     # convert shape
@@ -244,6 +250,8 @@ def read_gcam_land(db_path, db_file, f_queries, d_reg_name, d_basin_name, subreg
                          columns='Year', fill_value=0)
     piv.reset_index(inplace=True)
 
+    piv.to_csv('TEST_OUTPUT.csv')
+    exit(0)
     return piv
 
 

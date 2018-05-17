@@ -100,7 +100,7 @@ class Stage:
         self.d_regid_nm = rdr.to_dict(self.c.gcam_regnamefile, header=True, swap=False)
 
         # GCAM basin_id: basin_name as dictionary
-        self.d_bsnnm_id = rdr.to_dict(self.c.gcam_bsnnamefile, header=True, swap=False)
+        self.d_bsnnm_id = rdr.to_dict(self.c.gcam_bsnnamefile, header=True, swap=True)
 
     def read_allocation(self):
         """

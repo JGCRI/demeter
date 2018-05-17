@@ -110,7 +110,7 @@ class ReadConfig:
         # if getting input directly from GCAM database
         if p['db_path'] is not None:
             self.db_path = self.check_exist(p['db_path'], 'dir', self.log)
-            self.db_file = self.check_exist(os.path.join(self.db_path, p['db_file']), 'file', self.log)
+            self.db_file = self.check_exist(os.path.join(self.db_path, p['db_file']), 'dir', self.log)
             self.db_queries = self.check_exist(p['db_queries'], 'file', self.log)
             self.crop_water_src = self.ck_vals(p['crop_water_src'].upper(), 'crop_water_src', ['IRR', 'RFD', 'BOTH'])
         else:
@@ -586,7 +586,7 @@ class ReadConfigShuffle:
         # if getting input directly from GCAM database
         if p['db_path'] is not None:
             self.db_path = self.check_exist(p['db_path'], 'dir', self.log)
-            self.db_file = self.check_exist(os.path.join(self.db_path, p['db_file']), 'file', self.log)
+            self.db_file = self.check_exist(os.path.join(self.db_path, p['db_file']), 'dir', self.log)
             self.db_queries = self.check_exist(p['db_queries'], 'file', self.log)
             self.crop_water_src = self.ck_vals(p['crop_water_src'].upper(), 'crop_water_src', ['IRR', 'RFD', 'BOTH'])
         else:
