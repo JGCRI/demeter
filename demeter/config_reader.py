@@ -113,7 +113,7 @@ class ReadConfig:
             self.db_path = self.check_exist(db_path_, 'dir', self.log)
             self.db_queries = self.check_exist(p['db_queries'], 'file', self.log)
             self.crop_water_src = self.ck_vals(p['crop_water_src'].upper(), 'crop_water_src', ['IRR', 'RFD', 'BOTH'])
-        except  KeyError:
+        except KeyError:
             self.db_path = None
 
         self.metric = self.ck_vals(p['metric'].upper(), 'metric', ['BASIN', 'AEZ'])
@@ -590,7 +590,7 @@ class ReadConfigShuffle:
             self.db_path = self.check_exist(db_path_, 'dir', self.log)
             self.db_queries = self.check_exist(p['db_queries'], 'file', self.log)
             self.crop_water_src = self.ck_vals(p['crop_water_src'].upper(), 'crop_water_src', ['IRR', 'RFD', 'BOTH'])
-        except  KeyError:
+        except KeyError:
             self.db_path = None
 
         self.metric = self.ck_vals(p['metric'].upper(), 'metric', ['BASIN', 'AEZ'])
