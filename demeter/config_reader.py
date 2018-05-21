@@ -108,12 +108,12 @@ class ReadConfig:
         self.model = self.ck_len(p['model'], 'model')
 
         # if getting input directly from GCAM database
-        if p['db_path'] is not None:
-            self.db_path = self.check_exist(p['db_path'], 'dir', self.log)
-            self.db_file = self.check_exist(os.path.join(self.db_path, p['db_file']), 'dir', self.log)
+        try:
+            db_path_ = p['db_path']
+            self.db_path = self.check_exist(db_path_, 'dir', self.log)
             self.db_queries = self.check_exist(p['db_queries'], 'file', self.log)
             self.crop_water_src = self.ck_vals(p['crop_water_src'].upper(), 'crop_water_src', ['IRR', 'RFD', 'BOTH'])
-        else:
+        except  KeyError:
             self.db_path = None
 
         self.metric = self.ck_vals(p['metric'].upper(), 'metric', ['BASIN', 'AEZ'])
@@ -585,12 +585,12 @@ class ReadConfigShuffle:
         self.model = self.ck_len(p['model'], 'model')
 
         # if getting input directly from GCAM database
-        if p['db_path'] is not None:
-            self.db_path = self.check_exist(p['db_path'], 'dir', self.log)
-            self.db_file = self.check_exist(os.path.join(self.db_path, p['db_file']), 'dir', self.log)
+        try:
+            db_path_ = p['db_path']
+            self.db_path = self.check_exist(db_path_, 'dir', self.log)
             self.db_queries = self.check_exist(p['db_queries'], 'file', self.log)
             self.crop_water_src = self.ck_vals(p['crop_water_src'].upper(), 'crop_water_src', ['IRR', 'RFD', 'BOTH'])
-        else:
+        except  KeyError:
             self.db_path = None
 
         self.metric = self.ck_vals(p['metric'].upper(), 'metric', ['BASIN', 'AEZ'])

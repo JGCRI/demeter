@@ -158,13 +158,13 @@ class Stage:
         if self.c.db_path is None:
             lu = self.c.lu_file
         else:
-            lu = rdr.read_gcam_land(self.c.db_path, self.c.db_file, self.c.db_queries,
-                                    self.d_bsnnm_id, self.c.metric, self.c.crop_water_src)
+            lu = rdr.read_gcam_land(self.c.db_path, self.c.db_queries, self.d_bsnnm_id,
+                                    self.c.metric, self.c.crop_water_src)
 
         # extract and process data contained from the land allocation GCAM output file
-        gcam_data = rdr.read_gcam_file(self.log, lu, self.gcam_landclasses, start_yr=self.c.year_b,
-                                       end_yr=self.c.year_e, scenario=self.c.scenario, region_dict=self.d_regnm_id,
-                                       agg_level=self.c.agg_level, area_factor=self.c.proj_factor)
+        gcam_data = rdr.read_gcam(self.log, lu, self.gcam_landclasses, start_yr=self.c.year_b,
+                                  end_yr=self.c.year_e, scenario=self.c.scenario, region_dict=self.d_regnm_id,
+                                  agg_level=self.c.agg_level, area_factor=self.c.proj_factor)
 
         # unpack variables
         self.user_years, self.gcam_ludata, self.gcam_aez, self.gcam_landname, self.gcam_regionnumber, self.allreg, \

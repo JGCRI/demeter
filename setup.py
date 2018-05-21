@@ -27,5 +27,6 @@ setup(
     author_email='chris.vernon@pnnl.gov; niquya@gmail.com',
     description='A land use land cover disaggregation and land change analytic model',
     long_description=readme(),
-    install_requires=get_requirements()
+    install_requires=get_requirements(),
+    dependency_links=["https://github.com/JGCRI/gcam_reader.git"]
 )
