@@ -102,7 +102,7 @@ def read_alloc(f, lc_col, output_level=3, delim=','):
         fcs = [i for i in df.columns if i != col]
 
         # extract target land cover values only from the dataframe and create Numpy array
-        arr = df[fcs].as_matrix()
+        arr = df[fcs].values
 
         if output_level == 3:
             return fcs, tcs, arr
@@ -213,7 +213,8 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
 
     # create land use area per year array converted from thousands km using area_factor
     target_years = [str(yr) for yr in user_years]
-    gcam_ludata = gdf[target_years].as_matrix() * area_factor
+
+    gcam_ludata = gdf[target_years].values * area_factor
 
     # create field for land class
     gdf['gcam_landname'] = gdf['landclass'].apply(lambda x: x.lower())
@@ -232,16 +233,16 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
         gdf['gcam_regionnumber'] = gdf['region'].map(lambda x: int(region_dict[x]))
 
     # create an array of AEZ or Basin positions
-    gcam_metric  = gdf['gcam_metric'].as_matrix()
+    gcam_metric  = gdf['gcam_metric'].values
 
     # create an array of AEZ or Basin ids; formerly gcam_aez; this has the original metric values - not sequential
-    metric_id_array = gdf['metric_id'].as_matrix()
+    metric_id_array = gdf['metric_id'].values
 
     # create an array of projected land use names
-    gcam_landname = gdf['gcam_landname'].as_matrix()
+    gcam_landname = gdf['gcam_landname'].values
 
     # create an array of GCAM region numbers
-    gcam_regionnumber = gdf['gcam_regionnumber'].as_matrix()
+    gcam_regionnumber = gdf['gcam_regionnumber'].values
 
     # create a list of GCAM regions represented
     l_allreg = gdf['region'].unique().tolist()
@@ -298,29 +299,29 @@ def read_base(log, c, spat_landclasses):
 
     try:
         # create array with only spatial land cover values
-        spat_ludata = df[spat_landclasses].as_matrix()
+        spat_ludata = df[spat_landclasses].values
     except KeyError as e:
         log.error('Fields are listed in the spatial allocation file that do not exist in the base layer.')
         log.error(e)
 
     # create array of latitude, longitude coordinates
     try:
-        spat_coords = df[['latcoord', 'loncoord']].as_matrix()
+        spat_coords = df[['latcoord', 'loncoord']].values
     except KeyError:
-        spat_coords = df[['latitude', 'longitude']].as_matrix()
+        spat_coords = df[['latitude', 'longitude']].values
 
     # create array of metric (AEZ or basin id) per region; naming convention (regionmetric); formerly spat_aezreg
     try:
-        spat_metric_region = df['regaez'].as_matrix()
+        spat_metric_region = df['regaez'].values
     except:
         spat_metric_region = None
 
     # create array of grid ids
-    spat_grid_id = df[c.pkey].as_matrix()
+    spat_grid_id = df[c.pkey].values
 
     try:
         # create array of water areas
-        spat_water = df['water'].as_matrix()
+        spat_water = df['water'].values
     except KeyError:
         log.warning('Water not represented in base layer.  Representing water as 0 percent of grid.')
         spat_water = np.zeros_like(spat_grid_id)
@@ -333,14 +334,14 @@ def read_base(log, c, spat_landclasses):
         # spat_metric = np.int8(spat_metric_region % 100)
 
         # for new parsing style
-        spat_region = df['region_id'].as_matrix()
-        spat_metric = df['{0}_id'.format(c.metric.lower())].as_matrix()
+        spat_region = df['region_id'].values
+        spat_metric = df['{0}_id'.format(c.metric.lower())].values
 
     # for basin scale
     elif c.agg_level == 1:
-        spat_r = df['region_id'].as_matrix()
+        spat_r = df['region_id'].values
         spat_region = np.ones_like(spat_r) # np.zeros_like(spat_r) + 9999
-        spat_metric = df['{0}_id'.format(c.metric.lower())].as_matrix()
+        spat_metric = df['{0}_id'.format(c.metric.lower())].values
 
     # get the total number of grid cells
     ngrids = len(df)
