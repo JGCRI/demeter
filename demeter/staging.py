@@ -81,6 +81,7 @@ class Stage:
         self.gcam_landmatrix = None
         self.ixr_ixm_ixg = None
         self.metric_id_array = None
+        self.sequence_metric_dict = None
 
         # populate
         self.stage()
@@ -158,7 +159,7 @@ class Stage:
 
         # unpack variables
         self.user_years, self.gcam_ludata, self.gcam_aez, self.gcam_landname, self.gcam_regionnumber, self.allreg, \
-        self.allregnumber, self.allregaez, self.allaez, self.metric_id_array = gcam_data
+        self.allregnumber, self.allregaez, self.allaez, self.metric_id_array, self.sequence_metric_dict = gcam_data
 
         self.log.info('PERFORMANCE:  Projected landuse data prepared in {0} seconds'.format(time.time() - t0))
 
@@ -173,11 +174,11 @@ class Stage:
         t0 = time.time()
 
         # extract and process base layer land cover data
-        base_data = rdr.read_base(self.log, self.c, self.spat_landclasses)
+        base_data = rdr.read_base(self.log, self.c, self.spat_landclasses, self.sequence_metric_dict)
 
         # unpack variables
         self.spat_ludata, self.spat_water, self.spat_coords, self.spat_aez_region, self.spat_grid_id, self.spat_aez, \
-        self.spat_region, self.ngrids, self.cellarea, self.celltrunk = base_data
+        self.spat_region, self.ngrids, self.cellarea, self.celltrunk, self.sequence_metric_dict = base_data
 
         self.log.info('PERFORMANCE:  Base spatial landuse data prepared in {0} seconds'.format(time.time() - t0))
 

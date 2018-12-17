@@ -220,15 +220,15 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
     gdf['gcam_landname'] = gdf['landclass'].apply(lambda x: x.lower())
 
     # create dictionary to look up metric id to its index to act as a proxy for non-sequential values
-    lu = {i: ix+1 for ix, i in enumerate(gdf['metric_id'].sort_values().unique())}
+    sequence_metric_dict = {i: ix+1 for ix, i in enumerate(gdf['metric_id'].sort_values().unique())}
 
     # create field for metric id that has sequential metric ids
-    gdf['gcam_metric'] = gdf['metric_id'].map(lambda x: lu[x])
+    gdf['gcam_metric'] = gdf['metric_id'].map(lambda x: sequence_metric_dict[x])
 
     # check field for GCAM region number based off of region name; if region name is None, assign 9999
     ck_reg = gdf['region'].unique()
     if (len(ck_reg)) == 1 and (ck_reg[0] == 1):
-        gdf['gcam_regionnumber'] = 1 # gdf['gcam_regionnumber'] = 9999
+        gdf['gcam_regionnumber'] = 1
     else:
         gdf['gcam_regionnumber'] = gdf['region'].map(lambda x: int(region_dict[x]))
 
@@ -278,10 +278,10 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
         allregaez.insert(taiwan_idx, [])
 
     return [user_years, gcam_ludata, gcam_metric, gcam_landname, gcam_regionnumber, allreg, allregnumber, allregaez,
-            allmetric, metric_id_array]
+            allmetric, metric_id_array, sequence_metric_dict]
 
 
-def read_base(log, c, spat_landclasses):
+def read_base(log, c, spat_landclasses, sequence_metric_dict):
     """
     Read and process base layer land cover file.
 
@@ -339,9 +339,25 @@ def read_base(log, c, spat_landclasses):
 
     # for basin scale
     elif c.agg_level == 1:
-        spat_r = df['region_id'].values
-        spat_region = np.ones_like(spat_r) # np.zeros_like(spat_r) + 9999
+        # spat_r = df['region_id'].values
+        # spat_region = np.ones_like(spat_r)
+
+        spat_region = df['region_id'].values
         spat_metric = df['{0}_id'.format(c.metric.lower())].values
+
+    sequence_list = sequence_metric_dict.keys()
+    max_key = max(sequence_list)
+
+    # get a list of aez or basin ids that are in observed but not in projected data
+    not_in_metrics = set(np.unique(spat_metric)) - set(sequence_list)
+
+    # add observed basins not in projected to the sequential dictionary
+    for index, k in enumerate(not_in_metrics):
+        sequence_metric_dict[k] = max_key + index
+        max_key += index
+
+    # apply the new sequential metric ids to the data
+    spat_metric = np.vectorize(sequence_metric_dict.get)(spat_metric)
 
     # get the total number of grid cells
     ngrids = len(df)
@@ -361,7 +377,7 @@ def read_base(log, c, spat_landclasses):
     spat_ludata = spat_ludata / (c.resin ** 2) * np.transpose([cellarea, ] * len(spat_landclasses))
 
     return [spat_ludata, spat_water, spat_coords, spat_metric_region, spat_grid_id, spat_metric, spat_region, ngrids,
-            cellarea, celltrunk]
+            cellarea, celltrunk, sequence_metric_dict]
 
 
 def to_array(f, target_index, delim=','):
