@@ -353,8 +353,10 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict):
 
     # add observed basins not in projected to the sequential dictionary
     for index, k in enumerate(not_in_metrics):
-        sequence_metric_dict[k] = max_key + index
-        max_key += index
+        adder = index + 1
+
+        sequence_metric_dict[k] = max_key + adder
+        max_key += adder
 
     # apply the new sequential metric ids to the data
     spat_metric = np.vectorize(sequence_metric_dict.get)(spat_metric)
