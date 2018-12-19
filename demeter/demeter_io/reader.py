@@ -362,6 +362,10 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
         log.error('Observed spatial data must have all {}_id represented.'.format(c.metric.lower()))
         raise ValidationException
 
+    # account for 0 designation in observed data for unclassified
+    if 0 in np.unique(spat_metric):
+        sequence_metric_dict[0] = 0
+
     # adjust the numbering of metrics in the observed data
     spat_metric = np.vectorize(sequence_metric_dict.get)(spat_metric)
 
