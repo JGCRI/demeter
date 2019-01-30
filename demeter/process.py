@@ -149,6 +149,10 @@ class ProcessStep:
         :param transitions:             area in sqkm of each transition from one land class to another (n_cells, n_landclasses, n_landclasses)
         :param user_years:              a list of user selected years to process
         """
+        # convert metric_id back to the original
+        revert_metric_dict = {self.s.sequence_metric_dict[k]: k for k in self.s.sequence_metric_dict.iterkeys()}
+        orig_spat_aez = np.vectorize(revert_metric_dict.get)(self.s.spat_aez)
+
         # convert land cover from sqkm per grid cell per land class to fraction for mapping (n_grids, n_landclasses)
         map_fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea, (self.l_fcs, 1)).T
 
@@ -212,7 +216,7 @@ class ProcessStep:
         # save land cover data for the time step
         if (self.c.save_tabular == 1) and (self.step in self.c.target_years_output):
             self.log.info("Saving tabular land cover data for time step {0}...".format(self.step))
-            wdr.lc_timestep_csv(self.c, self.step, self.s.final_landclasses, self.s.spat_coords, self.s.spat_aez,
+            wdr.lc_timestep_csv(self.c, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
                                 self.c.metric, self.c.tabular_units)
 
