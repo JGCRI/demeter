@@ -208,6 +208,12 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
     # assign user-defined scenario to data frame
     gdf['scenario'] = scenario
 
+    # check for extractor output which makes region ... gcam_region_name
+    try:
+        gdf['region'] = gdf['gcam_region_name']
+    except KeyError:
+        pass
+
     # create a list of GCAM years from header that are within the user specified year range
     user_years = _get_steps(gdf, start_yr, end_yr)
 
