@@ -1,3 +1,4 @@
+configobj>=5.0.0
 numpy>=1.12.0rc2
 pandas>=0.19.2
 scipy>=0.18.1
