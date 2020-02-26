@@ -7,19 +7,16 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov)
 """
-import datetime
-from joblib import Parallel, delayed
+
 import os.path as op
 import sys
 import time
 import traceback
 
-from demeter.config_reader import ReadConfig, ReadConfigShuffle, ReadConfigInitial
+from demeter.config_reader import ReadConfig
 from demeter.logger import Logger
 from demeter.process import ProcessStep
 from demeter.staging import Stage
-from demeter.ensemble.ensemble import RandomConfig
-from demeter.weight.kernel_density import KernelDensity
 
 
 class ValidationException(Exception):
