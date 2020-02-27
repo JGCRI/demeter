@@ -86,6 +86,7 @@ class Stage:
         self.sequence_metric_dict = None
         self.metric_not_in_prj = None
         self.metric_sequence_list, self.region_sequence_list = self.prep_reference()
+        self.key_list = None
 
         # populate
         self.stage()
@@ -154,19 +155,26 @@ class Stage:
         :param metric:                  basin or aez
         :return:                        Sorted list of metric ids, Sorted list of region ids
         """
-        # if basin
-        met = self.c.metric.lower()
-        if met == 'basin':
-            df = pd.read_csv(os.path.join(self.c.ref_dir, 'gcam_basin_lookup.csv'), usecols=['basin_id'])
-            m = sorted(df['basin_id'].tolist())
+        # if running only one land region
+        if self.c.run_single_land_region is None:
 
-        # if AEZ, use 1 through 18 - this will not change
-        elif met == 'aez':
-            m = list(range(1, 19, 1))
+            # if basin
+            met = self.c.metric.lower()
+            if met == 'basin':
+                df = pd.read_csv(os.path.join(self.c.ref_dir, 'gcam_basin_lookup.csv'), usecols=['basin_id'])
+                m = sorted(df['basin_id'].tolist())
 
-        # read in region ids
-        rdf = pd.read_csv(os.path.join(self.c.ref_dir, 'gcam_regions_32.csv'), usecols=['gcam_region_id'])
-        r = sorted(rdf['gcam_region_id'].tolist())
+            # if AEZ, use 1 through 18 - this will not change
+            elif met == 'aez':
+                m = list(range(1, 19, 1))
+
+            # read in region ids
+            rdf = pd.read_csv(os.path.join(self.c.ref_dir, 'gcam_regions_32.csv'), usecols=['gcam_region_id'])
+            r = sorted(rdf['gcam_region_id'].tolist())
+
+        else:
+            m = [self.c.run_single_land_region['metric_id']]
+            r = [self.c.run_single_land_region['region_id']]
 
         return m, r
 
@@ -184,7 +192,7 @@ class Stage:
         gcam_data = rdr.read_gcam_file(self.log, self.c.lu_file, self.gcam_landclasses, start_yr=self.c.year_b,
                                        end_yr=self.c.year_e, scenario=self.c.scenario, region_dict=self.d_regnm_id,
                                        agg_level=self.c.agg_level, area_factor=self.c.proj_factor,
-                                       metric_seq=self.metric_sequence_list)
+                                       metric_seq=self.metric_sequence_list, filter=self.c.run_single_land_region)
 
         # unpack variables
         self.user_years, self.gcam_ludata, self.gcam_aez, self.gcam_landname, self.gcam_regionnumber, self.allreg, \
@@ -204,11 +212,13 @@ class Stage:
 
         # extract and process base layer land cover data
         base_data = rdr.read_base(self.log, self.c, self.spat_landclasses, self.sequence_metric_dict,
-                                  metric_seq=self.metric_sequence_list, region_seq=self.region_sequence_list)
+                                  metric_seq=self.metric_sequence_list, region_seq=self.region_sequence_list,
+                                  filter=self.c.run_single_land_region)
 
         # unpack variables
         self.spat_ludata, self.spat_water, self.spat_coords, self.spat_aez_region, self.spat_grid_id, self.spat_aez, \
-        self.spat_region, self.ngrids, self.cellarea, self.celltrunk, self.sequence_metric_dict = base_data
+        self.spat_region, self.ngrids, self.cellarea, self.celltrunk, self.sequence_metric_dict, self.lat, \
+        self.lon, self.key_list = base_data
 
         self.log.info('PERFORMANCE:  Base spatial landuse data prepared in {0} seconds'.format(time.time() - t0))
 
@@ -253,7 +263,7 @@ class Stage:
                                    self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
                                    self.gcam_agg, self.gcam_ludata, self.ngrids, self.constrain_names,
                                    self.spat_landclasses, self.spat_agg, self.spat_ludata, self.c.map_luc_steps,
-                                   self.c.map_luc, self.c.constraint_files)
+                                   self.c.map_luc, self.c.constraint_files, self.key_list)
 
         # apply spatial constraints
         self.spat_ludataharm, self.spat_ludataharm_orig_steps, self.spat_ludataharm_orig = self.cst.apply_spat_constraints()
@@ -270,12 +280,12 @@ class Stage:
         t0 = time.time()
 
         # instantiate kernel density class
-        self.kd = KernelDensity(self.c.resin, self.spat_coords, self.final_landclasses, self.c.kerneldistance, self.ngrids,
-                           self.c.kernel_map_dir, self.order_rules, self.c.map_kernels)
+        self.kd = KernelDensity(self.c.resin, self.spat_coords, self.final_landclasses, self.c.kerneldistance,
+                                self.ngrids, self.c.kernel_map_dir, self.order_rules, self.c.map_kernels, self.lat,
+                                self.lon)
 
         # preprocess year-independent kernel density data
-        self.lat, self.lon, self.cellindexresin, self.pft_maps, self.kernel_maps, self.kernel_vector, \
-        self.weights = self.kd.preprocess_kernel_density()
+        self.cellindexresin, self.pft_maps, self.kernel_maps, self.kernel_vector, self.weights = self.kd.preprocess_kernel_density()
 
         # log processing time
         self.log.info('PERFORMANCE:  Kernel density filter prepared in {0} seconds'.format(time.time() - t0))

@@ -195,23 +195,23 @@ class ProcessStep:
 
             wdr.map_transitions(self.s, self.c, self.step, self.transitions)
 
-        # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
-        if (self.c.save_netcdf_yr == 1) and (self.step in self.c.target_years_output):
-
-            self.log.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
-
-            # create out path and file name for NetCDF file
-            netcdf_yr_out = os.path.join(self.c.lc_per_step_nc, 'lc_yearly_{0}.nc'.format(self.step))
-
-            wdr.to_netcdf_yr(fraction_lu, self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin,
-                             self.s.final_landclasses, self.step, self.c.model, netcdf_yr_out)
-
-        # create a NetCDF file of land cover fraction for each land class by grid cell containing each year
-        if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
-            self.log.info("Saving stacked land class for time step {0}...".format(self.step))
-            wdr.to_netcdf_lc(map_grid_now, self.s.lat, self.s.lon, self.c.resin,
-                             self.s.final_landclasses, self.s.user_years, self.step,
-                             self.c.model, self.c.lc_per_step_nc)
+        # # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
+        # if (self.c.save_netcdf_yr == 1) and (self.step in self.c.target_years_output):
+        #
+        #     self.log.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
+        #
+        #     # create out path and file name for NetCDF file
+        #     netcdf_yr_out = os.path.join(self.c.lc_per_step_nc, 'lc_yearly_{0}.nc'.format(self.step))
+        #
+        #     wdr.to_netcdf_yr(fraction_lu, self.s.cellindexresin, self.s.lat, self.s.lon, self.c.resin,
+        #                      self.s.final_landclasses, self.step, self.c.model, netcdf_yr_out)
+        #
+        # # create a NetCDF file of land cover fraction for each land class by grid cell containing each year
+        # if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
+        #     self.log.info("Saving stacked land class for time step {0}...".format(self.step))
+        #     wdr.to_netcdf_lc(map_grid_now, self.s.lat, self.s.lon, self.c.resin,
+        #                      self.s.final_landclasses, self.s.user_years, self.step,
+        #                      self.c.model, self.c.lc_per_step_nc)
 
         # save land cover data for the time step
         if (self.c.save_tabular == 1) and (self.step in self.c.target_years_output):

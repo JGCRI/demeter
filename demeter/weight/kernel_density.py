@@ -18,7 +18,8 @@ import demeter.demeter_io.writer as wdr
 class KernelDensity:
 
     def __init__(self, resolution, spat_coords, final_landclasses, kerneldistance, ngrids, kernel_map_dir, order_rules,
-                 map_kernels):
+                 map_kernels, lat, lon):
+
 
         self.resolution = resolution
         self.spat_coords = spat_coords
@@ -29,6 +30,8 @@ class KernelDensity:
         self.order_rules = order_rules
         self.kernel_map_dir = kernel_map_dir
         self.map_kernels = map_kernels
+        self.lat = lat
+        self.lon = lon
 
     def global_system(self):
         """
@@ -38,13 +41,19 @@ class KernelDensity:
         :return:                        latitude and longitude arrays
         """
 
+        bbox = [-179.125,    1.675,  -64.275,   71.325]
+
+
+
         # get latitude and longitude for grid system
-        lat = np.arange(90 - self.resolution / 2., -90, -self.resolution)
-        lon = np.arange(-180 + self.resolution / 2., 180, self.resolution)
+        # lat = np.arange(90 - self.resolution / 2., -90, -self.resolution)
+        # lon = np.arange(-180 + self.resolution / 2., 180, self.resolution)
+        lat = np.arange(bbox[1] - self.resolution / 2., bbox[3], -self.resolution)
+        lon = np.arange(bbox[0] + self.resolution / 2., bbox[2], self.resolution)
 
         return lat, lon
 
-    def compute_cell_index(self, lat, lon):
+    def compute_cell_index(self):
         """
         Compute grid-cell indices to convert from native resolution to user-defined resolution.  Do this only for
         start year.
@@ -59,19 +68,19 @@ class KernelDensity:
 
         # populate grid indicies array with index location of base layer coord in global system (lat, lon)
         for i in range(n):
-            cellindexresin[0, i] = np.argmin(abs(lat - self.spat_coords[i, 0]))
-            cellindexresin[1, i] = np.argmin(abs(lon - self.spat_coords[i, 1]))
+            cellindexresin[0, i] = np.argmin(abs(self.lat - self.spat_coords[i, 0]))
+            cellindexresin[1, i] = np.argmin(abs(self.lon - self.spat_coords[i, 1]))
 
         return cellindexresin
 
-    def prep_arrays(self, lat, lon):
+    def prep_arrays(self):
         """
         Prepare empty arrays used in kernel density calculation.
 
         :return:
         """
-        l_lat = len(lat)
-        l_lon = len(lon)
+        l_lat = len(self.lat)
+        l_lon = len(self.lon)
 
         # create empty arrays used in kernel density calculation
         pft_maps = np.zeros((l_lat, l_lon, self.l_fcs))
@@ -124,20 +133,20 @@ class KernelDensity:
         :return:
         """
         # get latitude and longitude index for map grid system
-        lat, lon = self.global_system()
+        # lat, lon = self.global_system()
 
         # compute grid-cell indices to convert from native resolution to user-defined resolution.
         #   Do this only for start year.
-        cellindexresin = self.compute_cell_index(lat, lon)
+        cellindexresin = self.compute_cell_index()
 
         # prepare empty arrays used in kernel density calculation.
-        kd_arrays = self.prep_arrays(lat, lon)
+        kd_arrays = self.prep_arrays()
         pft_maps, kernel_maps, kernel_vector, weights = kd_arrays
 
         # convolution filter (distance weighted, function of square of the distance)
         weights = self.convolution_filter(weights)
 
-        return [lat, lon, cellindexresin, pft_maps, kernel_maps, kernel_vector, weights]
+        return [cellindexresin, pft_maps, kernel_maps, kernel_vector, weights]
 
     def apply_convolution(self, cellindexresin, pft_maps, kernel_maps, lat, lon, yr, kernel_vector, weights,
                           spat_ludataharm):
@@ -146,6 +155,7 @@ class KernelDensity:
 
         :return:
         """
+
         for pft_order in np.unique(self.order_rules):
 
             # get target PFT
@@ -157,12 +167,18 @@ class KernelDensity:
             # populate pft_maps array with base land use layer data
             pft_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft] = spat_ludataharm[:, pft]
 
-            # apply image filter
-            kernel_maps[:, :, pft] = ndimage.filters.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
+            try:
+                # apply image filter
+                kernel_maps[:, :, pft] = ndimage.filters.convolve(pft_maps[:, :, pft], weights, output=None,
+                                                                  mode='wrap')
+            except ValueError:
 
-            # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
-            #   while we might need them.
-            kernel_maps[:, :, pft][kernel_maps[:, :, pft] == 0] = np.nanmin(kernel_maps[:, :, pft][kernel_maps[:, :, pft] > 0])
+                # where the input array is all 0, sub in a very low number to register a value
+                kernel_maps[:, :, pft] = 0.0000001
+
+                # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
+                #   while we might need them.
+                kernel_maps[:, :, pft][kernel_maps[:, :, pft] == 0] = np.nanmin(kernel_maps[:, :, pft][kernel_maps[:, :, pft] > 0])
 
             # add to map array if user selects to plot them
             if self.map_kernels == 1:

@@ -23,10 +23,13 @@ class ValidationException(Exception):
 
 class ReadConfig:
 
-    def __init__(self, config_file):
+    def __init__(self, config_file, run_single_land_region=None):
 
         # check ini file
         ini_file = config_file
+
+        # to run a single land region, None to run global all at once
+        self.run_single_land_region = run_single_land_region
 
         # initialize console logger for model initialization
         self.log = self.console_logger()
@@ -77,8 +80,8 @@ class ReadConfig:
         # create and validate reference input file full paths
         r = i['REFERENCE']
         self.gcam_regnamefile = self.check_exist(os.path.join(self.ref_dir, r['gcam_regnamefile']), 'file', self.log)
-        self.region_coords = self.check_exist(os.path.join(self.ref_dir, r['region_coords']), 'file', self.log)
-        self.country_coords = self.check_exist(os.path.join(self.ref_dir, r['country_coords']), 'file', self.log)
+        # self.region_coords = self.check_exist(os.path.join(self.ref_dir, r['region_coords']), 'file', self.log)
+        # self.country_coords = self.check_exist(os.path.join(self.ref_dir, r['country_coords']), 'file', self.log)
 
         # create and validate output dir full paths
         o = self.config['OUTPUTS']
@@ -134,8 +137,8 @@ class ReadConfig:
         self.save_transitions = self.ck_vals(int(p['save_transitions']), 'save_transitions', [0, 1])
         self.save_transition_maps = self.ck_vals(int(p['map_transitions']), 'map_transitions', [0, 1])
         self.save_shapefile = self.ck_vals(int(p['save_shapefile']), 'save_shapefile', [0, 1])
-        self.save_netcdf_yr = self.ck_vals(int(p['save_netcdf_yr']), 'save_netcdf_yr', [0, 1])
-        self.save_netcdf_lc = self.ck_vals(int(p['save_netcdf_lc']), 'save_netcdf_lc', [0, 1])
+        # self.save_netcdf_yr = self.ck_vals(int(p['save_netcdf_yr']), 'save_netcdf_yr', [0, 1])
+        # self.save_netcdf_lc = self.ck_vals(int(p['save_netcdf_lc']), 'save_netcdf_lc', [0, 1])
         self.shuffle = 0
 
         # --------- NEW OUTPUT PARAM HERE --------- #
@@ -153,15 +156,6 @@ class ReadConfig:
         # turn on tabular land cover data output if writing a shapefile
         if self.save_shapefile == 1:
             self.save_tabular = 1
-
-        # if running ensemble
-        try:
-            ens = self.config['ENSEMBLE']
-            self.permutations = self.ck_limit(int(ens['permutations']), 'permutations', [0, 10000000])
-            self.limits_file = self.check_exist(ens['limits_file'], 'file', self.log)
-            self.n_jobs = self.ck_limit(int(ens['n_jobs']), 'n_jobs', [-10000, 10000])
-        except KeyError:
-            pass
 
     @staticmethod
     def ck_type(v, p, tp):

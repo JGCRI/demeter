@@ -10,6 +10,9 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import numpy as np
 import os
 import pandas as pd
+import geopandas as gpd
+
+from shapely.geometry import Point
 
 
 class ValidationException(Exception):
@@ -183,7 +186,7 @@ def _get_steps(df, start_step, end_step):
 
 
 def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_dict, agg_level, metric_seq,
-                   area_factor=1000):
+                   area_factor=1000, filter=None):
     """
     Read and process the GCAM land allocation output file.
 
@@ -208,6 +211,12 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
     """
     # read GCAM output file as a dataframe; skip title row
     gdf = pd.read_csv(f, header=0)
+
+    gdf['gcam_regionnumber'] = gdf['region'].map(lambda x: int(region_dict[x]))
+
+    if filter is not None:
+
+        gdf = gdf.loc[(gdf['gcam_regionnumber'] == filter['region_id']) & (gdf['metric_id'] == filter['metric_id'])]
 
     # make sure all land classes in the projected file are in the allocation file and vice versa
     _check_constraints(log, gcam_landclasses, gdf['landclass'].tolist())
@@ -249,11 +258,11 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
     gdf['gcam_metric'] = gdf['metric_id'].map(lambda x: sequence_metric_dict[x])
 
     # check field for GCAM region number based off of region name; if region name is None, assign 1
-    ck_reg = gdf['region'].unique()
-    if (len(ck_reg)) == 1 and (ck_reg[0] == 1):
-        gdf['gcam_regionnumber'] = 1
-    else:
-        gdf['gcam_regionnumber'] = gdf['region'].map(lambda x: int(region_dict[x]))
+    # ck_reg = gdf['region'].unique()
+    # if (len(ck_reg)) == 1 and (ck_reg[0] == 1):
+    #     gdf['gcam_regionnumber'] = 1
+    # else:
+    #     gdf['gcam_regionnumber'] = gdf['region'].map(lambda x: int(region_dict[x]))
 
     # create an array of AEZ or Basin positions
     gcam_metric  = gdf['gcam_metric'].values
@@ -304,7 +313,7 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
             allmetric, metric_id_array, sequence_metric_dict]
 
 
-def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region_seq):
+def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region_seq, filter=None):
     """
     Read and process base layer land cover file.
 
@@ -317,6 +326,10 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
     """
     df = pd.read_csv(c.first_mod_file)
 
+    # if only running one region, metric filter df
+    if filter is not None:
+        df = df.loc[(df['region_id'] == filter['region_id']) & (df['basin_id'] == filter['metric_id'])]
+
     # rename columns as lower case
     df.columns = [i.lower() for i in df.columns]
 
@@ -327,11 +340,14 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
         log.error('Fields are listed in the spatial allocation file that do not exist in the base layer.')
         log.error(e)
 
-    # create array of latitude, longitude coordinates
+    # create array of latitude, longitude coordinates and create geometry list
     try:
         spat_coords = df[['latcoord', 'loncoord']].values
+        geometry = [Point(xy) for xy in zip(df['loncoord'], df['latcoord'])]
+
     except KeyError:
         spat_coords = df[['latitude', 'longitude']].values
+        geometry = [Point(xy) for xy in zip(df['longitude'], df['latitude'])]
 
     # create array of metric (AEZ or basin id) per region; naming convention (regionmetric); formerly spat_aezreg
     try:
@@ -392,8 +408,24 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
     # adjust land cover area based on the percentage of the grid cell represented
     spat_ludata = spat_ludata / (c.resin ** 2) * np.transpose([cellarea, ] * len(spat_landclasses))
 
+    gdf = gpd.GeoDataFrame(df, crs={'init': 'epsg:4326'}, geometry=geometry)
+
+    # get the bounding box of the input data
+    bbox = gdf.total_bounds
+
+    # get latitude and longitude for grid system
+    if bbox[3] < 0:
+        lat = np.arange(bbox[1] - c.resin / 2., bbox[3], -c.resin)
+    else:
+        lat = np.arange(bbox[1] - c.resin / 2., bbox[3], c.resin)
+
+    lon = np.arange(bbox[0] + c.resin / 2., bbox[2], c.resin)
+
+    # get a list of the FID's in the data frame
+    key_list = gdf[c.pkey].unique()
+
     return [spat_ludata, spat_water, spat_coords, spat_metric_region, spat_grid_id, spat_metric, spat_region, ngrids,
-            cellarea, celltrunk, sequence_metric_dict]
+            cellarea, celltrunk, sequence_metric_dict, lat, lon, key_list]
 
 
 def to_array(f, target_index, delim=','):
