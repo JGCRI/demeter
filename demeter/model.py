@@ -26,12 +26,11 @@ class ValidationException(Exception):
 
 class Demeter(Logger):
 
-    def __init__(self,
-                 root_dir=op.dirname(op.realpath(__file__)),
-                 config=op.join(op.dirname(op.dirname(op.realpath(__file__))), 'config.ini')):
+    def __init__(self, root_dir=None, config_file=None, run_single_land_region=None):
 
         self.dir = root_dir
-        self.ini = config
+        self.ini = config_file
+        self.run_single_land_region = run_single_land_region
         self.c = None
         self.s = None
         self.process_step = None
@@ -71,7 +70,7 @@ class Demeter(Logger):
         Setup model.
         """
         # instantiate config
-        self.c = ReadConfig(self.ini)
+        self.c = ReadConfig(self.ini, self.run_single_land_region)
 
         # instantiate log file
         self.make_logfile()
@@ -133,36 +132,10 @@ class Demeter(Logger):
 
 if __name__ == '__main__':
 
-    # terminal option for running without installing demeter
-    args = sys.argv[1:]
-
-    if len(args) != 2:
-        print("""USAGE:  Two arguments should be passed.
-                        1) Full path file name with extension for config file and
-                        2) the type of run you wish to conduct "standard" or "ensemble"
-                    """)
-        print('Exiting...')
-        raise ValidationException
-
-    # explode args
-    ini = args[0]
-
-    # run mode
-    mode = args[1]
-
-    if op.isfile is False:
-        print('ERROR:  Config file not found.')
-        print('You entered:  {0}'.format(ini))
-        print('Please enter a full path file name with extension to config file and retry.')
-        raise ValidationException
-
-    if mode.lower() not in ('standard', 'ensemble'):
-        print("""ERROR:  Run mode passed '{0}' not a valid option.  Either select 'standard' or 'ensemble' """.format(mode))
-        print('Exiting...')
-        raise ValidationException
+    ini = '/Users/d3y010/projects/demeter/data/test_config.ini'
 
     # instantiate demeter
-    dm = Demeter(config=ini)
+    dm = Demeter(config_file=ini, run_single_land_region={'metric_id':  221, 'region_id': 1})
 
     dm.execute()
 
