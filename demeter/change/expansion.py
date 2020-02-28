@@ -8,6 +8,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com)
 """
 
+import logging
 import numpy as np
 import os
 from scipy import stats
@@ -216,7 +217,7 @@ def _reg_metric_iter(allregnumber, allregmet):
     return l
 
 
-def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met, kernel_vector, cons_data,
+def apply_expansion(c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met, kernel_vector, cons_data,
                     order_rules, final_landclasses, constrain_rules, transition_rules, land_mismatch, transitions,
                     spat_ludataharm_orig_steps, target_change, yr):
 
@@ -264,7 +265,7 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
     else:
         non_chg_per = 0
 
-    log.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
+    logging.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
 
     # close file if diagnostic
     if c.diagnostic == 1:

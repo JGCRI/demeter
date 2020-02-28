@@ -7,6 +7,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov)
 """
+import logging
 import numpy as np
 import os
 import pandas as pd
@@ -126,11 +127,10 @@ def read_alloc(f, lc_col, output_level=3, delim=','):
         return list(), np.empty(shape=0, dtype=np.float)
 
 
-def _check_constraints(log_obj, allocate, actual):
+def _check_constraints(allocate, actual):
     """
     Checks to see if all land classes that are in the projection file are accounted for in the allocation file.
 
-    :param log_obj:             logger object
     :param allocate:            land classes from the allocation file
     :param actual:              land classes from the projection file
     """
@@ -151,16 +151,16 @@ def _check_constraints(log_obj, allocate, actual):
     if (l_alloc > 0) and (l_act > 0):
         m1 = "Land classes in allocation file but not in projected model data:  {0}".format(alloc_extra)
         m2 = "Land classes in projected model but not in allocation file:  {0}".format(act_extra)
-        log_obj.warning(m1)
-        log_obj.warning(m2)
+        logging.warning(m1)
+        logging.warning(m2)
 
     elif (l_alloc > 0) and (l_act == 0):
         m1 = "Land classes in allocation file but not in projected model data:  {0}".format(alloc_extra)
-        log_obj.warning(m1)
+        logging.warning(m1)
 
     elif (l_alloc == 0) and (l_act > 0):
         m2 = "Land classes in projected model but not in allocation file:  {0}".format(act_extra)
-        log_obj.warning(m2)
+        logging.warning(m2)
 
 
 def _get_steps(df, start_step, end_step):
@@ -185,7 +185,7 @@ def _get_steps(df, start_step, end_step):
     return l
 
 
-def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_dict, agg_level, metric_seq,
+def read_gcam_file(f, gcam_landclasses, start_yr, end_yr, scenario, region_dict, agg_level, metric_seq,
                    area_factor=1000, filter=None):
     """
     Read and process the GCAM land allocation output file.
@@ -219,7 +219,7 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
         gdf = gdf.loc[(gdf['gcam_regionnumber'] == filter['region_id']) & (gdf['metric_id'] == filter['metric_id'])]
 
     # make sure all land classes in the projected file are in the allocation file and vice versa
-    _check_constraints(log, gcam_landclasses, gdf['landclass'].tolist())
+    _check_constraints(gcam_landclasses, gdf['landclass'].tolist())
 
     # assign user-defined scenario to data frame
     gdf['scenario'] = scenario
@@ -301,8 +301,8 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
     allregaez = xdf.apply(lambda x: list(np.unique(x))).tolist()
 
     # log the number of regions and metric_ids
-    log.info('Number of regions from projected file:  {0}'.format(len(allregnumber)))
-    log.info('Number of basins or AEZs from projected file:  {0}'.format(len(allmetric)))
+    logging.info('Number of regions from projected file:  {0}'.format(len(allregnumber)))
+    logging.info('Number of basins or AEZs from projected file:  {0}'.format(len(allmetric)))
 
     # add Taiwan region space holder if aggregated by GCAM region
     if agg_level == 2:
@@ -313,7 +313,7 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
             allmetric, metric_id_array, sequence_metric_dict]
 
 
-def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region_seq, filter=None):
+def read_base(c, spat_landclasses, sequence_metric_dict, metric_seq, region_seq, filter=None):
     """
     Read and process base layer land cover file.
 
@@ -337,8 +337,8 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
     try:
         spat_ludata = df[spat_landclasses].values
     except KeyError as e:
-        log.error('Fields are listed in the spatial allocation file that do not exist in the base layer.')
-        log.error(e)
+        logging.error('Fields are listed in the spatial allocation file that do not exist in the base layer.')
+        logging.error(e)
 
     # create array of latitude, longitude coordinates and create geometry list
     try:
@@ -362,7 +362,7 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
     try:
         spat_water = df['water'].values
     except KeyError:
-        log.warning('Water not represented in base layer.  Representing water as 0 percent of grid.')
+        logging.warning('Water not represented in base layer.  Representing water as 0 percent of grid.')
         spat_water = np.zeros_like(spat_grid_id)
 
     spat_region = df['region_id'].values
@@ -373,7 +373,7 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
     valid_region_test = set(region_seq) - set(unique_spat_region)
 
     if len(valid_region_test) > 0:
-        log.error('Observed spatial data must have all regions represented.')
+        logging.error('Observed spatial data must have all regions represented.')
         raise ValidationException
 
     # ensure that the observed data represents all expected metric ids
@@ -381,7 +381,7 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
     valid_metric_test = set(metric_seq) - set(unique_spat_metric)
 
     if len(valid_metric_test) > 0:
-        log.error('Observed spatial data must have all {}_id represented.'.format(c.metric.lower()))
+        logging.error('Observed spatial data must have all {}_id represented.'.format(c.metric.lower()))
         raise ValidationException
 
     # account for 0 designation in observed data for unclassified

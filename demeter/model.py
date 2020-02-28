@@ -8,7 +8,8 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov)
 """
 
-import os.path as op
+import logging
+import os
 import sys
 import time
 import traceback
@@ -19,70 +20,91 @@ from demeter.process import ProcessStep
 from demeter.staging import Stage
 
 
-class ValidationException(Exception):
-    def __init__(self, *args, **kwargs):
-        Exception.__init__(self, *args, **kwargs)
-
-
-class Demeter(Logger):
+class Demeter:
 
     def __init__(self, root_dir=None, config_file=None, run_single_land_region=None):
 
         self.dir = root_dir
-        self.ini = config_file
+        self.config_file = config_file
         self.run_single_land_region = run_single_land_region
-        self.c = None
+
+        # instantiate config
+        self.c = ReadConfig(self.config_file, self.run_single_land_region)
+
+        # build logfile path
+        self.logfile = os.path.join(self.c.log_dir, 'logfile_{}_{}.log'.format(self.c.scenario, self.c.dt))
+
         self.s = None
-        self.process_step = None
-        self.rg = None
-        self.f = None
+        self.timestep = None
 
     @staticmethod
-    def log_config(c, log):
-        """
-        Log validated configuration options.
-        """
-        for i in dir(c):
+    def make_dir(pth):
+        """Create dir if not exists."""
 
-            # create configuration object from string
-            x = eval('c.{0}'.format(i))
+        if not os.path.exists(pth):
+            os.makedirs(pth)
 
-            # ignore magic objects
-            if type(x) == str and i[:2] != '__':
+    def init_log(self):
+        """Initialize project-wide logger. The logger outputs to both stdout and a file."""
 
-                # log result
-                log.debug('CONFIG: [PARAMETER] {0} -- [VALUE] {1}'.format(i, x))
+        log_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        log_level = logging.DEBUG
 
-    def make_logfile(self):
-        """
-        Make log file.
+        logger = logging.getLogger()
+        logger.setLevel(log_level)
 
-        :return                               log file object
-        """
-        # create logfile path and name
-        self.f = op.join(self.dir, '{0}/logfile_{1}_{2}.log'.format(self.c.log_dir, self.c.scenario, self.c.dt))
+        # logger console handler
+        c_handler = logging.StreamHandler(sys.stdout)
+        c_handler.setLevel(log_level)
+        c_handler.setFormatter(log_format)
+        logger.addHandler(c_handler)
 
-        # parameterize logger
-        self.log = Logger(self.f, self.c.scenario).make_log()
+        # logger file handler
+        f_handler = logging.FileHandler(self.logfile)
+        c_handler.setLevel(log_level)
+        c_handler.setFormatter(log_format)
+        logger.addHandler(f_handler)
 
-    def setup(self):
-        """
-        Setup model.
-        """
-        # instantiate config
-        self.c = ReadConfig(self.ini, self.run_single_land_region)
+    def initialize(self):
+        """Setup model."""
+        # build output directory first to store logfile and other outputs
+        self.make_dir(self.c.out_dir)
 
-        # instantiate log file
-        self.make_logfile()
+        # initialize logger
+        self.init_log()
 
-        # create log header
-        self.log.info('START')
+        logging.info("Start time:  {}".format(time.strftime("%Y-%m-%d %H:%M:%S")))
 
-        # log validated configuration
-        self.log_config(self.c, self.log)
+        # log run parameters
+        logging.info("Model configuration:")
+        logging.info("\tconfig_file = {}".format(self.config_file))
+        logging.info("\troot_dir = {}".format(self.c.root_dir))
+        logging.info("\tin_dir = {}".format(self.c.in_dir))
+        logging.info("\tout_dir = {}".format(self.c.out_dir))
 
         # prepare data for processing
-        self.s = Stage(self.c, self.log)
+        self.s = Stage(self.c)
+
+        # set up time step generator
+        self.timestep = self.run_timestep()
+
+    def run_timestep(self):
+        """Process time step"""
+
+        for idx, step in enumerate(self.s.user_years):
+
+            yield ProcessStep(self.c, self.s, idx, step)
+
+    def close(self):
+        """End model run and close log files"""
+
+        logging.info("End time:  {}".format(time.strftime("%Y-%m-%d %H:%M:%S")))
+
+        # Remove logging handlers
+        logger = logging.getLogger()
+
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
 
     def execute(self):
         """
@@ -91,43 +113,15 @@ class Demeter(Logger):
         # set start time
         t0 = time.time()
 
-        try:
+        # set up pre time step
+        self.initialize()
 
-            # set up pre time step
-            self.setup()
+        # run for each time step
+        for idx, step in enumerate(self.s.user_years):
 
-            # run for each time step
-            for idx, step in enumerate(self.s.user_years):
+            ProcessStep(self.c, self.s, idx, step)
 
-                ProcessStep(self.c, self.log, self.s, idx, step)
-
-        except:
-
-            # catch all exceptions and their traceback
-            e = sys.exc_info()[0]
-            t = traceback.format_exc()
-
-            # log exception and traceback as error
-            try:
-                self.log.error(e)
-                self.log.error(t)
-
-                # close all open log handlers
-                Logger(self.f, self.c.scenario).close_logger(self.log)
-
-            except AttributeError:
-                print(e)
-                print(t)
-
-        finally:
-
-            try:
-                self.log.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
-                self.log.info('END')
-                self.log = None
-
-            except AttributeError:
-                pass
+        self.close()
 
 
 if __name__ == '__main__':
@@ -135,7 +129,7 @@ if __name__ == '__main__':
     ini = '/Users/d3y010/projects/demeter/data/test_config.ini'
 
     # instantiate demeter
-    dm = Demeter(config_file=ini, run_single_land_region={'metric_id':  221, 'region_id': 1})
+    dm = Demeter(config_file=ini, run_single_land_region={'metric_id':  142, 'region_id': 5})
 
     dm.execute()
 
