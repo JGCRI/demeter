@@ -1,0 +1,2 @@
+category,NET_tem,NET_bor,NDT_bor,BET_tro,BET_tem,BDT_tro,BDT_tem,BDT_bor,BES_tem,BDS_tem,BDS_bor,C3_gra_arc,C3_gra,C4_gra,Corn_rf,Corn_irr,Wheat_rf,Wheat_irr,Soy_rf,Soy_irr,Cotton_rf,Cotton_irr,Rice_rf,Rice_irr,Sugarcrop_rf,Sugarcrop_irr,OtherCrop_rf,OtherCrop_irr,Bioenergy_rf,Bioenergy_irr,Urban,Barren
+kernel_density,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,1,1
