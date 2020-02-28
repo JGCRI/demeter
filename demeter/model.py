@@ -12,10 +12,8 @@ import logging
 import os
 import sys
 import time
-import traceback
 
 from demeter.config_reader import ReadConfig
-from demeter.logger import Logger
 from demeter.process import ProcessStep
 from demeter.staging import Stage
 
