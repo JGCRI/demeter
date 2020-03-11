@@ -9,6 +9,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 """
 import os
 import numpy as np
+import pandas as pd
 
 import demeter.demeter_io.reader as rdr
 
@@ -23,7 +24,7 @@ class ApplyConstraints:
     def __init__(self, allreg, allaez, final_landclasses, user_years, ixr_ixm, allregaez, spat_region, allregnumber,
                  spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_agg, gcam_ludata, ngrids,
                  constrain_names, spat_landclasses, spat_agg, spat_ludata, map_luc_steps, map_luc,
-                 constraint_files):
+                 constraint_files, key_list):
 
         self.allreg = allreg
         self.allaez = allaez
@@ -51,6 +52,7 @@ class ApplyConstraints:
         self.map_luc_steps = map_luc_steps
         self.map_luc = map_luc
         self.constraint_files = constraint_files
+        self.key_list = key_list
 
         # assign array holding constraints
         self.cons_data = self.compile_constraints()
@@ -74,8 +76,12 @@ class ApplyConstraints:
             # get index number from file name
             idx = int(os.path.basename(f).split('_')[0])
 
-            # read in file and add to out array
-            cons_data[:, idx] = rdr.to_array(f, target_index=1)
+            # read in file and add to out array where grid cells match the base layer input
+            df = pd.read_csv(f, header=None)
+            df.columns = ['fid', 'v']
+            dfx = df.loc[df['fid'].isin(self.key_list)]
+
+            cons_data[:, idx] = dfx['v'].values
 
         return cons_data
 

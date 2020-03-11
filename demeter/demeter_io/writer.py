@@ -8,11 +8,11 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com); Caleb J. Braun (caleb.braun@pnnl.gov)
 """
 import os
-import matplotlib.pyplot as plt
-from matplotlib import cm
+# import matplotlib.pyplot as plt
+# from matplotlib import cm
 import numpy as np
 from scipy import io as sio
-import shapefile
+#import shapefile
 
 import demeter.demeter_io.reader as rdr
 

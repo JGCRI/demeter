@@ -7,7 +7,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com)
 """
-
+import logging
 import os
 import numpy as np
 
@@ -224,24 +224,13 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
 
 
 def _create_summary(reg_idx, allregnumber, spat_ludata, spat_landmatrix, gcam_landmatrix, d_regid_nm,
-                    log, spat_region, yr_idx, target_change, pass_number, c):
+                    spat_region, yr_idx, target_change, pass_number, c):
     """
     Create summary data for log output per region.
     """
 
     # get region numbers from index
     regnumber = allregnumber[reg_idx]
-
-    # calculate summary
-    tot_spat_area = np.sum(spat_ludata[spat_region == allregnumber[reg_idx]])
-    tot_harm_spat = np.sum(spat_landmatrix[reg_idx, :, :])
-    tot_harm_gcam = np.sum(gcam_landmatrix[yr_idx, reg_idx, :, :])
-
-    # log summary
-    # log.info("Processing region:  {0}".format(d_regid_nm[str(reg_idx + 1)]))
-    # log.info("Total spatial land area:  {0} km2".format(tot_spat_area))
-    # log.info("Total harmonized spatial land area:  {0} km2".format(tot_harm_spat))
-    # log.info("Total harmonized GCAM land area:  {0} km2".format(tot_harm_gcam))
 
     # update prev idx
     prev_reg = reg_idx
@@ -256,7 +245,7 @@ def _create_summary(reg_idx, allregnumber, spat_ludata, spat_landmatrix, gcam_la
     return regnumber, prev_reg, target_intensification
 
 
-def apply_intensification(log, pass_number, c, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
+def apply_intensification(pass_number, c, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
                           spat_landmatrix, gcam_landmatrix, yr_idx, d_regid_nm, target_change, spat_ludataharm,
                           spat_met, kernel_vector, cons_data, final_landclasses,spat_ludataharm_orig_steps, yr,
                           land_mismatch, constrain_rules, transition_rules, transitions):
@@ -303,7 +292,7 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
             # update user per region change
             regnumber, prev_reg, target_intensification = _create_summary(reg_idx, allregnumber, spat_ludata,
                                                                           spat_landmatrix, gcam_landmatrix, d_regid_nm,
-                                                                          log, spat_region, yr_idx, target_change,
+                                                                          spat_region, yr_idx, target_change,
                                                                           pass_number, c)
 
         # calculate and write area diagnostic
@@ -337,7 +326,7 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
     else:
         non_chg_per = 0
 
-    log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
+    logging.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
 
     # close file if diagnostic
     if c.diagnostic == 1:

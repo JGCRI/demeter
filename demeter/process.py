@@ -8,8 +8,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 @author:  Chris R. Vernon (PNNL); Yannick le Page (niquya@gmail.com)
 """
 import numpy as np
-import os
-
+import logging
 import demeter.change.intensification as itz
 import demeter.change.expansion as exp
 import demeter.demeter_io.writer as wdr
@@ -20,10 +19,9 @@ class ProcessStep:
     Process downscaling of a time step.
     """
 
-    def __init__(self, c, log, s, step_idx, step):
+    def __init__(self, c,s, step_idx, step):
 
         self.c = c
-        self.log = log
         self.s = s
         self.step_idx = step_idx
         self.step = step
@@ -65,14 +63,14 @@ class ProcessStep:
         """
         Conduct the first pass of intensification.
         """
-        self.log.info("Applying intensification: pass {0} for time step {1}...".format(pass_num, self.step))
+        logging.info("Applying intensification: pass {0} for time step {1}...".format(pass_num, self.step))
 
         # set pass dir
         od = 'self.c.luc_intense_p{0}_dir'.format(pass_num)
         out_dir = eval(od)
 
         # apply intensification
-        itz_pass = itz.apply_intensification(self.log, pass_num, self.c, self.s.spat_region, self.s.order_rules,
+        itz_pass = itz.apply_intensification(pass_num, self.c, self.s.spat_region, self.s.order_rules,
                                                  self.s.allregnumber, self.s.allregaez, self.s.spat_ludata,
                                                  self.spat_landmatrix, self.s.gcam_landmatrix, self.step_idx,
                                                  self.s.d_regid_nm, self.target_change, self.s.spat_ludataharm,
@@ -88,7 +86,7 @@ class ProcessStep:
         # create intensification first pass map if user-selected
         if self.c.map_luc_steps == 1:
 
-            self.log.info("Creating LUC intensification pass {0} maps for time step {1}...".format(pass_num, self.step))
+            logging.info("Creating LUC intensification pass {0} maps for time step {1}...".format(pass_num, self.step))
 
             wdr.map_luc(self.s.spat_ludataharm / np.tile(self.s.cellarea, (self.l_fcs, 1)).T,
                         self.s.spat_ludataharm_orig_steps / np.tile(self.s.cellarea, (self.l_fcs, 1)).T,
@@ -104,10 +102,10 @@ class ProcessStep:
         Conduct expansion pass.
         """
 
-        self.log.info("Applying expansion for time step {0}...".format(self.step))
+        logging.info("Applying expansion for time step {0}...".format(self.step))
 
         # apply expansion
-        exp_pass = exp.apply_expansion(self.log, self.c, self.s.allregnumber, self.s.allregaez, self.s.spat_ludataharm,
+        exp_pass = exp.apply_expansion(self.c, self.s.allregnumber, self.s.allregaez, self.s.spat_ludataharm,
                                        self.s.spat_region, self.s.spat_aez, self.s.kernel_vector, self.s.cons_data,
                                        self.s.order_rules, self.s.final_landclasses, self.s.constrain_rules,
                                        self.s.transition_rules, self.land_mismatch, self.transitions,
@@ -120,7 +118,7 @@ class ProcessStep:
         # create maps if user-selected
         if self.c.map_luc_steps == 1:
 
-            self.log.info("Creating LUC expansion maps for time step {0}...".format(self.step))
+            logging.info("Creating LUC expansion maps for time step {0}...".format(self.step))
 
             wdr.map_luc(self.s.spat_ludataharm / np.tile(self.s.cellarea, (self.l_fcs, 1)).T,
                         self.s.spat_ludataharm_orig_steps / np.tile(self.s.cellarea, (self.l_fcs, 1)).T,
@@ -172,7 +170,7 @@ class ProcessStep:
         # optionally map time step
         if (self.c.map_luc == 1) and (self.step in self.c.target_years_output):
 
-            self.log.info("Mapping land cover change for time step {0}...".format(self.step))
+            logging.info("Mapping land cover change for time step {0}...".format(self.step))
 
             wdr.map_luc(map_fraction_lu, map_fraction_lu_prev, self.s.cellindexresin, self.s.lat, self.s.lon,
                         self.s.final_landclasses, self.step, self.c.region_coords, self.c.country_coords,
@@ -184,21 +182,21 @@ class ProcessStep:
         # optionally save land cover transitions as a CSV
         if (self.c.save_transitions == 1) and (self.step in self.c.target_years_output):
 
-            self.log.info("Saving land cover transition files for time step {0}...".format(self.step))
+            logging.info("Saving land cover transition files for time step {0}...".format(self.step))
 
             wdr.write_transitions(self.s, self.c, self.step, self.transitions)
 
         # optionally create land cover transition maps
         if (self.c.save_transition_maps == 1) and (self.step in self.c.target_years_output):
 
-            self.log.info("Saving land cover transition maps for time step {0}...".format(self.step))
+            logging.info("Saving land cover transition maps for time step {0}...".format(self.step))
 
             wdr.map_transitions(self.s, self.c, self.step, self.transitions)
 
         # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
         if (self.c.save_netcdf_yr == 1) and (self.step in self.c.target_years_output):
 
-            self.log.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
+            logging.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
 
             # create out path and file name for NetCDF file
             netcdf_yr_out = os.path.join(self.c.lc_per_step_nc, 'lc_yearly_{0}.nc'.format(self.step))
@@ -208,37 +206,29 @@ class ProcessStep:
 
         # create a NetCDF file of land cover fraction for each land class by grid cell containing each year
         if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
-            self.log.info("Saving stacked land class for time step {0}...".format(self.step))
+            logging.info("Saving stacked land class for time step {0}...".format(self.step))
             wdr.to_netcdf_lc(map_grid_now, self.s.lat, self.s.lon, self.c.resin,
                              self.s.final_landclasses, self.s.user_years, self.step,
                              self.c.model, self.c.lc_per_step_nc)
 
         # save land cover data for the time step
         if (self.c.save_tabular == 1) and (self.step in self.c.target_years_output):
-            self.log.info("Saving tabular land cover data for time step {0}...".format(self.step))
+            logging.info("Saving tabular land cover data for time step {0}...".format(self.step))
             wdr.lc_timestep_csv(self.c, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
                                 self.c.metric, self.c.tabular_units)
 
         # optionally save land cover data for the time step as a shapefile
         if (self.c.save_shapefile == 1) and (self.step in self.c.target_years_output):
-            self.log.info("Saving land cover data for time step as a shapefile {0}".format(self.step))
+            logging.info("Saving land cover data for time step as a shapefile {0}".format(self.step))
             wdr.to_shp(self.c, self.step, self.s.final_landclasses)
 
         # create an ASCII raster with the land class number having the maximum area for each grid cell
         if (self.c.save_ascii_max == 1) and (self.step in self.c.target_years_output):
-            self.log.info("Saving output in ASCII raster format for time step {0}...".format(self.step))
+            logging.info("Saving output in ASCII raster format for time step {0}...".format(self.step))
 
             # call function for output object using available data detailed in this methods docstring
             wdr.max_ascii_rast(map_grid_now, self.c.out_dir, self.step, cellsize=self.c.resin)
-
-        # --------- NEW OUTPUT PARAM HERE --------- #
-        # Create a conditional statement after the following for your extended format where
-        #   your parameter created in config_reader.py is in the place of 'self.c.save_ascii_max' with the same
-        #   'self.c.' prefix.  Then call your function from writer.py using wdr as the prefix
-        #   alias (e.g., wdr.your_function).
-
-        # --------- END OUTPUT EXTENSION --------- #
 
     def process(self):
         """
