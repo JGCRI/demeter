@@ -120,16 +120,3 @@ class Demeter:
             ProcessStep(self.c, self.s, idx, step)
 
         self.close()
-
-
-if __name__ == '__main__':
-
-    ini = '/Users/d3y010/projects/demeter/data/test_config.ini'
-
-    # instantiate demeter
-    dm = Demeter(config_file=ini, run_single_land_region={'metric_id':  142, 'region_id': 5})
-
-    dm.execute()
-
-    # clean up
-    del dm
