@@ -137,21 +137,14 @@ class ReadConfig:
         self.save_transitions = self.ck_vals(int(p['save_transitions']), 'save_transitions', [0, 1])
         self.save_transition_maps = self.ck_vals(int(p['map_transitions']), 'map_transitions', [0, 1])
         self.save_shapefile = self.ck_vals(int(p['save_shapefile']), 'save_shapefile', [0, 1])
-        # self.save_netcdf_yr = self.ck_vals(int(p['save_netcdf_yr']), 'save_netcdf_yr', [0, 1])
-        # self.save_netcdf_lc = self.ck_vals(int(p['save_netcdf_lc']), 'save_netcdf_lc', [0, 1])
-        self.shuffle = 0
-
-        # --------- NEW OUTPUT PARAM HERE --------- #
-        # Enter your new output parameter here in the following format, substituting 'lc_max_grid' with
-        #   your parameter name and 'self.lc_max_grid' with your param.
+        self.save_netcdf_yr = self.ck_vals(int(p['save_netcdf_yr']), 'save_netcdf_yr', [0, 1])
+        self.save_netcdf_lc = self.ck_vals(int(p['save_netcdf_lc']), 'save_netcdf_lc', [0, 1])
 
         try:
             self.save_ascii_max = self.ck_vals(int(p['save_ascii_max']), 'save_ascii_max', [0, 1])
 
         except KeyError:
             self.save_ascii_max = 0
-
-        # --------- END OUTPUT EXTENSION --------- #
 
         # turn on tabular land cover data output if writing a shapefile
         if self.save_shapefile == 1:

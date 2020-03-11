@@ -12,6 +12,7 @@ import logging
 import os
 import sys
 import time
+import datetime
 
 from demeter.config_reader import ReadConfig
 from demeter.process import ProcessStep
@@ -22,12 +23,15 @@ class Demeter:
 
     def __init__(self, root_dir=None, config_file=None, run_single_land_region=None):
 
+        # get current time
+        self.date_time_string = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')
+
+        # instantiate config
+        self.c = ReadConfig(config_file, run_single_land_region)
+
         self.dir = root_dir
         self.config_file = config_file
         self.run_single_land_region = run_single_land_region
-
-        # instantiate config
-        self.c = ReadConfig(self.config_file, self.run_single_land_region)
 
         # build logfile path
         self.logfile = os.path.join(self.c.log_dir, 'logfile_{}_{}.log'.format(self.c.scenario, self.c.dt))
@@ -93,17 +97,6 @@ class Demeter:
 
             yield ProcessStep(self.c, self.s, idx, step)
 
-    def close(self):
-        """End model run and close log files"""
-
-        logging.info("End time:  {}".format(time.strftime("%Y-%m-%d %H:%M:%S")))
-
-        # Remove logging handlers
-        logger = logging.getLogger()
-
-        for handler in logger.handlers[:]:
-            logger.removeHandler(handler)
-
     def execute(self):
         """
         Execute main downscaling routine.
@@ -120,3 +113,17 @@ class Demeter:
             ProcessStep(self.c, self.s, idx, step)
 
         self.close()
+
+    def close(self):
+        """End model run and close log files"""
+
+        logging.info("End time:  {}".format(time.strftime("%Y-%m-%d %H:%M:%S")))
+
+        # Remove logging handlers
+        logger = logging.getLogger()
+
+        for handler in logger.handlers[:]:
+            handler.close()
+            logger.removeHandler(handler)
+
+        logging.shutdown()

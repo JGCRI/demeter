@@ -37,7 +37,7 @@ class TestOutputs(unittest.TestCase):
 
         for _ in range(2005, 2020, 5):
 
-            run.timestep.next()
+            next(run.timestep)
 
         run.close()
 

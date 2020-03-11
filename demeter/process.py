@@ -7,6 +7,8 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (PNNL); Yannick le Page (niquya@gmail.com)
 """
+
+import os
 import numpy as np
 import logging
 import demeter.change.intensification as itz
@@ -19,7 +21,7 @@ class ProcessStep:
     Process downscaling of a time step.
     """
 
-    def __init__(self, c,s, step_idx, step):
+    def __init__(self, c, s, step_idx, step):
 
         self.c = c
         self.s = s
@@ -148,7 +150,8 @@ class ProcessStep:
         :param user_years:              a list of user selected years to process
         """
         # convert metric_id back to the original
-        revert_metric_dict = {self.s.sequence_metric_dict[k]: k for k in self.s.sequence_metric_dict.iterkeys()}
+        revert_metric_dict = {self.s.sequence_metric_dict[k]: k for k in self.s.sequence_metric_dict.keys()}
+
         orig_spat_aez = np.vectorize(revert_metric_dict.get)(self.s.spat_aez)
 
         # convert land cover from sqkm per grid cell per land class to fraction for mapping (n_grids, n_landclasses)
