@@ -12,9 +12,7 @@
 
 # exclude dirs
 outputs/
-build/
 demeter.egg-info/
-dist/
 
 # exclude tests outputs dir
 demeter/tests/data/outputs/
@@ -47,7 +45,6 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
