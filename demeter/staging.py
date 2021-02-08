@@ -7,7 +7,9 @@ Copyright (c) 2017, Battelle Memorial Institute
 Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (PNNL); Yannick le Page (niquya@gmail.com)
+
 """
+
 import numpy as np
 import pandas as pd
 import time
@@ -21,14 +23,13 @@ from demeter.weight.kernel_density import KernelDensity
 
 
 class Stage:
-    """
-    Prepare data for processing.
-    """
+    """Prepare data for processing."""
 
     def __init__(self, c, log):
 
         self.c = c
         self.log = log
+        self.d_bsnnm_id = None
         self.d_regnm_id = None
         self.d_reg_nm = None
         self.final_landclasses = None
@@ -98,10 +99,13 @@ class Stage:
         """
 
         # GCAM region_name: region_id as dictionary
-        self.d_regnm_id = rdr.to_dict(self.c.gcam_regnamefile, header=True, swap=True)
+        self.d_regnm_id = rdr.to_dict(self.c.gcam_region_names_file, header=True, swap=True)
 
         # GCAM region_id: region_name as dictionary
-        self.d_regid_nm = rdr.to_dict(self.c.gcam_regnamefile, header=True, swap=False)
+        self.d_regid_nm = rdr.to_dict(self.c.gcam_region_names_file, header=True, swap=False)
+
+        # GCAM basin_id: basin_glu_name as dictionary
+        self.d_bsnnm_id = rdr.to_dict(self.c.gcam_basin_names_file, header=True, swap=True, value_col=2)
 
     def read_allocation(self):
         """
@@ -114,29 +118,29 @@ class Stage:
         t0 = time.time()
 
         # create spatial allocation array
-        spat_alloc = rdr.read_alloc(self.c.spatial_allocation, lc_col='category')
+        spat_alloc = rdr.read_alloc(self.c.spatial_allocation_file, lc_col='category')
         self.final_landclasses, self.spat_landclasses, self.spat_agg = spat_alloc
 
         # create GCAM allocation array
-        proj_alloc = rdr.read_alloc(self.c.gcam_allocation, lc_col='category', output_level=2)
+        proj_alloc = rdr.read_alloc(self.c.gcam_allocation_file, lc_col='category', output_level=2)
         self.gcam_landclasses, self.gcam_agg = proj_alloc
 
         # create transition priority rules array
-        self.transition_rules = rdr.read_alloc(self.c.priority_allocation, lc_col='category', output_level=1)
+        self.transition_rules = rdr.read_alloc(self.c.transition_order_file, lc_col='category', output_level=1)
 
         # create treatment order rules array
-        self.order_rules = rdr.to_list(self.c.treatment_order)
+        self.order_rules = rdr.to_list(self.c.treatment_order_file)
 
         # create constraints weighting array
         if self.c.use_constraints == 1:
-            constraint_alloc = rdr.read_alloc(self.c.constraints, lc_col='category', output_level=2)
+            constraint_alloc = rdr.read_alloc(self.c.constraints_file, lc_col='category', output_level=2)
             self.constrain_names, self.constraint_weights = constraint_alloc
         else:
             self.constrain_names = []
             self.constraint_weights = []
 
         # create kernel density weighting array; 1 equals no constraints
-        self.kernel_constraints = rdr.read_alloc(self.c.kernel_allocation, lc_col='category', output_level=1)
+        self.kernel_constraints = rdr.read_alloc(self.c.kernel_allocation_file, lc_col='category', output_level=1)
 
         # add kernel density constraints to constrain rules array; if there are no other constraints, apply KD array
         try:
@@ -157,7 +161,7 @@ class Stage:
         # if basin
         met = self.c.metric.lower()
         if met == 'basin':
-            df = pd.read_csv(os.path.join(self.c.ref_dir, 'gcam_basin_lookup.csv'), usecols=['basin_id'])
+            df = pd.read_csv(os.path.join(self.c.reference_dir, 'gcam_basin_lookup.csv'), usecols=['basin_id'])
             m = sorted(df['basin_id'].tolist())
 
         # if AEZ, use 1 through 18 - this will not change
@@ -165,7 +169,7 @@ class Stage:
             m = list(range(1, 19, 1))
 
         # read in region ids
-        rdf = pd.read_csv(os.path.join(self.c.ref_dir, 'gcam_regions_32.csv'), usecols=['gcam_region_id'])
+        rdf = pd.read_csv(os.path.join(self.c.reference_dir, 'gcam_regions_32.csv'), usecols=['gcam_region_id'])
         r = sorted(rdf['gcam_region_id'].tolist())
 
         return m, r
@@ -180,9 +184,17 @@ class Stage:
         # set start time
         t0 = time.time()
 
+        if self.c.gcam_database is None:
+            self.log.info(f"Using projected GCAM data from:  {self.c.projected_lu_file}")
+            lu = self.c.projected_lu_file
+        else:
+            self.log.info(f"Using projected GCAM data from:  {self.c.gcam_database}")
+            lu = rdr.read_gcam_land(self.c.gcam_database_dir, self.c.gcam_database_name, self.c.gcam_query, self.d_bsnnm_id,
+                                    self.c.metric, self.c.crop_type)
+
         # extract and process data contained from the land allocation GCAM output file
-        gcam_data = rdr.read_gcam_file(self.log, self.c.lu_file, self.gcam_landclasses, start_yr=self.c.year_b,
-                                       end_yr=self.c.year_e, scenario=self.c.scenario, region_dict=self.d_regnm_id,
+        gcam_data = rdr.read_gcam_file(self.log, lu, self.gcam_landclasses, start_yr=self.c.start_year,
+                                       end_yr=self.c.end_year, scenario=self.c.scenario, region_dict=self.d_regnm_id,
                                        agg_level=self.c.agg_level, area_factor=self.c.proj_factor,
                                        metric_seq=self.metric_sequence_list)
 
@@ -253,7 +265,7 @@ class Stage:
                                    self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
                                    self.gcam_agg, self.gcam_ludata, self.ngrids, self.constrain_names,
                                    self.spat_landclasses, self.spat_agg, self.spat_ludata, self.c.map_luc_steps,
-                                   self.c.map_luc, self.c.constraint_files)
+                                   self.c.map_luc_pft, self.c.constraint_files)
 
         # apply spatial constraints
         self.spat_ludataharm, self.spat_ludataharm_orig_steps, self.spat_ludataharm_orig = self.cst.apply_spat_constraints()
@@ -270,12 +282,12 @@ class Stage:
         t0 = time.time()
 
         # instantiate kernel density class
-        self.kd = KernelDensity(self.c.resin, self.spat_coords, self.final_landclasses, self.c.kerneldistance, self.ngrids,
-                           self.c.kernel_map_dir, self.order_rules, self.c.map_kernels)
+        self.kd = KernelDensity(self.c.spatial_resolution, self.spat_coords, self.final_landclasses,
+                                self.c.kernel_distance, self.ngrids, self.c.kernel_maps_output_dir,
+                                self.order_rules, self.c.map_kernels)
 
         # preprocess year-independent kernel density data
-        self.lat, self.lon, self.cellindexresin, self.pft_maps, self.kernel_maps, self.kernel_vector, \
-        self.weights = self.kd.preprocess_kernel_density()
+        self.lat, self.lon, self.cellindexresin, self.pft_maps, self.kernel_maps, self.kernel_vector, self.weights = self.kd.preprocess_kernel_density()
 
         # log processing time
         self.log.info('PERFORMANCE:  Kernel density filter prepared in {0} seconds'.format(time.time() - t0))
@@ -310,8 +322,7 @@ class Stage:
         self.constrain()
 
         # create kernel density filter if not running multiple jobs
-        if self.c.shuffle == 0:
-            self.kernel_filter()
+        self.kernel_filter()
 
         # set data for step zero
         self.set_step_zero()
