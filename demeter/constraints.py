@@ -14,8 +14,8 @@ import demeter.demeter_io.reader as rdr
 
 
 class ValidationException(Exception):
-    def __init__(self,*args,**kwargs):
-        Exception.__init__(self,*args,**kwargs)
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)
 
 
 class ApplyConstraints:
