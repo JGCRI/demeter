@@ -116,7 +116,7 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
     """
 
     # create out path and file name
-    lc_ts_file = os.path.join(c.lc_per_step_csv, 'landcover_{0}_timestep.csv'.format(yr))
+    lc_ts_file = os.path.join(c.lu_csv_output_dir, 'landcover_{0}_timestep.csv'.format(yr))
 
     # create header
     hdr = "latitude,longitude,{0}_id,region_id,water,{1}".format(metric.lower(), ','.join(final_landclasses))
@@ -133,7 +133,7 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
                         np.reshape(gcam_regionnumber, (-1, 1)),
 
                         # water
-                        np.reshape(spat_water / (c.resin**2) * cellarea, (-1, 1)),
+                        np.reshape(spat_water / (c.spatial_resolution**2) * cellarea, (-1, 1)),
 
                         # final land cover classes
                         spat_ludataharm
