@@ -17,14 +17,14 @@ import demeter.demeter_io.writer as wdr
 
 class KernelDensity:
 
-    def __init__(self, resolution, spat_coords, final_landclasses, kerneldistance, ngrids, kernel_map_dir, order_rules,
+    def __init__(self, resolution, spat_coords, final_landclasses, kernel_distance, ngrids, kernel_map_dir, order_rules,
                  map_kernels):
 
         self.resolution = resolution
         self.spat_coords = spat_coords
         self.l_fcs = len(final_landclasses)
         self.final_landclasses = final_landclasses
-        self.kerneldistance = kerneldistance
+        self.kernel_distance = kernel_distance
         self.ngrids = ngrids
         self.order_rules = order_rules
         self.kernel_map_dir = kernel_map_dir
@@ -77,7 +77,7 @@ class KernelDensity:
         pft_maps = np.zeros((l_lat, l_lon, self.l_fcs))
         kernel_maps = np.zeros((l_lat, l_lon, self.l_fcs))
         kernel_vector = np.zeros((self.ngrids, self.l_fcs))
-        weights = np.zeros((self.kerneldistance, self.kerneldistance))
+        weights = np.zeros((self.kernel_distance, self.kernel_distance))
 
         return pft_maps, kernel_maps, kernel_vector, weights
 
@@ -88,7 +88,7 @@ class KernelDensity:
         :param weights:
         :return:
         """
-        rkd = range(self.kerneldistance)
+        rkd = range(self.kernel_distance)
         l = []
         for i in rkd:
             for j in rkd:
@@ -109,8 +109,8 @@ class KernelDensity:
         for i, j in rw:
 
             # calculate weighted distance
-            dist = np.sqrt(np.power(abs(i - (self.kerneldistance - 1) / 2.), 2)
-                           + np.power(abs(j - (self.kerneldistance - 1) / 2.), 2))
+            dist = np.sqrt(np.power(abs(i - (self.kernel_distance - 1) / 2.), 2)
+                           + np.power(abs(j - (self.kernel_distance - 1) / 2.), 2))
 
             # assign to weights
             weights[i, j] = 1 / np.power(dist, 2)
