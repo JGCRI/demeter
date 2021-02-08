@@ -6,7 +6,9 @@ Copyright (c) 2017, Battelle Memorial Institute
 Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (PNNL); Yannick le Page (niquya@gmail.com)
+
 """
+
 import numpy as np
 import os
 
@@ -16,9 +18,7 @@ import demeter.demeter_io.writer as wdr
 
 
 class ProcessStep:
-    """
-    Process downscaling of a time step.
-    """
+    """Process downscaling of a time step."""
 
     def __init__(self, c, log, s, step_idx, step):
 
@@ -39,9 +39,7 @@ class ProcessStep:
         self.process()
 
     def prep_step(self):
-        """
-        Prepare step-specific data.
-        """
+        """Prepare step-specific data."""
 
         # create data summary by region, metric, final land class to conduct the GCAM aggregation
         self.spat_landmatrix = self.s.cst.build_spat_landmatrix(self.s.spat_ludataharm)
@@ -62,13 +60,12 @@ class ProcessStep:
         self.transitions = np.zeros(shape=(self.l_spat_region, self.l_order_rules, self.l_order_rules))
 
     def intense_pass(self, pass_num):
-        """
-        Conduct the first pass of intensification.
-        """
+        """Conduct the first pass of intensification."""
+
         self.log.info("Applying intensification: pass {0} for time step {1}...".format(pass_num, self.step))
 
         # set pass dir
-        od = 'self.c.luc_intense_p{0}_dir'.format(pass_num)
+        od = 'self.c.intensification_pass{0}_output_dir'.format(pass_num)
         out_dir = eval(od)
 
         # apply intensification
@@ -148,9 +145,11 @@ class ProcessStep:
         :param luc_ts_luc:              path to luc_timestep output dir
         :param transitions:             area in sqkm of each transition from one land class to another (n_cells, n_landclasses, n_landclasses)
         :param user_years:              a list of user selected years to process
+
         """
+
         # convert metric_id back to the original
-        revert_metric_dict = {self.s.sequence_metric_dict[k]: k for k in self.s.sequence_metric_dict.iterkeys()}
+        revert_metric_dict = {self.s.sequence_metric_dict[k]: k for k in self.s.sequence_metric_dict.keys()}
         orig_spat_aez = np.vectorize(revert_metric_dict.get)(self.s.spat_aez)
 
         # convert land cover from sqkm per grid cell per land class to fraction for mapping (n_grids, n_landclasses)
@@ -170,7 +169,7 @@ class ProcessStep:
         map_grid_chg = map_grid_now - map_grid_prev
 
         # optionally map time step
-        if (self.c.map_luc == 1) and (self.step in self.c.target_years_output):
+        if (self.c.map_luc_pft == 1) and (self.step in self.c.target_years_output):
 
             self.log.info("Mapping land cover change for time step {0}...".format(self.step))
 
@@ -189,7 +188,7 @@ class ProcessStep:
             wdr.write_transitions(self.s, self.c, self.step, self.transitions)
 
         # optionally create land cover transition maps
-        if (self.c.save_transition_maps == 1) and (self.step in self.c.target_years_output):
+        if (self.c.map_transitions == 1) and (self.step in self.c.target_years_output):
 
             self.log.info("Saving land cover transition maps for time step {0}...".format(self.step))
 
@@ -208,7 +207,9 @@ class ProcessStep:
 
         # create a NetCDF file of land cover fraction for each land class by grid cell containing each year
         if (self.c.save_netcdf_lc == 1) and (self.step in self.c.target_years_output):
+
             self.log.info("Saving stacked land class for time step {0}...".format(self.step))
+
             wdr.to_netcdf_lc(map_grid_now, self.s.lat, self.s.lon, self.c.resin,
                              self.s.final_landclasses, self.s.user_years, self.step,
                              self.c.model, self.c.lc_per_step_nc)

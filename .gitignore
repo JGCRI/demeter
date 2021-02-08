@@ -1,3 +1,6 @@
+# temporary removal of tests
+demeter/tests/
+
 # example dir for docker
 example/
 
