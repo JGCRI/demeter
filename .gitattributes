@@ -1,3 +1,0 @@
-example/inputs/observed/*.txt filter=lfs diff=lfs merge=lfs -text
-example/inputs/observed/*.csv filter=lfs diff=lfs merge=lfs -text
-example/inputs/projected/*.csv filter=lfs diff=lfs merge=lfs -text
