@@ -1,0 +1,13 @@
+include README.md
+include LICENSE
+include DISCLAIMER
+include Dockerfile
+include .dockerignore
+include demeter/tests/data/comp_data/*
+include demeter/tests/data/inputs/allocation/*
+include demeter/tests/data/inputs/constraints/*
+include demeter/tests/data/inputs/observed/*
+include demeter/tests/data/inputs/projected/*
+include demeter/tests/data/inputs/reference/*
+include demeter/tests/data/outputs/README.txt
+include demeter/tests/data/config.ini
