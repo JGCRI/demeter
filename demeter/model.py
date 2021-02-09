@@ -43,9 +43,8 @@ class Demeter:
 
     @staticmethod
     def log_config(c, log):
-        """
-        Log validated configuration options.
-        """
+        """Log validated configuration options."""
+
         for i in dir(c):
 
             # create configuration object from string
@@ -87,9 +86,8 @@ class Demeter:
         self.s = Stage(self.c, self.log)
 
     def execute(self):
-        """
-        Execute main downscaling routine.
-        """
+        """Execute main downscaling routine."""
+
         # set start time
         t0 = time.time()
 
@@ -110,26 +108,17 @@ class Demeter:
             t = traceback.format_exc()
 
             # log exception and traceback as error
-            try:
-                self.log.error(e)
-                self.log.error(t)
+            self.log.error(e)
+            self.log.error(t)
 
-                # close all open log handlers
-                Logger(self.f, self.c.scenario).close_logger(self.log)
-
-            except AttributeError:
-                print(e)
-                print(t)
+            # close all open log handlers
+            Logger(self.f, self.c.scenario).close_logger(self.log)
 
         finally:
 
-            try:
-                self.log.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
-                self.log.info('END')
-                self.log = None
-
-            except AttributeError:
-                pass
+            self.log.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
+            self.log.info('END')
+            self.log = None
 
 
 if __name__ == '__main__':
