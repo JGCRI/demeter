@@ -194,7 +194,7 @@ class Stage:
 
         self.config.logger.info('PERFORMANCE:  Harmonization completed in {0} seconds'.format(time.time() - t0))
 
-    def constrain(self):
+    def set_constraints(self):
         """
         Apply constraints to projected and base layer land allocation and use data.
         """
@@ -210,7 +210,7 @@ class Stage:
                                    self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
                                    self.gcam_array, self.gcam_ludata, self.ngrids, self.constraint_names,
                                    self.observed_landclasses, self.observed_array, self.spat_ludata, self.config.map_luc_steps,
-                                   self.config.map_luc_pft, self.config.constraint_files)
+                                   self.config.map_luc_pft, self.config.constraint_files, self.config.logger)
 
         # apply spatial constraints
         self.spat_ludataharm, self.spat_ludataharm_orig_steps, self.spat_ludataharm_orig = self.cst.apply_spat_constraints()
@@ -258,7 +258,7 @@ class Stage:
         self.harmony()
 
         # apply constraints
-        self.constrain()
+        self.set_constraints()
 
         # create kernel density filter if not running multiple jobs
         self.kernel_filter()

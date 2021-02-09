@@ -23,7 +23,7 @@ class ApplyConstraints:
     def __init__(self, allreg, allaez, final_landclasses, user_years, ixr_ixm, allregaez, spat_region, allregnumber,
                  spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_array, gcam_ludata, ngrids,
                  constraint_names, observed_landclasses, observed_array, spat_ludata, map_luc_steps, map_luc,
-                 constraint_files):
+                 constraint_files, logger):
 
         self.allreg = allreg
         self.allaez = allaez
@@ -51,6 +51,7 @@ class ApplyConstraints:
         self.map_luc_steps = map_luc_steps
         self.map_luc = map_luc
         self.constraint_files = constraint_files
+        self.logger = logger
 
         # assign array holding constraints
         self.cons_data = self.compile_constraints()
@@ -98,9 +99,9 @@ class ApplyConstraints:
 
             # if non-permitted constrain assignment occurred in spatial allocation rules file, exit
             if np.sum(t) > 1:
-                print("\nERROR: Aggregation numbers for PFT {0} in spatial allocation file sum up to more than 1.".format(i))
-                print("Please correct and try again.")
-                print("Exiting...\n")
+                self.logger.error("\nERROR: Aggregation numbers for PFT {0} in spatial allocation file sum up to more than 1.".format(i))
+                self.logger.error("Please correct and try again.")
+                self.logger.error("Exiting...\n")
                 raise ValidationException
 
             # if individual values sum to greater than 1
@@ -194,9 +195,9 @@ class ApplyConstraints:
 
             # check for missing aggregation setting in GCAM allocation file
             if np.sum(t) == 0:
-                print("\nERROR: No aggregation class defined for PFT {0} in the GCAM allocation file".format(self.gcam_landclasses(gix)))
-                print("Please correct and try again.")
-                print("Exiting...\n")
+                self.logger.error("\nERROR: No aggregation class defined for PFT {0} in the GCAM allocation file".format(self.gcam_landclasses(gix)))
+                self.logger.error("Please correct and try again.")
+                self.logger.error("Exiting...\n")
                 raise ValidationException
 
             # Examine the case of one-to-many recombination (e.g., rockicedesert to snow and sparse). Data is split into
