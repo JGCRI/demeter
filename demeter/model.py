@@ -13,6 +13,7 @@ import os
 import sys
 import time
 import traceback
+import logging
 
 from demeter.config_reader import ReadConfig
 from demeter.logger import Logger
@@ -34,56 +35,20 @@ class Demeter:
 
     def __init__(self, **kwargs):
 
-        self.params = kwargs
-        self.config = None
+        self.config = ReadConfig(kwargs)
+
         self.s = None
         self.process_step = None
         self.rg = None
         self.f = None
 
-    @staticmethod
-    def log_config(c, log):
-        """Log validated configuration options."""
-
-        for i in dir(c):
-
-            # create configuration object from string
-            x = eval('c.{0}'.format(i))
-
-            # ignore magic objects
-            if type(x) == str and i[:2] != '__':
-
-                # log result
-                log.debug('CONFIG: [PARAMETER] {0} -- [VALUE] {1}'.format(i, x))
-
-    def make_logfile(self):
-        """Instantiate the logger.
-
-        :return                               log file object
-
-        """
-        # create logfile path and name
-        self.logfile = os.path.join(self.config.run_dir, '{0}/logfile_{1}_{2}.log'.format(self.config.log_output_dir, self.config.scenario, self.config.dt))
-
-        # instantiate logger
-        self.log = Logger(self.logfile, self.config.scenario).make_log()
-
-    def setup(self):
+    def initialize(self):
         """Setup model."""
-        # instantiate config
-        self.config = ReadConfig(self.params)
-
-        # instantiate log file
-        self.make_logfile()
-
         # create log header
-        self.log.info('START')
-
-        # log validated configuration
-        self.log_config(self.c, self.log)
+        self.config.logger.info('START')
 
         # prepare data for processing
-        self.s = Stage(self.config, self.log)
+        self.s = Stage(self.config)
 
     def execute(self):
         """Execute main downscaling routine."""
@@ -94,21 +59,20 @@ class Demeter:
         try:
 
             # set up pre time step
-            self.setup()
+            self.initialize()
 
             # run for each time step
             for idx, step in enumerate(self.s.user_years):
 
-                ProcessStep(self.config, self.log, self.s, idx, step)
+                ProcessStep(self.config, self.s, idx, step)
 
         finally:
 
-            self.log.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
-            self.log.info('END')
+            self.config.logger.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
+            self.config.logger.info('END')
 
             # close all open log handlers
-            Logger(self.f, self.config.scenario).close_logger(self.log)
-            self.log = None
+            self.config.logger_ini.close_logger()
 
 
 if __name__ == '__main__':

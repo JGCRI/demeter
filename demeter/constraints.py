@@ -21,8 +21,8 @@ class ValidationException(Exception):
 class ApplyConstraints:
 
     def __init__(self, allreg, allaez, final_landclasses, user_years, ixr_ixm, allregaez, spat_region, allregnumber,
-                 spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_agg, gcam_ludata, ngrids,
-                 constraint_names, spat_landclasses, spat_agg, spat_ludata, map_luc_steps, map_luc,
+                 spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_array, gcam_ludata, ngrids,
+                 constraint_names, observed_landclasses, observed_array, spat_ludata, map_luc_steps, map_luc,
                  constraint_files):
 
         self.allreg = allreg
@@ -41,12 +41,12 @@ class ApplyConstraints:
         self.gcam_regionnumber = gcam_regionnumber
         self.gcam_aez = gcam_aez
         self.gcam_landname = gcam_landname
-        self.gcam_agg = gcam_agg
+        self.gcam_array = gcam_array
         self.gcam_ludata = gcam_ludata
         self.ngrids = ngrids
         self.constraint_names = constraint_names
-        self.spat_landclasses = spat_landclasses
-        self.spat_agg = spat_agg
+        self.observed_landclasses = observed_landclasses
+        self.observed_array = observed_array
         self.spat_ludata = spat_ludata
         self.map_luc_steps = map_luc_steps
         self.map_luc = map_luc
@@ -91,10 +91,10 @@ class ApplyConstraints:
         spat_ludataharm = np.zeros((self.ngrids, self.l_flcs))
 
         # assign the amount of PFT after splitting based upon user specification
-        for idx, i in enumerate(self.spat_landclasses):
+        for idx, i in enumerate(self.observed_landclasses):
 
             # assign target row
-            t = self.spat_agg[idx, :]
+            t = self.observed_array[idx, :]
 
             # if non-permitted constrain assignment occurred in spatial allocation rules file, exit
             if np.sum(t) > 1:
@@ -185,7 +185,7 @@ class ApplyConstraints:
         for reg, met, gix in ixr_ixm_ixg:
 
             # set target value
-            t = self.gcam_agg[gix, :]
+            t = self.gcam_array[gix, :]
 
             # create array of index from GCAM land use data that meets criteria
             regaezlandind = np.where((self.gcam_regionnumber == self.allregnumber[reg])

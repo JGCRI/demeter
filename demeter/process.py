@@ -20,10 +20,9 @@ import demeter.demeter_io.writer as wdr
 class ProcessStep:
     """Process downscaling of a time step."""
 
-    def __init__(self, c, log, s, step_idx, step):
+    def __init__(self, config, s, step_idx, step):
 
-        self.c = c
-        self.log = log
+        self.config = config
         self.s = s
         self.step_idx = step_idx
         self.step = step
@@ -31,8 +30,8 @@ class ProcessStep:
         self.land_mismatch = None
         self.target_change = None
         self.transitions = None
-        self.l_spat_region = len(s.spat_region)
-        self.l_order_rules = len(s.order_rules)
+        self.l_spat_region = len(self.s.spat_region)
+        self.l_order_rules = len(self.s.order_rules)
         self.l_fcs = len(s.final_landclasses)
 
         # populate
@@ -62,14 +61,14 @@ class ProcessStep:
     def intense_pass(self, pass_num):
         """Conduct the first pass of intensification."""
 
-        self.log.info("Applying intensification: pass {0} for time step {1}...".format(pass_num, self.step))
+        self.config.logger.info("Applying intensification: pass {0} for time step {1}...".format(pass_num, self.step))
 
         # set pass dir
         od = 'self.config.intensification_pass{0}_output_dir'.format(pass_num)
         out_dir = eval(od)
 
         # apply intensification
-        itz_pass = itz.apply_intensification(self.log, pass_num, self.c, self.s.spat_region, self.s.order_rules,
+        itz_pass = itz.apply_intensification(self.config.logger, pass_num, self.config, self.s.spat_region, self.s.order_rules,
                                                  self.s.allregnumber, self.s.allregaez, self.s.spat_ludata,
                                                  self.spat_landmatrix, self.s.gcam_landmatrix, self.step_idx,
                                                  self.s.d_regid_nm, self.target_change, self.s.spat_ludataharm,
@@ -85,7 +84,7 @@ class ProcessStep:
         # create intensification first pass map if user-selected
         if self.config.map_luc_steps == 1:
 
-            self.log.info("Creating LUC intensification pass {0} maps for time step {1}...".format(pass_num, self.step))
+            self.config.logger.info("Creating LUC intensification pass {0} maps for time step {1}...".format(pass_num, self.step))
 
             wdr.map_luc(self.s.spat_ludataharm / np.tile(self.s.cellarea, (self.l_fcs, 1)).T,
                         self.s.spat_ludataharm_orig_steps / np.tile(self.s.cellarea, (self.l_fcs, 1)).T,
@@ -101,10 +100,10 @@ class ProcessStep:
         Conduct expansion pass.
         """
 
-        self.log.info("Applying expansion for time step {0}...".format(self.step))
+        self.config.logger.info("Applying expansion for time step {0}...".format(self.step))
 
         # apply expansion
-        exp_pass = exp.apply_expansion(self.log, self.c, self.s.allregnumber, self.s.allregaez, self.s.spat_ludataharm,
+        exp_pass = exp.apply_expansion(self.config.logger, self.config, self.s.allregnumber, self.s.allregaez, self.s.spat_ludataharm,
                                        self.s.spat_region, self.s.spat_aez, self.s.kernel_vector, self.s.cons_data,
                                        self.s.order_rules, self.s.final_landclasses, self.s.constraint_rules,
                                        self.s.transition_rules, self.land_mismatch, self.transitions,
@@ -117,7 +116,7 @@ class ProcessStep:
         # create maps if user-selected
         if self.config.map_luc_steps == 1:
 
-            self.log.info("Creating LUC expansion maps for time step {0}...".format(self.step))
+            self.config.logger.info("Creating LUC expansion maps for time step {0}...".format(self.step))
 
             wdr.map_luc(self.s.spat_ludataharm / np.tile(self.s.cellarea, (self.l_fcs, 1)).T,
                         self.s.spat_ludataharm_orig_steps / np.tile(self.s.cellarea, (self.l_fcs, 1)).T,
@@ -171,7 +170,7 @@ class ProcessStep:
         # optionally map time step
         if (self.config.map_luc_pft == 1) and (self.step in self.config.target_years_output):
 
-            self.log.info("Mapping land cover change for time step {0}...".format(self.step))
+            self.config.logger.info("Mapping land cover change for time step {0}...".format(self.step))
 
             wdr.map_luc(map_fraction_lu, map_fraction_lu_prev, self.s.cellindexresin, self.s.lat, self.s.lon,
                         self.s.final_landclasses, self.step, self.config.region_coords, self.config.country_coords,
@@ -183,21 +182,21 @@ class ProcessStep:
         # optionally save land cover transitions as a CSV
         if (self.config.save_transitions == 1) and (self.step in self.config.target_years_output):
 
-            self.log.info("Saving land cover transition files for time step {0}...".format(self.step))
+            self.config.logger.info("Saving land cover transition files for time step {0}...".format(self.step))
 
-            wdr.write_transitions(self.s, self.c, self.step, self.transitions)
+            wdr.write_transitions(self.s, self.config, self.step, self.transitions)
 
         # optionally create land cover transition maps
         if (self.config.map_transitions == 1) and (self.step in self.config.target_years_output):
 
-            self.log.info("Saving land cover transition maps for time step {0}...".format(self.step))
+            self.config.logger.info("Saving land cover transition maps for time step {0}...".format(self.step))
 
-            wdr.map_transitions(self.s, self.c, self.step, self.transitions)
+            wdr.map_transitions(self.s, self.config, self.step, self.transitions)
 
         # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
         if (self.config.save_netcdf_yr == 1) and (self.step in self.config.target_years_output):
 
-            self.log.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
+            self.config.logger.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
 
             # create out path and file name for NetCDF file
             netcdf_yr_out = os.path.join(self.config.lc_per_step_nc, 'lc_yearly_{0}.nc'.format(self.step))
@@ -208,7 +207,7 @@ class ProcessStep:
         # create a NetCDF file of land cover fraction for each land class by grid cell containing each year
         if (self.config.save_netcdf_lc == 1) and (self.step in self.config.target_years_output):
 
-            self.log.info("Saving stacked land class for time step {0}...".format(self.step))
+            self.config.logger.info("Saving stacked land class for time step {0}...".format(self.step))
 
             wdr.to_netcdf_lc(map_grid_now, self.s.lat, self.s.lon, self.config.resin,
                              self.s.final_landclasses, self.s.user_years, self.step,
@@ -216,19 +215,19 @@ class ProcessStep:
 
         # save land cover data for the time step
         if (self.config.save_tabular == 1) and (self.step in self.config.target_years_output):
-            self.log.info("Saving tabular land cover data for time step {0}...".format(self.step))
-            wdr.lc_timestep_csv(self.c, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
+            self.config.logger.info("Saving tabular land cover data for time step {0}...".format(self.step))
+            wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
                                 self.config.metric, self.config.tabular_units)
 
         # optionally save land cover data for the time step as a shapefile
         if (self.config.save_shapefile == 1) and (self.step in self.config.target_years_output):
-            self.log.info("Saving land cover data for time step as a shapefile {0}".format(self.step))
-            wdr.to_shp(self.c, self.step, self.s.final_landclasses)
+            self.config.logger.info("Saving land cover data for time step as a shapefile {0}".format(self.step))
+            wdr.to_shp(self.config, self.step, self.s.final_landclasses)
 
         # create an ASCII raster with the land class number having the maximum area for each grid cell
         if (self.config.save_ascii_max == 1) and (self.step in self.config.target_years_output):
-            self.log.info("Saving output in ASCII raster format for time step {0}...".format(self.step))
+            self.config.logger.info("Saving output in ASCII raster format for time step {0}...".format(self.step))
 
             # call function for output object using available data detailed in this methods docstring
             wdr.max_ascii_rast(map_grid_now, self.config.out_dir, self.step, cellsize=self.config.resin)

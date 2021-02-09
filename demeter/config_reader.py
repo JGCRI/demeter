@@ -11,10 +11,10 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import datetime
 import logging
 import os
-import sys
 import pkg_resources
 
 from configobj import ConfigObj
+from demeter.logger import Logger
 
 
 class ValidationException(Exception):
@@ -28,8 +28,9 @@ class ReadConfig:
 
     def __init__(self, params):
 
-        # initialize console logger for model initialization
-        self.log = self.console_logger()
+        # initilize logger
+        self.logger_ini = Logger()
+        self.logger = self.logger_ini.logger
 
         # get current time
         self.dt = datetime.datetime.now().strftime(ReadConfig.DATETIME_FORMAT)
@@ -53,7 +54,7 @@ class ReadConfig:
         else:
 
             # instantiate config object
-            self.config = ConfigObj(self.check_exist(self.config_file, 'file', self.log))
+            self.config = ConfigObj(self.check_exist(self.config_file, 'file'))
 
             # instantiate config file sections
             structure_params = self.config.get('STRUCTURE', None)
@@ -74,8 +75,6 @@ class ReadConfig:
             self.run_dir = pkg_resources.resource_filename('demeter', 'tests/data')
         else:
             self.run_dir = params.get('run_dir', structure_params.get('run_dir', '/code/example/data'))
-
-        self.log.info(f'Using `run_dir`:  {self.run_dir}')
 
         self.input_dir = os.path.join(self.run_dir, structure_params.get('input_dir', 'inputs'))
         self.output_dir = self.get_outdir(os.path.join(self.run_dir, structure_params.get('output_dir', 'outputs')))
@@ -134,14 +133,21 @@ class ReadConfig:
         self.intensification_pass2_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('intensification_pass2_file', 'intensification_pass_two_diag.csv'))
         self.extensification_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('extensification_file', 'expansion_diag.csv'))
 
+        # initialize file logger
+        self.write_logfile = run_params.get('write_logfile', True)
+        self.run_desc = run_params.get('run_desc', 'demeter_example')
+        log_basename = f"logfile_{self.scenario}_{self.dt}.log"
+        self.create_dir(self.log_output_dir)
+        self.logfile = os.path.join(self.log_output_dir, log_basename)
+        self.logger_ini.file_handler(self.logfile, self.write_logfile)
+
         # run parameters
         self.model = run_params.get('model', 'GCAM')
-        self.metric = run_params.get('metric', 'BASIN')
-        self.run_desc = run_params.get('run_desc', 'demeter_example')
+        self.metric = run_params.get('metric', 'basin').lower()
         self.agg_level = self.valid_integer(run_params.get('agg_level', 2), 'agg_level', [1, 2])
         self.observed_id_field = run_params.get('observed_id_field', 'target_fid')
         self.start_year = self.ck_yr(run_params.get('start_year', 2010), 'start_year')
-        self.end_year = self.ck_yr(run_params.get('end_year', 2020), 'end_year')
+        self.end_year = self.ck_yr(run_params.get('end_year', 2010), 'end_year')
         self.use_constraints = self.valid_integer(run_params.get('use_constraints', 1), 'use_constraints', [0, 1])
         self.spatial_resolution = self.valid_limit(run_params.get('spatial_resolution', 0.25), 'spatial_resolution', [0.0, 1000000.0], 'float')
         self.errortol = self.valid_limit(run_params.get('errortol', 0.001), 'errortol', [0.0, 1000000.0], 'float')
@@ -168,12 +174,11 @@ class ReadConfig:
         # create and validate constraints input file full paths
         self.constraint_files = self.get_constraints()
 
+        self.logger.info(f'Using `run_dir`:  {self.run_dir}')
+
         # turn on tabular land cover data output if writing a shapefile
         if self.save_shapefile == 1:
             self.save_tabular = 1
-
-        # create needed output directories
-        self.create_dir(self.log_output_dir)
 
         if self.diagnostic:
             self.create_dir(self.diagnostics_output_dir)
@@ -346,22 +351,23 @@ class ReadConfig:
             raise ValidationException('Value "{0}" does not fall within acceptable range of values for parameter {1} where min >= {2} and max <= {3}. Exiting...'.format(value, p, l[0], l[1]))
 
     @staticmethod
-    def check_exist(f, kind, log):
-        """
-        Check file or directory existence.
+    def check_exist(f, kind):
+        """Check file or directory existence.
 
         :param f        file or directory full path
         :param kind     either 'file' or 'dir'
+
         :return         either path or error
+
         """
         if kind == 'file' and os.path.isfile(f) is False:
-            log.error("File not found:  {0}".format(f))
-            log.error("Confirm path and retry.")
+            logging.error("File not found:  {0}".format(f))
+            logging.error("Confirm path and retry.")
             raise IOError('File not found: {0}. Confirm path and retry.'.format(f))
 
         elif kind == 'dir' and os.path.isdir(f) is False:
-            log.error("Directory not found:  {0}".format(f))
-            log.error("Confirm path and retry.")
+            logging.error("Directory not found:  {0}".format(f))
+            logging.error("Confirm path and retry.")
             raise IOError('Directory not found: {0}. Confirm path and retry.'.format(f))
 
         else:
@@ -381,20 +387,20 @@ class ReadConfig:
                 os.makedirs(d)
 
         except:
-            self.log.error("ERROR:  Failed to create directory.")
+            logging.error("ERROR:  Failed to create directory.")
             raise
 
     @staticmethod
-    def ck_agg(a, log):
+    def ck_agg(a):
         """Check aggregation level.  1 if by only region, 2 if by region and Basin or AEZ."""
         try:
             agg = int(a)
         except TypeError:
-            log.error('"agg_level" parameter must be either  1 or 2.  Exiting...')
+            logging.error('"agg_level" parameter must be either  1 or 2.  Exiting...')
             raise
 
         if agg < 1 or agg > 2:
-            log.error('"agg_level" parameter must be either 1 or 2.  Exiting...')
+            logging.error('"agg_level" parameter must be either 1 or 2.  Exiting...')
             raise ValidationException
 
         else:
@@ -411,26 +417,6 @@ class ReadConfig:
             return range(self.start_year, self.end_year + self.timestep, self.timestep)
         else:
             return [int(i) for i in yr.strip().split(';')]
-
-    @staticmethod
-    def console_logger():
-        """Instantiate console logger to log any errors in config.ini file that the user
-        must repair before model initialization.
-
-        :return:  logger object
-        """
-        # set up logger
-        log = logging.getLogger('demeter_initialization_logger')
-        log.setLevel(logging.INFO)
-
-        # set up console handler
-        fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        cns = logging.StreamHandler(sys.stdout)
-        cns.setLevel(logging.INFO)
-        cns.setFormatter(fmt)
-        log.addHandler(cns)
-
-        return log
 
     def get_outdir(self, out):
         """Create output directory unique name."""
@@ -462,7 +448,7 @@ class ReadConfig:
             # get list of files in constraints dir
             for i in os.listdir(self.constraints_dir):
                 if os.path.splitext(i)[1].lower() == '.csv':
-                    l.append(self.check_exist(os.path.join(self.constraints_dir, i), 'file', self.log))
+                    l.append(self.check_exist(os.path.join(self.constraints_dir, i), 'file'))
 
             return l
 
