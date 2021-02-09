@@ -98,7 +98,7 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
 
 
 def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub_o, reg_idx, met_idx, order_rules, final_landclasses,
-               errortol, constrain_rules, transition_rules, stochastic_expansion, selection_threshold, land_mismatch,
+               errortol, constraint_rules, transition_rules, stochastic_expansion, selection_threshold, land_mismatch,
                target_change):
 
     # get lengths for array creation
@@ -131,7 +131,7 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
             # print("\nExpansion desired for:  {0}, {1}".format(fcs, round(exp_target, 4)))
 
             # retrieve expansion constraints for the PFT (e.g., soil quality, protection status, etc.)
-            cons_rules_pft = constrain_rules[:, pft]
+            cons_rules_pft = constraint_rules[:, pft]
 
             # add kernel density to the constraints and normalize their value (all constraints are [0 1])
             kdc = kernel_vector_sub[:, pft] / np.nanmax([0.00000001, np.nanmax(kernel_vector_sub[:, pft])])
@@ -217,7 +217,7 @@ def _reg_metric_iter(allregnumber, allregmet):
 
 
 def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met, kernel_vector, cons_data,
-                    order_rules, final_landclasses, constrain_rules, transition_rules, land_mismatch, transitions,
+                    order_rules, final_landclasses, constraint_rules, transition_rules, land_mismatch, transitions,
                     spat_ludataharm_orig_steps, target_change, yr):
 
     # open diagnostic file if user-selected
@@ -248,7 +248,7 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
 
         # calculate expansion for each PFT
         exp = _expansion(c.diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub, reg_idx,
-                         metnum_idx, order_rules, final_landclasses, c.errortol, constrain_rules, transition_rules,
+                         metnum_idx, order_rules, final_landclasses, c.errortol, constraint_rules, transition_rules,
                          c.stochastic_expansion, c.selection_threshold, land_mismatch, target_change)
 
         # apply expansion and update transitions

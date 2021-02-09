@@ -114,7 +114,7 @@ class ReadConfig:
         self.gcam_basin_names_file = os.path.join(self.reference_dir, reference_params.get('gcam_basin_names_file', 'gcam_basin_lookup.csv'))
         self.gcam_query = os.path.join(self.reference_dir, projected_params.get('gcam_query', 'query_land_reg32_basin235_gcam5p0.xml'))
 
-        # outputs directories
+        # output directories
         self.diagnostics_output_dir = os.path.join(self.output_dir, output_params.get('diagnostics_output_dir', 'diagnostics'))
         self.log_output_dir = os.path.join(self.output_dir, output_params.get('log_output_dir', 'log_files'))
         self.kernel_maps_output_dir = os.path.join(self.output_dir, output_params.get('kernel_maps_output_dir', 'kernel_density'))

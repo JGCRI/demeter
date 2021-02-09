@@ -25,12 +25,20 @@ from demeter.weight.kernel_density import KernelDensity
 class Stage:
     """Prepare data for processing."""
 
-    def __init__(self, c, log):
+    def __init__(self, config, log):
 
-        self.c = c
+        self.config = config
         self.log = log
-        self.d_bsnnm_id = None
-        self.d_regnm_id = None
+
+        # GCAM region_name: region_id as dictionary
+        self.d_regnm_id = rdr.to_dict(self.config.gcam_region_names_file, header=True, swap=True)
+
+        # GCAM region_id: region_name as dictionary
+        self.d_regid_nm = rdr.to_dict(self.config.gcam_region_names_file, header=True, swap=False)
+
+        # GCAM basin_id: basin_glu_name as dictionary
+        self.d_bsnnm_id = rdr.to_dict(self.config.gcam_basin_names_file, header=True, swap=True, value_col=2)
+
         self.d_reg_nm = None
         self.final_landclasses = None
         self.spat_landclasses = None
@@ -39,10 +47,10 @@ class Stage:
         self.gcam_agg = None
         self.transition_rules = None
         self.order_rules = None
-        self.constrain_names = None
+        self.constraint_names = None
         self.constraint_weights = None
         self.kernel_constraints = None
-        self.constrain_rules = None
+        self.constraint_rules = None
         self.user_years = None
         self.gcam_ludata = None
         self.gcam_aez = None
@@ -91,62 +99,44 @@ class Stage:
         # populate
         self.stage()
 
-    def reg_dict(self):
-        """
-        Create region reference dictionaries
-
-        :return:
-        """
-
-        # GCAM region_name: region_id as dictionary
-        self.d_regnm_id = rdr.to_dict(self.c.gcam_region_names_file, header=True, swap=True)
-
-        # GCAM region_id: region_name as dictionary
-        self.d_regid_nm = rdr.to_dict(self.c.gcam_region_names_file, header=True, swap=False)
-
-        # GCAM basin_id: basin_glu_name as dictionary
-        self.d_bsnnm_id = rdr.to_dict(self.c.gcam_basin_names_file, header=True, swap=True, value_col=2)
-
     def read_allocation(self):
-        """
-        Read in allocation files.
-        """
+        """Read in allocation files."""
 
-        self.log.info("Reading allocation files...")
+        self.log.info("Reading allocation input files...")
 
         # set start time
         t0 = time.time()
 
         # create spatial allocation array
-        spat_alloc = rdr.read_alloc(self.c.spatial_allocation_file, lc_col='category')
+        spat_alloc = rdr.read_allocation_data(self.config.spatial_allocation_file, lc_col='category')
         self.final_landclasses, self.spat_landclasses, self.spat_agg = spat_alloc
 
         # create GCAM allocation array
-        proj_alloc = rdr.read_alloc(self.c.gcam_allocation_file, lc_col='category', output_level=2)
+        proj_alloc = rdr.read_allocation_data(self.config.gcam_allocation_file, lc_col='category', output_level=2)
         self.gcam_landclasses, self.gcam_agg = proj_alloc
 
         # create transition priority rules array
-        self.transition_rules = rdr.read_alloc(self.c.transition_order_file, lc_col='category', output_level=1)
+        self.transition_rules = rdr.read_allocation_data(self.config.transition_order_file, lc_col='category', output_level=1)
 
         # create treatment order rules array
-        self.order_rules = rdr.to_list(self.c.treatment_order_file)
+        self.order_rules = rdr.to_list(self.config.treatment_order_file)
 
         # create constraints weighting array
-        if self.c.use_constraints == 1:
-            constraint_alloc = rdr.read_alloc(self.c.constraints_file, lc_col='category', output_level=2)
-            self.constrain_names, self.constraint_weights = constraint_alloc
+        if self.config.use_constraints == 1:
+            constraint_alloc = rdr.read_allocation_data(self.config.constraints_file, lc_col='category', output_level=2)
+            self.constraint_names, self.constraint_weights = constraint_alloc
         else:
-            self.constrain_names = []
+            self.constraint_names = []
             self.constraint_weights = []
 
         # create kernel density weighting array; 1 equals no constraints
-        self.kernel_constraints = rdr.read_alloc(self.c.kernel_allocation_file, lc_col='category', output_level=1)
+        self.kernel_constraints = rdr.read_allocation_data(self.config.kernel_allocation_file, lc_col='category', output_level=1)
 
         # add kernel density constraints to constrain rules array; if there are no other constraints, apply KD array
         try:
-            self.constrain_rules = np.insert(self.constraint_weights, [0], self.kernel_constraints, axis=0)
+            self.constraint_rules = np.insert(self.constraint_weights, [0], self.kernel_constraints, axis=0)
         except ValueError:
-            self.constrain_rules = self.kernel_constraints
+            self.constraint_rules = self.kernel_constraints
 
         self.log.info('PERFORMANCE:  Allocation files processed in {0} seconds'.format(time.time() - t0))
 
@@ -159,9 +149,9 @@ class Stage:
         :return:                        Sorted list of metric ids, Sorted list of region ids
         """
         # if basin
-        met = self.c.metric.lower()
+        met = self.config.metric.lower()
         if met == 'basin':
-            df = pd.read_csv(os.path.join(self.c.reference_dir, 'gcam_basin_lookup.csv'), usecols=['basin_id'])
+            df = pd.read_csv(os.path.join(self.config.reference_dir, 'gcam_basin_lookup.csv'), usecols=['basin_id'])
             m = sorted(df['basin_id'].tolist())
 
         # if AEZ, use 1 through 18 - this will not change
@@ -169,7 +159,7 @@ class Stage:
             m = list(range(1, 19, 1))
 
         # read in region ids
-        rdf = pd.read_csv(os.path.join(self.c.reference_dir, 'gcam_regions_32.csv'), usecols=['gcam_region_id'])
+        rdf = pd.read_csv(os.path.join(self.config.reference_dir, 'gcam_regions_32.csv'), usecols=['gcam_region_id'])
         r = sorted(rdf['gcam_region_id'].tolist())
 
         return m, r
@@ -184,18 +174,18 @@ class Stage:
         # set start time
         t0 = time.time()
 
-        if self.c.gcam_database is None:
-            self.log.info(f"Using projected GCAM data from:  {self.c.projected_lu_file}")
-            lu = self.c.projected_lu_file
+        if self.config.gcam_database is None:
+            self.log.info(f"Using projected GCAM data from:  {self.config.projected_lu_file}")
+            lu = self.config.projected_lu_file
         else:
-            self.log.info(f"Using projected GCAM data from:  {self.c.gcam_database}")
-            lu = rdr.read_gcam_land(self.c.gcam_database_dir, self.c.gcam_database_name, self.c.gcam_query, self.d_bsnnm_id,
-                                    self.c.metric, self.c.crop_type)
+            self.log.info(f"Using projected GCAM data from:  {self.config.gcam_database}")
+            lu = rdr.read_gcam_land(self.config.gcam_database_dir, self.config.gcam_database_name, self.config.gcam_query, self.d_bsnnm_id,
+                                    self.config.metric, self.config.crop_type)
 
         # extract and process data contained from the land allocation GCAM output file
-        gcam_data = rdr.read_gcam_file(self.log, lu, self.gcam_landclasses, start_yr=self.c.start_year,
-                                       end_yr=self.c.end_year, scenario=self.c.scenario, region_dict=self.d_regnm_id,
-                                       agg_level=self.c.agg_level, area_factor=self.c.proj_factor,
+        gcam_data = rdr.read_gcam_file(self.log, lu, self.gcam_landclasses, start_yr=self.config.start_year,
+                                       end_yr=self.config.end_year, scenario=self.config.scenario, region_dict=self.d_regnm_id,
+                                       agg_level=self.config.agg_level, area_factor=self.config.proj_factor,
                                        metric_seq=self.metric_sequence_list)
 
         # unpack variables
@@ -244,8 +234,8 @@ class Stage:
         self.ixy_ixr_ixm, self.gcam_ludata = recon_data
 
         # write harmonization coefficient array as a diagnostics file
-        if self.c.diagnostic == 1:
-            wdr.save_array(self.areacoef, self.c.harm_coeff_file)
+        if self.config.diagnostic == 1:
+            wdr.save_array(self.areacoef, self.config.harm_coeff_file)
 
         self.log.info('PERFORMANCE:  Harmonization completed in {0} seconds'.format(time.time() - t0))
 
@@ -263,9 +253,9 @@ class Stage:
         self.cst = ApplyConstraints(self.allreg, self.allaez, self.final_landclasses, self.user_years, self.ixr_idm,
                                    self.allregaez, self.spat_region, self.allregnumber, self.spat_aez,
                                    self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
-                                   self.gcam_agg, self.gcam_ludata, self.ngrids, self.constrain_names,
-                                   self.spat_landclasses, self.spat_agg, self.spat_ludata, self.c.map_luc_steps,
-                                   self.c.map_luc_pft, self.c.constraint_files)
+                                   self.gcam_agg, self.gcam_ludata, self.ngrids, self.constraint_names,
+                                   self.spat_landclasses, self.spat_agg, self.spat_ludata, self.config.map_luc_steps,
+                                   self.config.map_luc_pft, self.config.constraint_files)
 
         # apply spatial constraints
         self.spat_ludataharm, self.spat_ludataharm_orig_steps, self.spat_ludataharm_orig = self.cst.apply_spat_constraints()
@@ -282,9 +272,9 @@ class Stage:
         t0 = time.time()
 
         # instantiate kernel density class
-        self.kd = KernelDensity(self.c.spatial_resolution, self.spat_coords, self.final_landclasses,
-                                self.c.kernel_distance, self.ngrids, self.c.kernel_maps_output_dir,
-                                self.order_rules, self.c.map_kernels)
+        self.kd = KernelDensity(self.config.spatial_resolution, self.spat_coords, self.final_landclasses,
+                                self.config.kernel_distance, self.ngrids, self.config.kernel_maps_output_dir,
+                                self.order_rules, self.config.map_kernels)
 
         # preprocess year-independent kernel density data
         self.lat, self.lon, self.cellindexresin, self.pft_maps, self.kernel_maps, self.kernel_vector, self.weights = self.kd.preprocess_kernel_density()
@@ -302,9 +292,6 @@ class Stage:
         """
         Run processing that prepares data used in the processing of each time step.
         """
-
-        # create region reference dictionaries
-        self.reg_dict()
 
         # read in allocation files
         self.read_allocation()

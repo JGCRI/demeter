@@ -35,7 +35,7 @@ class Demeter:
     def __init__(self, **kwargs):
 
         self.params = kwargs
-        self.c = None
+        self.config = None
         self.s = None
         self.process_step = None
         self.rg = None
@@ -57,21 +57,21 @@ class Demeter:
                 log.debug('CONFIG: [PARAMETER] {0} -- [VALUE] {1}'.format(i, x))
 
     def make_logfile(self):
-        """Make log file.
+        """Instantiate the logger.
 
         :return                               log file object
 
         """
         # create logfile path and name
-        self.f = os.path.join(self.c.run_dir, '{0}/logfile_{1}_{2}.log'.format(self.c.log_output_dir, self.c.scenario, self.c.dt))
+        self.logfile = os.path.join(self.config.run_dir, '{0}/logfile_{1}_{2}.log'.format(self.config.log_output_dir, self.config.scenario, self.config.dt))
 
-        # parameterize logger
-        self.log = Logger(self.f, self.c.scenario).make_log()
+        # instantiate logger
+        self.log = Logger(self.logfile, self.config.scenario).make_log()
 
     def setup(self):
         """Setup model."""
         # instantiate config
-        self.c = ReadConfig(self.params)
+        self.config = ReadConfig(self.params)
 
         # instantiate log file
         self.make_logfile()
@@ -83,7 +83,7 @@ class Demeter:
         self.log_config(self.c, self.log)
 
         # prepare data for processing
-        self.s = Stage(self.c, self.log)
+        self.s = Stage(self.config, self.log)
 
     def execute(self):
         """Execute main downscaling routine."""
@@ -99,25 +99,15 @@ class Demeter:
             # run for each time step
             for idx, step in enumerate(self.s.user_years):
 
-                ProcessStep(self.c, self.log, self.s, idx, step)
-
-        except:
-
-            # catch all exceptions and their traceback
-            e = sys.exc_info()[0]
-            t = traceback.format_exc()
-
-            # log exception and traceback as error
-            self.log.error(e)
-            self.log.error(t)
-
-            # close all open log handlers
-            Logger(self.f, self.c.scenario).close_logger(self.log)
+                ProcessStep(self.config, self.log, self.s, idx, step)
 
         finally:
 
             self.log.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
             self.log.info('END')
+
+            # close all open log handlers
+            Logger(self.f, self.config.scenario).close_logger(self.log)
             self.log = None
 
 

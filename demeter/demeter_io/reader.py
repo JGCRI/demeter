@@ -81,24 +81,25 @@ def to_list(f, header=True, delim=','):
     return l
 
 
-def read_alloc(f, lc_col, output_level=3, delim=','):
-    """
-    Converts an allocation file to a numpy array.  Returns final land cover class and target
+def read_allocation_data(f, lc_col, output_level=3, delim=','):
+    """Converts an allocation file to a numpy array.  Returns final land cover class and target
     land cover class names as lists.
 
     :param f:               Input allocation file with header
     :param lc_col:          Target land cover field name in header (located a zero index)
     :param output_level     If 3 all variables will be returned (default); 2, target lcs list and array; 3, array
     :param delim:           Delimiter type; default is comma
-    :return:                List of final land cover classes, list of target land cover classes,
-                            numpy array of allocation values
+
+    :return:                [0] List of final land cover classes
+                            [1]list of target land cover classes
+                            [2]  numpy array of allocation values
     """
 
     # make target land cover field name lower case
     col = lc_col.lower()
 
     # check for empty file; if blank return empty array
-    if os.stat(f).st_size != 0:
+    if os.stat(f).st_size > 0:
 
         # import file as a pandas dataframe
         df = pd.read_csv(f, delimiter=delim)
@@ -107,22 +108,22 @@ def read_alloc(f, lc_col, output_level=3, delim=','):
         df.columns = [c.lower() for c in df.columns]
 
         # extract target land cover classes as a list; make lower case
-        tcs = df[col].str.lower().tolist()
+        target_land_classes = df[col].str.lower().tolist()
 
         # extract final land cover classes as a list; remove target land cover field name
-        fcs = [i for i in df.columns if i != col]
+        final_land_classes = [i for i in df.columns if i != col]
 
         # extract target land cover values only from the dataframe and create Numpy array
-        arr = df[fcs].values
+        land_cover_array = df[final_land_classes].values
 
         if output_level == 3:
-            return fcs, tcs, arr
+            return final_land_classes, target_land_classes, land_cover_array
 
         elif output_level == 2:
-            return tcs, arr
+            return target_land_classes, land_cover_array
 
         elif output_level == 1:
-            return arr
+            return land_cover_array
 
     else:
         return list(), np.empty(shape=0, dtype=np.float)

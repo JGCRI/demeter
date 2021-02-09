@@ -22,7 +22,7 @@ class ApplyConstraints:
 
     def __init__(self, allreg, allaez, final_landclasses, user_years, ixr_ixm, allregaez, spat_region, allregnumber,
                  spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_agg, gcam_ludata, ngrids,
-                 constrain_names, spat_landclasses, spat_agg, spat_ludata, map_luc_steps, map_luc,
+                 constraint_names, spat_landclasses, spat_agg, spat_ludata, map_luc_steps, map_luc,
                  constraint_files):
 
         self.allreg = allreg
@@ -44,7 +44,7 @@ class ApplyConstraints:
         self.gcam_agg = gcam_agg
         self.gcam_ludata = gcam_ludata
         self.ngrids = ngrids
-        self.constrain_names = constrain_names
+        self.constraint_names = constraint_names
         self.spat_landclasses = spat_landclasses
         self.spat_agg = spat_agg
         self.spat_ludata = spat_ludata
