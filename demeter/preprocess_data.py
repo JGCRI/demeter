@@ -165,7 +165,7 @@ class FormatGcamDataFrame:
 def format_gcam_data(df, f_out=None, start_year=2010, through_year=2100, region_name_field='gcam_region_name',
                      region_id_field='gcam_region_id', basin_name_field='glu_name', basin_id_field='basin_id',
                      output_to_csv=False):
-    """Convenience wrapper for the `FormatGcamData` class.  Formats the data frame that `gcamwrapper` produces into
+    """Convenience wrapper for the `FormatGcamDataFrame` class.  Formats the data frame that `gcamwrapper` produces into
     the format the Demeter requires.
 
     :param df:                          Pandas dataframe of land allocation from gcamwrapper
