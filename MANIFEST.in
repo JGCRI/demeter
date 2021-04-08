@@ -3,6 +3,7 @@ include LICENSE
 include DISCLAIMER
 include Dockerfile
 include .dockerignore
+include demeter/data/*
 include demeter/tests/data/comp_data/*
 include demeter/tests/data/inputs/allocation/*
 include demeter/tests/data/inputs/constraints/*
