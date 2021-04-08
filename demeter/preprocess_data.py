@@ -110,8 +110,8 @@ class FormatGcamDataFrame:
                            usecols=[self.region_name_field, self.region_id_field],
                            index_col=self.region_name_field).to_dict()[self.region_id_field]
 
-    def extract_land(self):
-        """Extract land allocation data for use in Demeter. Optional:  save to file.
+    def format_land_data(self):
+        """Format land allocation data for use in Demeter. Optional:  save to file.
 
         :return:              Data frame
         """
@@ -162,10 +162,50 @@ class FormatGcamDataFrame:
         return piv
 
 
-df = pd.read_pickle('/Users/d3y010/projects/gcamwrapper/output/land_alloc.pkl')
+def format_gcam_data(df, f_out=None, start_year=2010, through_year=2100, region_name_field='gcam_region_name',
+                     region_id_field='gcam_region_id', basin_name_field='glu_name', basin_id_field='basin_id',
+                     output_to_csv=False):
+    """Convenience wrapper for the `FormatGcamData` class.  Formats the data frame that `gcamwrapper` produces into
+    the format the Demeter requires.
 
-c = FormatGcamDataFrame(df, start_year=2010, through_year=2020)
+    :param df:                          Pandas dataframe of land allocation from gcamwrapper
+    :type df:                           DataFrame
 
-dfx = c.extract_land()
+    :param f_out:                       Full path with file name and extension to save the output
+    :type f_out:                        str
 
-print(dfx.head())
+    :param start_year:                  Start year
+    :type start_year:                   int
+
+    :param through_year:                Through year
+    :type through_year:                 int
+
+    :param region_name_field:           Region field name in the GCAM region reference file
+    :type region_name_field:            str
+
+    :param region_id_field:             Region id field name in the GCAM region reference file
+    :type region_name_field:            str
+
+
+    :param basin_name_field:            Basin GLU abbreviation field name in the GCAM basin reference file
+    :type basin_name_field:             str
+
+
+    :param basin_id_field:              Basin id field name in the GCAM basin reference file
+    :type basin_id_field:               str
+
+
+    :param output_to_csv:               If True, file will be output to the location specified in the f_out parameter
+    :type output_to_csv:                bool
+
+
+    :return:                            Data frame; optionally, save as file
+
+
+    """
+
+    # instantiate the formatting class
+    c = FormatGcamDataFrame(df, f_out, start_year, through_year, region_name_field, region_id_field, basin_name_field,
+                            basin_id_field, output_to_csv)
+
+    return c.format_land_data()
