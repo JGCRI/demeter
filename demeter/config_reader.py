@@ -98,13 +98,16 @@ class ReadConfig:
         self.observed_lu_file = os.path.join(self.observed_dir, observed_params.get('observed_lu_file', 'gcam_reg32_basin235_modis_v6_2010_5arcmin_sqdeg_wgs84_11Jul2019.zip'))
 
         # projected data
-        self.projected_lu_file = os.path.join(self.projected_dir, projected_params.get('projected_lu_file', 'gcam_ref_scenario_reg32_basin235_v5p1p3.csv'))
+        self.projected_lu_file = os.path.join(self.projected_dir, projected_params.get('projected_lu_file', None)) #'gcam_ref_scenario_reg32_basin235_v5p1p3.csv'))
         self.gcam_database = projected_params.get('gcam_database', None)
         self.crop_type = self.valid_string(projected_params.get('crop_type', 'BOTH').upper(), 'crop_type', ['IRR', 'RFD', 'BOTH'])
 
         if self.gcam_database is not None:
             self.gcam_database_dir = os.path.dirname(self.gcam_database)
             self.gcam_database_name = os.path.basename(self.gcam_database)
+
+        # look for this first in code; this only comes in from the main function - not the config file
+        self.gcamwrapper_df = params.get('gcamwrapper_df', None)
 
         # reference data
         self.gcam_region_names_file = os.path.join(self.reference_dir, reference_params.get('gcam_region_names_file', 'gcam_regions_32.csv'))
@@ -128,10 +131,11 @@ class ReadConfig:
         self.lu_shapefile_output_dir = os.path.join(self.output_dir, output_params.get('lu_shapefile_output_dir', 'spatial_landcover_shapefile'))
 
         # diagnostics
-        self.harmonization_coefficent_array = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('harmonization_coefficent_array', 'harmonization_coeff.npy'))
-        self.intensification_pass1_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('intensification_pass1_file', 'intensification_pass_one_diag.csv'))
-        self.intensification_pass2_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('intensification_pass2_file', 'intensification_pass_two_diag.csv'))
-        self.extensification_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('extensification_file', 'expansion_diag.csv'))
+        if diagnostic_params is not None:
+            self.harmonization_coefficent_array = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('harmonization_coefficent_array', 'harmonization_coeff.npy'))
+            self.intensification_pass1_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('intensification_pass1_file', 'intensification_pass_one_diag.csv'))
+            self.intensification_pass2_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('intensification_pass2_file', 'intensification_pass_two_diag.csv'))
+            self.extensification_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('extensification_file', 'expansion_diag.csv'))
 
         # initialize file logger
         self.write_logfile = run_params.get('write_logfile', True)

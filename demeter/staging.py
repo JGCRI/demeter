@@ -20,6 +20,7 @@ import pandas as pd
 import demeter.demeter_io.reader as rdr
 import demeter.demeter_io.writer as wdr
 import demeter.reconcile as rec
+import demeter.preprocess_data as proc
 
 from demeter.constraints import ApplyConstraints
 from demeter.weight.kernel_density import KernelDensity
@@ -120,16 +121,31 @@ class Stage:
         # set start time
         t0 = time.time()
 
-        if self.config.gcam_database is None:
-            self.config.logger.info(f"Using projected GCAM data from:  {self.config.projected_lu_file}")
-            projected_land_cover_file = self.config.projected_lu_file
+        if self.config.gcamwrapper_df is not None:
 
-        else:
+            self.config.logger.info(f"Using projected GCAM data from `gcamwrapper` data frame")
+            projected_land_cover_file = proc.format_gcam_data(self.config.gcamwrapper_df,
+                                                              f_out='',
+                                                              start_year=self.config.start_year,
+                                                              through_year=self.config.end_year,
+                                                              region_name_field='gcam_region_name',
+                                                              region_id_field='gcam_region_id',
+                                                              basin_name_field='glu_name',
+                                                              basin_id_field='basin_id',
+                                                              output_to_csv=False)
+
+        elif self.config.gcam_database is not None:
+
             self.config.logger.info(f"Using projected GCAM data from:  {self.config.gcam_database}")
             projected_land_cover_file = rdr.read_gcam_land(self.config.gcam_database_dir,
                                                            self.config.gcam_database_name,
                                                            self.config.gcam_query, self.d_bsnnm_id,
                                                            self.config.metric, self.config.crop_type)
+
+
+        else:
+            self.config.logger.info(f"Using projected GCAM data from:  {self.config.projected_lu_file}")
+            projected_land_cover_file = self.config.projected_lu_file
 
         # extract and process data contained from the land allocation GCAM output file
         gcam_data = rdr.read_gcam_file(projected_land_cover_file,

@@ -159,6 +159,9 @@ class FormatGcamDataFrame:
 
             piv.to_csv(self.f_out, index=False)
 
+        # ensure that all column names are strings and clean them up
+        piv.columns = [str(i).strip() for i in piv.columns]
+
         return piv
 
 

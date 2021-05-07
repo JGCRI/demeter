@@ -14,7 +14,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-import gcam_reader
+#import gcam_reader
 
 
 class ValidationException(Exception):
@@ -300,6 +300,8 @@ def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, scenario, regi
 
     # create land use area per year array converted from thousands km using area_factor
     model_year_list_str = [str(yr) for yr in model_year_list_int]
+
+    cols = gdf.columns
     gcam_data_array_km = gdf[model_year_list_str].values * area_factor
 
     # create field for land class all lower case

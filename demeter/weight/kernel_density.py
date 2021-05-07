@@ -146,6 +146,7 @@ class KernelDensity:
 
         :return:
         """
+
         for pft_order in np.unique(self.order_rules):
 
             # get target PFT
@@ -162,7 +163,9 @@ class KernelDensity:
 
             # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
             #   while we might need them.
-            kernel_maps[:, :, pft][kernel_maps[:, :, pft] == 0] = np.nanmin(kernel_maps[:, :, pft][kernel_maps[:, :, pft] > 0])
+            # TODO:  remove the min value
+            min_seed = 0.0000000001
+            kernel_maps[:, :, pft][kernel_maps[:, :, pft] == 0] = min_seed #np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
 
             # add to map array if user selects to plot them
             if self.map_kernels == 1:

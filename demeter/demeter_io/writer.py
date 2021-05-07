@@ -10,7 +10,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import os
 import numpy as np
 from scipy import io as sio
-import shapefile
+#import shapefile
 
 import demeter.demeter_io.reader as rdr
 
