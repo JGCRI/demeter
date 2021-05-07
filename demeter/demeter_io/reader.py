@@ -319,7 +319,7 @@ def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, scenario, regi
         max_prj_metric += 1
 
     # create field for metric id that has sequential metric ids
-    gdf['gcam_basins'] = gdf['metric_id'].map(lambda x: sequence_metric_dict[x])
+    gdf['gcam_metric'] = gdf['metric_id'].map(lambda x: sequence_metric_dict[x])
 
     # check field for GCAM region number based off of region name; if region name is None, assign 1
     ck_reg = gdf['region'].unique()
