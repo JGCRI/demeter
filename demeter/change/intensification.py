@@ -330,14 +330,14 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
         transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
-    non_chg = np.sum(abs(target_change[:, :, :])) / 2.
+    non_chg = np.sum(abs(target_change[:, :, :])) / 2.0
 
     if non_chg > 0:
         non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(abs(land_mismatch[:, :, :].flatten())) * 100
     else:
         non_chg_per = 0
 
-    log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
+    # log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
 
     # close file if diagnostic
     if c.diagnostic == 1:

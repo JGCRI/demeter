@@ -20,7 +20,7 @@ import demeter.demeter_io.writer as wdr
 class ProcessStep:
     """Process downscaling of a time step."""
 
-    def __init__(self, config, s, step_idx, step):
+    def __init__(self, config, s, step_idx, step, write_outputs=True):
 
         self.config = config
         self.s = s
@@ -33,9 +33,10 @@ class ProcessStep:
         self.l_spat_region = len(self.s.spat_region)
         self.l_order_rules = len(self.s.order_rules)
         self.l_fcs = len(s.final_landclasses)
+        self.write_outputs = write_outputs
 
         # populate
-        self.process()
+        self.output_df = self.process()
 
     def prep_step(self):
         """Prepare step-specific data."""
@@ -215,10 +216,10 @@ class ProcessStep:
 
         # save land cover data for the time step
         if (self.config.save_tabular == 1) and (self.step in self.config.target_years_output):
-            self.config.logger.info("Saving tabular land cover data for time step {0}...".format(self.step))
-            wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
+            # self.config.logger.info("Saving tabular land cover data for time step {0}...".format(self.step))
+            return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
-                                self.config.metric, self.config.tabular_units)
+                                self.config.metric, self.config.tabular_units, self.write_outputs)
 
         # optionally save land cover data for the time step as a shapefile
         if (self.config.save_shapefile == 1) and (self.step in self.config.target_years_output):
@@ -258,4 +259,4 @@ class ProcessStep:
         self.intense_pass(2)
 
         # outputs
-        self.outputs()
+        return self.outputs()

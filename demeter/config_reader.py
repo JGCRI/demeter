@@ -98,13 +98,15 @@ class ReadConfig:
         self.observed_lu_file = os.path.join(self.observed_dir, observed_params.get('observed_lu_file', 'gcam_reg32_basin235_modis_v6_2010_5arcmin_sqdeg_wgs84_11Jul2019.zip'))
 
         # projected data
-        self.projected_lu_file = os.path.join(self.projected_dir, projected_params.get('projected_lu_file', None)) #'gcam_ref_scenario_reg32_basin235_v5p1p3.csv'))
-        self.gcam_database = projected_params.get('gcam_database', None)
-        self.crop_type = self.valid_string(projected_params.get('crop_type', 'BOTH').upper(), 'crop_type', ['IRR', 'RFD', 'BOTH'])
+        if projected_params is not None:
+            self.projected_lu_file = os.path.join(self.projected_dir, projected_params.get('projected_lu_file', None)) #'gcam_ref_scenario_reg32_basin235_v5p1p3.csv'))
+            self.gcam_database = projected_params.get('gcam_database', None)
+            self.crop_type = self.valid_string(projected_params.get('crop_type', 'BOTH').upper(), 'crop_type', ['IRR', 'RFD', 'BOTH'])
+            self.gcam_query = os.path.join(self.reference_dir, projected_params.get('gcam_query', 'query_land_reg32_basin235_gcam5p0.xml'))
 
-        if self.gcam_database is not None:
-            self.gcam_database_dir = os.path.dirname(self.gcam_database)
-            self.gcam_database_name = os.path.basename(self.gcam_database)
+            if self.gcam_database is not None:
+                self.gcam_database_dir = os.path.dirname(self.gcam_database)
+                self.gcam_database_name = os.path.basename(self.gcam_database)
 
         # look for this first in code; this only comes in from the main function - not the config file
         self.gcamwrapper_df = params.get('gcamwrapper_df', None)
@@ -114,7 +116,6 @@ class ReadConfig:
         self.gcam_region_coords_file = os.path.join(self.reference_dir, reference_params.get('gcam_region_coords_file', 'regioncoord.csv'))
         self.gcam_country_coords_file = os.path.join(self.reference_dir, reference_params.get('gcam_country_coords_file', 'countrycoord.csv'))
         self.gcam_basin_names_file = os.path.join(self.reference_dir, reference_params.get('gcam_basin_names_file', 'gcam_basin_lookup.csv'))
-        self.gcam_query = os.path.join(self.reference_dir, projected_params.get('gcam_query', 'query_land_reg32_basin235_gcam5p0.xml'))
 
         # output directories
         self.diagnostics_output_dir = os.path.join(self.output_dir, output_params.get('diagnostics_output_dir', 'diagnostics'))

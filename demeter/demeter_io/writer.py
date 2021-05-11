@@ -10,6 +10,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import os
 import numpy as np
 from scipy import io as sio
+import pandas as pd
 #import shapefile
 
 import demeter.demeter_io.reader as rdr
@@ -108,10 +109,8 @@ def to_shp(c, yr, final_landclasses):
 
 
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
-                    spat_ludataharm, metric, units='fraction'):
-    """
-    Save land cover data for each time step as a CSV file.
-    """
+                    spat_ludataharm, metric, units='fraction', write_outputs=True):
+    """Save land cover data for each time step as a CSV file."""
 
     # create out path and file name
     lc_ts_file = os.path.join(c.lu_csv_output_dir, 'landcover_{0}_timestep.csv'.format(yr))
@@ -145,7 +144,11 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
         arr[:, 4:] = np.true_divide(arr[:, 4:], arr[:, 4:].sum(axis=1, keepdims=True))
 
     # save to file
-    np.savetxt(lc_ts_file, arr, fmt='%g', delimiter=',', header=hdr, comments='')
+    if write_outputs:
+        np.savetxt(lc_ts_file, arr, fmt='%g', delimiter=',', header=hdr, comments='')
+
+    columns = hdr.split(',')
+    return pd.DataFrame(data=arr, columns=columns)
 
 
 def write_transitions(s, c, step, transitions):

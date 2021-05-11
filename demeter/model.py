@@ -26,7 +26,7 @@ class ValidationException(Exception):
         Exception.__init__(self, *args)
 
 
-class Demeter:
+class Model:
     """Run the Demeter model.
 
     :param root_dir:                        Full path with filename and extension to the directory containing the
@@ -37,10 +37,10 @@ class Demeter:
 
         self.config = ReadConfig(kwargs)
 
-        self.s = None
-        self.process_step = None
-        self.rg = None
-        self.f = None
+        # self.s = None
+        # self.process_step = None
+        # self.rg = None
+        # self.f = None
 
     def initialize(self):
         """Setup model."""
@@ -49,6 +49,29 @@ class Demeter:
 
         # prepare data for processing
         self.s = Stage(self.config)
+
+        # build step generator
+        self.step_generator = self.build_generator()
+
+    def build_generator(self):
+        """Construct step generator."""
+
+        # run for each time step
+        for idx, step in enumerate(self.s.user_years):
+            yield ProcessStep(self.config, self.s, idx, step).output_df
+
+    def process_step(self):
+        """Process a single time step."""
+
+        return next(self.step_generator)
+
+    def cleanup(self):
+        """Clean up logger and model instance."""
+
+        self.config.logger.info('END')
+
+        # close all open log handlers
+        self.config.logger_ini.close_logger()
 
     def execute(self):
         """Execute main downscaling routine."""
@@ -95,7 +118,7 @@ if __name__ == '__main__':
         raise ValidationException
 
     # instantiate and run demeter
-    dm = Demeter(config_file=args.config_file,
+    dm = Model(config_file=args.config_file,
                  run_dir=args.run_dir,
                  start_year=args.start_year,
                  end_year=args.end_year,
