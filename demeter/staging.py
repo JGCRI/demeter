@@ -106,7 +106,7 @@ class Stage:
             m = list(range(1, 19, 1))
 
         # read in region ids
-        rdf = pd.read_csv(os.path.join(self.config.reference_dir, 'gcam_regions_32.csv'), usecols=['gcam_region_id'])
+        rdf = pd.read_csv(self.config.gcam_region_names_file, usecols=['gcam_region_id'])
         r = sorted(rdf['gcam_region_id'].tolist())
 
         return m, r
