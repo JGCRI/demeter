@@ -11,9 +11,6 @@ import os
 import numpy as np
 from scipy import io as sio
 import pandas as pd
-#import shapefile
-
-import demeter.demeter_io.reader as rdr
 
 
 def array_to_csv(arr, out_file):
@@ -34,78 +31,6 @@ def save_array(arr, out_file):
     :param out_file:        Output NPY file
     """
     np.save(out_file, arr)
-
-
-def to_shp(c, yr, final_landclasses):
-    """
-    Build shapefile containing landcover per grid location.
-
-    :param c:                       config object
-    :param yr:                      target year
-    :param final_landclasses:       list of final land classes
-    """
-
-    # instantiate the writer object
-    w = shapefile.Writer(shapeType=shapefile.POINT)
-
-    # field list
-    fields = ['latitude', 'longitude', '{0}_id'.format(c.metric.lower()), 'region_id', 'water']
-
-    # set schema
-    w.field('latitude', 'F', decimal=10)
-    w.field('longitude', 'F', decimal=10)
-    w.field('{0}_id'.format(c.metric.lower()), 'C')
-    w.field('region_id', 'C')
-    w.field('water', 'F', decimal=10)
-
-    # prep string for record
-    s = 'w.record(lat, lon, met, reg, wat,'
-
-    # add functional type fields and prepare record string
-    for idx, fci in enumerate(final_landclasses):
-
-        fc = fci.lower()
-
-        w.field(fc, 'F', decimal=10)
-
-        fields.append(fc)
-
-        # append fields to record string
-        if idx+1 < len(final_landclasses):
-            s += "float(r[d['{0}']]),".format(fc)
-
-        else:
-            s += "float(r[d['{0}']]))".format(fc)
-
-    # read landcover CSV
-    with open(os.path.join(c.lc_per_step_csv, 'landcover_{0}_timestep.csv'.format(yr))) as get:
-
-        # get the header as a list
-        hdr = get.next().strip().split(',')
-
-        # get the index locations of field to write in input file
-        d = {k: hdr.index(k) for k in fields}
-
-        for row in get:
-
-            # row to list
-            r = [i.lower() for i in row.strip().split(',')]
-
-            lat = float(r[d['latitude']])
-            lon = float(r[d['longitude']])
-            met = r[d['{0}_id'.format(c.metric.lower())]]
-            reg = r[d['region_id']]
-            wat = float(r[d['water']])
-
-            # add geometry to shapefile
-            w.point(lon, lat)
-
-            # add attribute to shapefile
-            eval(s)
-
-    # save output
-    out_shp = os.path.join(c.lc_per_step_shp, 'landcover_{0}_timestep.shp'.format(yr))
-    w.save(out_shp)
 
 
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
