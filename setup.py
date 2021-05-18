@@ -13,7 +13,7 @@ def get_requirements():
 
 setup(
     name='demeter',
-    version='1.0.0',
+    version='1.2.0',
     python_requires=">=3.6",
     packages=find_packages(),
     url='https://github.com/IMMM-SFA/demeter',
