@@ -161,7 +161,7 @@ class ReadConfig:
         self.selection_threshold = self.valid_limit(run_params.get('selection_threshold', 0.75), 'intensification_ratio', [0.0, 1.0], 'float')
         self.kernel_distance = self.valid_limit(run_params.get('kernel_distance', 10), 'kernel_distance', [0, 10000000000], 'int')
         self.target_years_output = self.set_target(run_params.get('target_years_output', 'all'))
-        self.save_tabular = self.valid_integer(run_params.get('save_tabular', 0), 'save_tabular', [0, 1])
+        self.save_tabular = self.valid_integer(run_params.get('save_tabular', 1), 'save_tabular', [0, 1])
         self.tabular_units = self.valid_string(run_params.get('tabular_units', 'sqkm'), 'tabular_units', ['sqkm', 'fraction'])
         self.save_transitions = self.valid_integer(run_params.get('save_transitions', 0), 'save_transitions', [0, 1])
         self.save_shapefile = self.valid_integer(run_params.get('save_shapefile', 0), 'save_shapefile', [0, 1])

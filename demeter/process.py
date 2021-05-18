@@ -149,7 +149,7 @@ class ProcessStep:
         # save land cover data for the time step
         if (self.config.save_tabular == 1) and (self.step in self.config.target_years_output):
 
-            self.config.logger.info("Saving tabular land cover data for time step {0}...".format(self.step))
+            self.config.logger.info("Generating projected land cover data for time step {0}...".format(self.step))
 
             return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
