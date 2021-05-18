@@ -87,19 +87,22 @@ class ReadConfig:
         self.projected_dir = os.path.join(self.input_dir, input_params.get('projected_dir', 'projected'))
 
         # allocation files
-        self.spatial_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('spatial_allocation_file', 'gcam_regbasin_modis_v6_type5_5arcmin_observed_alloc.csv'))
-        self.gcam_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('gcam_allocation_file', 'gcam_regbasin_modis_v6_type5_5arcmin_projected_alloc.csv'))
-        self.kernel_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('kernel_allocation_file', 'kernel_density_weighting.csv'))
-        self.transition_order_file = os.path.join(self.allocation_dir, allocation_params.get('transition_order_file', 'transition_priority.csv'))
-        self.treatment_order_file = os.path.join(self.allocation_dir, allocation_params.get('treatment_order_file', 'treatment_order.csv'))
-        self.constraints_file = os.path.join(self.allocation_dir, allocation_params.get('constraints_file', 'constraint_weighting.csv'))
+        self.spatial_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('spatial_allocation_file', 'csdms_observed_allocation.csv'))
+        self.gcam_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('gcam_allocation_file', 'csdms_projected_allocation.csv'))
+        self.kernel_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('kernel_allocation_file', 'csdms_kernel_weighting_allocation.csv'))
+        self.transition_order_file = os.path.join(self.allocation_dir, allocation_params.get('transition_order_file', 'csdms_transition_allocation.csv'))
+        self.treatment_order_file = os.path.join(self.allocation_dir, allocation_params.get('treatment_order_file', 'csdms_order_allocation.csv'))
+        self.constraints_file = os.path.join(self.allocation_dir, allocation_params.get('constraints_file', 'csdms_constraint_allocation.csv'))
 
         # observed data
-        self.observed_lu_file = os.path.join(self.observed_dir, observed_params.get('observed_lu_file', 'gcam_reg32_basin235_modis_v6_2010_5arcmin_sqdeg_wgs84_11Jul2019.zip'))
+        self.observed_lu_file = os.path.join(self.observed_dir, observed_params.get('observed_lu_file', 'gcam_reg32_basin235_modis_v6_2010_mirca_2000_0p5deg_sqdeg_wgs84_07may2021.zip'))
 
         # projected data
-        if projected_params is not None:
-            self.projected_lu_file = os.path.join(self.projected_dir, projected_params.get('projected_lu_file', None)) #'gcam_ref_scenario_reg32_basin235_v5p1p3.csv'))
+        # look for this first in code; this only comes in from the main function - not the config file
+        self.gcamwrapper_df = params.get('gcamwrapper_df', None)
+
+        if (projected_params is not None) and (self.gcamwrapper_df is None):
+            self.projected_lu_file = os.path.join(self.projected_dir, projected_params.get('projected_lu_file', None))
             self.gcam_database = projected_params.get('gcam_database', None)
             self.crop_type = self.valid_string(projected_params.get('crop_type', 'BOTH').upper(), 'crop_type', ['IRR', 'RFD', 'BOTH'])
             self.gcam_query = pkg_resources.resource_filename('demeter', 'data/query_land_reg32_basin235_gcam5p0.xml')
@@ -107,9 +110,6 @@ class ReadConfig:
             if self.gcam_database is not None:
                 self.gcam_database_dir = os.path.dirname(self.gcam_database)
                 self.gcam_database_name = os.path.basename(self.gcam_database)
-
-        # look for this first in code; this only comes in from the main function - not the config file
-        self.gcamwrapper_df = params.get('gcamwrapper_df', None)
 
         # reference data
         self.gcam_region_names_file = pkg_resources.resource_filename('demeter', 'data/gcam_regions_32.csv')
@@ -149,11 +149,11 @@ class ReadConfig:
         self.agg_level = self.valid_integer(run_params.get('agg_level', 2), 'agg_level', [1, 2])
         self.observed_id_field = run_params.get('observed_id_field', 'target_fid')
         self.start_year = self.ck_yr(run_params.get('start_year', 2010), 'start_year')
-        self.end_year = self.ck_yr(run_params.get('end_year', 2010), 'end_year')
+        self.end_year = self.ck_yr(run_params.get('end_year', 2015), 'end_year')
         self.use_constraints = self.valid_integer(run_params.get('use_constraints', 1), 'use_constraints', [0, 1])
         self.spatial_resolution = self.valid_limit(run_params.get('spatial_resolution', 0.25), 'spatial_resolution', [0.0, 1000000.0], 'float')
         self.errortol = self.valid_limit(run_params.get('errortol', 0.001), 'errortol', [0.0, 1000000.0], 'float')
-        self.timestep = self.valid_limit(run_params.get('timestep', 1), 'timestep', [1, 1000000], 'int')
+        self.timestep = self.valid_limit(run_params.get('timestep', 5), 'timestep', [1, 1000000], 'int')
         self.proj_factor = self.valid_limit(run_params.get('proj_factor', 1000), 'proj_factor', [1, 10000000000], 'int')
         self.diagnostic = self.valid_integer(run_params.get('diagnostic', 0), 'diagnostic', [0, 1])
         self.intensification_ratio = self.valid_limit(run_params.get('intensification_ratio', 0.8), 'intensification_ratio', [0.0, 1.0], 'float')

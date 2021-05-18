@@ -152,6 +152,7 @@ class Stage:
                                        self.gcam_landclasses,
                                        start_yr=self.config.start_year,
                                        end_yr=self.config.end_year,
+                                       timestep=self.config.timestep,
                                        scenario=self.config.scenario,
                                        region_dict=self.d_regnm_id,
                                        agg_level=self.config.agg_level,

@@ -183,6 +183,7 @@ def _get_steps(df, start_step, end_step):
     for i in df.columns:
         try:
             y = int(i)
+            print(y)
             if start_step <= y <= end_step:
                 l.append(y)
         except ValueError:
@@ -254,7 +255,7 @@ def read_gcam_land(db_path, db_file, f_queries, d_basin_name, subreg, crop_water
     return piv
 
 
-def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, scenario, region_dict, agg_level, metric_seq,
+def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, timestep, scenario, region_dict, agg_level, metric_seq,
                    area_factor=1000, logger=None):
     """
     Read and process the GCAM land allocation output file.
@@ -296,12 +297,11 @@ def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, scenario, regi
         pass
 
     # create a list of GCAM years from header that are within the user specified year range
-    model_year_list_int = _get_steps(gdf, start_yr, end_yr)
+    model_year_list_int = list(range(start_yr, end_yr + timestep, timestep))
 
     # create land use area per year array converted from thousands km using area_factor
     model_year_list_str = [str(yr) for yr in model_year_list_int]
 
-    cols = gdf.columns
     gcam_data_array_km = gdf[model_year_list_str].values * area_factor
 
     # create field for land class all lower case

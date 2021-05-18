@@ -53,13 +53,14 @@ class Model:
 
         # run for each time step
         for idx, step in enumerate(self.s.user_years):
-            yield ProcessStep(self.config, self.s, idx, step, write_outputs=self.config.write_outputs).output_df
+            yield ProcessStep(self.config, self.s, idx, step, write_outputs=self.config.write_outputs)
 
     def process_step(self):
         """Process a single time step."""
 
         try:
-            return next(self.step_generator)
+            step = next(self.step_generator)
+            return step.output_df
 
         except:
             self.cleanup()
