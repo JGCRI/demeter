@@ -222,11 +222,11 @@ class Stage:
 
         # apply user-defined constraints to base land use layer data and GCAM land use data
         self.cst = ApplyConstraints(self.allreg, self.allaez, self.final_landclasses, self.user_years, self.ixr_idm,
-                                   self.allregaez, self.spat_region, self.allregnumber, self.spat_aez,
-                                   self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
-                                   self.gcam_array, self.gcam_ludata, self.ngrids, self.constraint_names,
-                                   self.observed_landclasses, self.observed_array, self.spat_ludata, self.config.map_luc_steps,
-                                   self.config.map_luc_pft, self.config.constraint_files, self.config.logger)
+                                    self.allregaez, self.spat_region, self.allregnumber, self.spat_aez,
+                                    self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
+                                    self.gcam_array, self.gcam_ludata, self.ngrids, self.constraint_names,
+                                    self.observed_landclasses, self.observed_array, self.spat_ludata,
+                                    self.config.constraint_files, self.config.logger)
 
         # apply spatial constraints
         self.spat_ludataharm, self.spat_ludataharm_orig_steps, self.spat_ludataharm_orig = self.cst.apply_spat_constraints()
@@ -244,8 +244,7 @@ class Stage:
 
         # instantiate kernel density class
         self.kd = KernelDensity(self.config.spatial_resolution, self.spat_coords, self.final_landclasses,
-                                self.config.kernel_distance, self.ngrids, self.config.kernel_maps_output_dir,
-                                self.order_rules, self.config.map_kernels)
+                                self.config.kernel_distance, self.ngrids, self.order_rules)
 
         # preprocess year-independent kernel density data
         self.lat, self.lon, self.cellindexresin, self.pft_maps, self.kernel_maps, self.kernel_vector, self.weights = self.kd.preprocess_kernel_density()

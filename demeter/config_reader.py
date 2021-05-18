@@ -118,7 +118,6 @@ class ReadConfig:
         # output directories
         self.diagnostics_output_dir = os.path.join(self.output_dir, output_params.get('diagnostics_output_dir', 'diagnostics'))
         self.log_output_dir = os.path.join(self.output_dir, output_params.get('log_output_dir', 'log_files'))
-        self.kernel_maps_output_dir = os.path.join(self.output_dir, output_params.get('kernel_maps_output_dir', 'kernel_density'))
         self.transitions_tabular_output_dir = os.path.join(self.output_dir, output_params.get('transitions_tabular_output_dir', 'transition_tabular'))
         self.transitions_maps_output_dir = os.path.join(self.output_dir, output_params.get('transitions_maps_output_dir', 'transition_maps'))
         self.intensification_pass1_output_dir = os.path.join(self.output_dir, output_params.get('intensification_pass1_output_dir', 'luc_intensification_pass1'))
@@ -161,18 +160,12 @@ class ReadConfig:
         self.stochastic_expansion = self.valid_integer(run_params.get('stochastic_expansion', 0), 'stochastic_expansion', [0, 1])
         self.selection_threshold = self.valid_limit(run_params.get('selection_threshold', 0.75), 'intensification_ratio', [0.0, 1.0], 'float')
         self.kernel_distance = self.valid_limit(run_params.get('kernel_distance', 10), 'kernel_distance', [0, 10000000000], 'int')
-        self.map_kernels = self.valid_integer(run_params.get('map_kernels', 0), 'map_kernels', [0, 1])
-        self.map_luc_pft = self.valid_integer(run_params.get('map_luc_pft', 0), 'map_luc_pft', [0, 1])
-        self.map_luc_steps = self.valid_integer(run_params.get('map_luc_steps', 0), 'map_luc_steps', [0, 1])
-        self.map_transitions = self.valid_integer(run_params.get('map_transitions', 0), 'map_transitions', [0, 1])
         self.target_years_output = self.set_target(run_params.get('target_years_output', 'all'))
-        self.save_tabular = self.valid_integer(run_params.get('save_tabular', 1), 'save_tabular', [0, 1])
+        self.save_tabular = self.valid_integer(run_params.get('save_tabular', 0), 'save_tabular', [0, 1])
         self.tabular_units = self.valid_string(run_params.get('tabular_units', 'sqkm'), 'tabular_units', ['sqkm', 'fraction'])
         self.save_transitions = self.valid_integer(run_params.get('save_transitions', 0), 'save_transitions', [0, 1])
         self.save_shapefile = self.valid_integer(run_params.get('save_shapefile', 0), 'save_shapefile', [0, 1])
         self.save_netcdf_yr = self.valid_integer(run_params.get('save_netcdf_yr', 0), 'save_netcdf_yr', [0, 1])
-        self.save_netcdf_lc = self.valid_integer(run_params.get('save_netcdf_lc', 0), 'save_netcdf_lc', [0, 1])
-        self.save_ascii_max = self.valid_integer(run_params.get('save_ascii_max', 0), 'save_ascii_max', [0, 1])
 
         # create and validate constraints input file full paths
         self.constraint_files = self.get_constraints()
@@ -180,20 +173,8 @@ class ReadConfig:
         self.logger.info(f'Using `run_dir`:  {self.run_dir}')
 
         # turn on tabular land cover data output if writing a shapefile
-        if self.save_shapefile == 1:
-            self.save_tabular = 1
-
         if self.diagnostic:
             self.create_dir(self.diagnostics_output_dir)
-
-        if self.map_kernels:
-            self.create_dir(self.kernel_maps_output_dir)
-
-        if self.map_luc_pft:
-            self.create_dir(self.map_luc_pft)
-
-        if self.map_transitions:
-            self.create_dir(self.transitions_maps_output_dir)
 
         if self.save_tabular or self.save_shapefile:
             self.create_dir(self.lu_csv_output_dir)
@@ -204,8 +185,6 @@ class ReadConfig:
         if self.save_shapefile:
             self.create_dir(self.lu_shapefile_output_dir)
 
-        if self.save_netcdf_yr or self.save_netcdf_lc:
-            self.create_dir(self.lu_netcdf_output_dir)
 
     @staticmethod
     def ck_type(v, p, tp):

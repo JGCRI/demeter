@@ -17,8 +17,7 @@ import demeter.demeter_io.writer as wdr
 
 class KernelDensity:
 
-    def __init__(self, resolution, spat_coords, final_landclasses, kernel_distance, ngrids, kernel_map_dir, order_rules,
-                 map_kernels):
+    def __init__(self, resolution, spat_coords, final_landclasses, kernel_distance, ngrids, order_rules):
 
         self.resolution = resolution
         self.spat_coords = spat_coords
@@ -27,8 +26,6 @@ class KernelDensity:
         self.kernel_distance = kernel_distance
         self.ngrids = ngrids
         self.order_rules = order_rules
-        self.kernel_map_dir = kernel_map_dir
-        self.map_kernels = map_kernels
 
     def global_system(self):
         """
@@ -166,10 +163,6 @@ class KernelDensity:
             # TODO:  remove the min value
             min_seed = 0.0000000001
             kernel_maps[:, :, pft][kernel_maps[:, :, pft] == 0] = min_seed #np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
-
-            # add to map array if user selects to plot them
-            if self.map_kernels == 1:
-                wdr.map_kernel_density(pft_maps[:, :, pft], kernel_maps[:, :, pft], lat, lon, flc, yr, self.kernel_map_dir)
 
             # reshaping to the spatial grid-cell data (vector)
             kernel_vector[:, pft] = kernel_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft]
