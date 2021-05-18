@@ -95,6 +95,18 @@ class Model:
             self.cleanup()
 
 
+def run_model(**kwargs):
+    """Convenience wrapper for the 'demeter.Model' class to run all time steps sequentially."""
+
+    # instantiate the model class
+    model = Model(kwargs)
+
+    # run all steps then clean up
+    model.execute()
+
+    return model
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Run Demeter.')
