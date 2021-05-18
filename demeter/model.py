@@ -37,11 +37,6 @@ class Model:
 
         self.config = ReadConfig(kwargs)
 
-        # self.s = None
-        # self.process_step = None
-        # self.rg = None
-        # self.f = None
-
     def initialize(self):
         """Setup model."""
         # create log header
@@ -58,12 +53,16 @@ class Model:
 
         # run for each time step
         for idx, step in enumerate(self.s.user_years):
-            yield ProcessStep(self.config, self.s, idx, step).output_df
+            yield ProcessStep(self.config, self.s, idx, step, write_outputs=self.config.write_outputs).output_df
 
     def process_step(self):
         """Process a single time step."""
 
-        return next(self.step_generator)
+        try:
+            return next(self.step_generator)
+
+        except:
+            self.cleanup()
 
     def cleanup(self):
         """Clean up logger and model instance."""
@@ -87,15 +86,12 @@ class Model:
             # run for each time step
             for idx, step in enumerate(self.s.user_years):
 
-                ProcessStep(self.config, self.s, idx, step)
+                ProcessStep(self.config, self.s, idx, step, write_outputs=self.config.write_outputs)
 
         finally:
 
             self.config.logger.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
-            self.config.logger.info('END')
-
-            # close all open log handlers
-            self.config.logger_ini.close_logger()
+            self.cleanup()
 
 
 if __name__ == '__main__':

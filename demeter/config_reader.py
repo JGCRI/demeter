@@ -67,6 +67,9 @@ class ReadConfig:
             diagnostic_params = output_params.get('DIAGNOSTICS', None)
             run_params = self.config.get('PARAMS', None)
 
+        # choice to write outputs
+        self.write_outputs = run_params.get('write_outputs', False)
+
         # scenario is used to build the output directory name
         self.scenario = run_params.get('scenario', 'example')
 
@@ -139,7 +142,7 @@ class ReadConfig:
             self.extensification_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('extensification_file', 'expansion_diag.csv'))
 
         # initialize file logger
-        self.write_logfile = run_params.get('write_logfile', True)
+        self.write_logfile = run_params.get('write_logfile', False)
         self.run_desc = run_params.get('run_desc', 'demeter_example')
         log_basename = f"logfile_{self.scenario}_{self.dt}.log"
         self.create_dir(self.log_output_dir)
@@ -387,13 +390,14 @@ class ReadConfig:
 
         """
 
-        try:
-            if os.path.isdir(d) is False:
-                os.makedirs(d)
+        if self.write_outputs:
+            try:
+                if os.path.isdir(d) is False:
+                    os.makedirs(d)
 
-        except:
-            logging.error("ERROR:  Failed to create directory.")
-            raise
+            except:
+                logging.error("ERROR:  Failed to create directory.")
+                raise
 
     @staticmethod
     def ck_agg(a):

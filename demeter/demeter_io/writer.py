@@ -109,7 +109,7 @@ def to_shp(c, yr, final_landclasses):
 
 
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
-                    spat_ludataharm, metric, units='fraction', write_outputs=True):
+                    spat_ludataharm, metric, units='fraction', write_outputs=False):
     """Save land cover data for each time step as a CSV file."""
 
     # create out path and file name

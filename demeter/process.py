@@ -20,7 +20,7 @@ import demeter.demeter_io.writer as wdr
 class ProcessStep:
     """Process downscaling of a time step."""
 
-    def __init__(self, config, s, step_idx, step, write_outputs=True):
+    def __init__(self, config, s, step_idx, step, write_outputs=False):
 
         self.config = config
         self.s = s
