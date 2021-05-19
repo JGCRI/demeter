@@ -55,8 +55,6 @@ Demeter requires the setup of several input files to begin a run.  Examples of a
             -	Constraint files
         -	Projected GCAM land allocation directory
             -	GCAM land allocation file
-        -	Reference data directory
-            -	Reference files
 
 The following describes the requirements and format of each input.
 
@@ -175,43 +173,3 @@ Demeter’s configuration file allows the user to customize each run and define 
 | PARAMS |	save_netcdf_yr | 	0 to not write a NetCDF file for each year of the fraction of land cover of each land class by grid cell; 1 to write
 
 **Table 3.**  Configuration file hierarchy, parameters, and descriptions.
-
-## Workflow
-
-Figure 1 details the Demeter’s workflow once the input files have been prepared.  The process can be outlined as follows:
-
-1.	Configuration file read and input parameters are validated
-2.	Input data is read and validated
-3.	Grid area discrepancies between the OSD and the projected land allocation from GCAM are harmonized by adjusting the GCAM allocation areas using a correction factor (ratio of the OSD land use data per region and metric to the projected area from GCAM)
-4.	Constraints are processed if provided and prepared for integration
-5.	The convolution filter that will be used to calculate kernel density is prepared.  This is applied during each time step.
-6.	Initial and time step specific arrays are prepared
-7.	An initial pass to intensify existing land is conducted
-8.	An expansion pass is conducted to apply land allocation projections where the kernel density probabilities meet the user-specified selection threshold.
-9.	A final intensification pass is conducted to allocate any land projections not yet met.
-10.	Output products are created.
-
-
-![alt text](https://github.com/IMMM-SFA/demeter/blob/master/img/workflow.png "Figure 1")
-
-**Figure 1.** Demeter workflow diagram.
-
-### Run Preparation
-Prepare Demeter for a run as follows:
-
-1.	Setup your configuration file (.ini). Examples are located in the "example" directory. Be sure to change the root directory to the directory that holds your data (use the 'demeter/example' directory as an example).
-2.	If running Demeter from an IDE: Be sure to include the path to your config file. See the "demeter/example/example.py" script as a reference.
-3.	If running Demeter from terminal: Run model.py found in demeter/demeter/model.py passing the full path using forward slashes and having no spaces to the configuration file as the first argument and either “standard” or “ensemble” as the second argument (e.g., python model.py /users/<uname>/github/demeter/example/config.ini standard)
-
-Both the output directory and log file generated during runtime are named per the run scenario and the timestamp of when the run began.  An additional suffix of the permutation number will also be added if using the ensemble function in Demeter.  All other outputs directories are named according to what the user specifies in the configuration file.
-
-## Quality control
-
-All possible combinations of the configuration file and input files have been tested.  Strict requirements for input files are documented.  Configuration options have set limits, values, and types and are validated during runtime. An example setup for Demeter is included in the package.  The example has a configuration file and an input directory containing all other necessary files.  To setup the provided example, the user should simply change the file paths in the configuration file and the example.py file to represent their local directories.
-
-Demeter outputs the following diagnostic files that help the user to evaluate the outputs based on how they were processed during runtime:
-- Harmonization coefficient NumPy array
-- This file contains the correction factor that was applied to each grid cell of the projected land allocation data to ensure the projected area is the same as the area actually available as represented by the OSD for the target base year
-- Files for each intensification and expansion pass detailing the land change per year per grid cell from one landclass to its transition class by region and metric
-- A detailed log file
-- A suite of tabular, spatial, and mapped data.
