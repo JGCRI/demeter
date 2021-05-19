@@ -29,7 +29,8 @@ class TestOutputs(unittest.TestCase):
         # instantiate demeter model
         model = Model(run_dir=self.RUN_DIR,
                       gcamwrapper_df=self.GCAMWRAPPER_DF,
-                      write_outputs=False)
+                      write_outputs=False,
+                      write_logfile=False)
 
         # initialize demeter
         model.initialize()
