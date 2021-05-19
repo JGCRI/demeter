@@ -38,6 +38,11 @@ class FormatGcamDataFrame:
     :param output_to_csv:               If True, file will be output to the location specified in the f_out parameter
     :type output_to_csv:                bool
 
+    :param gcam_landalloc_field:        Field name for land-allocation in the GCAM database output for land allocation
+    :type gcam_landalloc_field:         str
+
+    :param gcam_nodes_field:            Field name for gcam nodes field in the GCAM database output for land allocation
+    :type gcam_nodes_field:             str
 
     :return:                            Data frame; optionally, save as file
 
@@ -58,8 +63,6 @@ class FormatGcamDataFrame:
     GCAM_YEAR_FIELD = 'year'
     GCAM_UNIT_FIELD = 'units'
     GCAM_REGION_FIELD = 'region'
-    GCAM_LANDALLOC_FIELD = 'land-allocation'
-    GCAM_NODES_FIELD = 'child-nodes'
     GCAM_LANDCLASS_DELIM = '_'
 
     # Demeter expected naming conventions
@@ -70,7 +73,7 @@ class FormatGcamDataFrame:
 
     def __init__(self, df, f_out=None, start_year=2010, through_year=2100, region_name_field='gcam_region_name',
                  region_id_field='gcam_region_id', basin_name_field='glu_name', basin_id_field='basin_id',
-                 output_to_csv=False):
+                 output_to_csv=False, gcam_landalloc_field='land-allocation', gcam_nodes_field='child-nodes'):
 
         self.df = df
         self.f_basin_ref = pkg_resources.resource_filename('demeter', 'data/gcam_basin_lookup.csv')
@@ -87,6 +90,32 @@ class FormatGcamDataFrame:
         # read in basins and regions to lookup dictionaries
         self.d_basins = self.build_basin_dict()
         self.d_regions = self.build_regions_dict()
+
+        # Dynamic set needs...GCAM naming conventions nested in the GCAM database outputs for land allocation
+        self._gcam_landalloc_field = gcam_landalloc_field
+        self._gcam_nodes_field = gcam_nodes_field
+
+    @property
+    def gcam_landalloc_field(self):
+        """Field name for land-allocation in the GCAM database output for land allocation"""
+        return self._gcam_landalloc_field
+
+    @gcam_landalloc_field.setter
+    def gcam_landalloc_field(self, value):
+        """Update land allocation field name."""
+
+        self._gcam_landalloc_field = value
+
+    @property
+    def gcam_nodes_field(self):
+        """Field name for gcam nodes field in the GCAM database output for land allocation"""
+        return self._gcam_nodes_field
+
+    @gcam_nodes_field.setter
+    def gcam_nodes_field(self, value):
+        """Update gcam nodes field name."""
+
+        self._gcam_nodes_field = value
 
     def build_basin_dict(self):
         """Create a basin lookup dictionary from the input reference file.
@@ -121,10 +150,10 @@ class FormatGcamDataFrame:
                          (self.df[FormatGcamDataFrame.GCAM_YEAR_FIELD] <= self.through_year)].copy()
 
         # split nodes field into list
-        df[FormatGcamDataFrame.GCAM_NODES_FIELD] = df[FormatGcamDataFrame.GCAM_NODES_FIELD].str.split('_')
+        df[self.gcam_nodes_field] = df[self.gcam_nodes_field].str.split('_')
 
         # break out basin name
-        df[FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD] = df[FormatGcamDataFrame.GCAM_NODES_FIELD].str[1]
+        df[FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD] = df[self.gcam_nodes_field].str[1]
 
         # map region id to region
         df[FormatGcamDataFrame.DEMETER_REGID_FIELD] = df[FormatGcamDataFrame.GCAM_REGION_FIELD].map(self.d_regions)
@@ -133,14 +162,14 @@ class FormatGcamDataFrame:
         df[FormatGcamDataFrame.DEMETER_METRIC_FIELD] = df[FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD].map(self.d_basins)
 
         # combine land type and use to make landclass; add IRR or RFD where applicable
-        df[FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD] = np.where(df[FormatGcamDataFrame.GCAM_NODES_FIELD].str[2].isnull(),
-                                                                   df[FormatGcamDataFrame.GCAM_NODES_FIELD].str[0],
-                                                                   df[FormatGcamDataFrame.GCAM_NODES_FIELD].str[0] +
+        df[FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD] = np.where(df[self.gcam_nodes_field].str[2].isnull(),
+                                                                   df[self.gcam_nodes_field].str[0],
+                                                                   df[self.gcam_nodes_field].str[0] +
                                                                    '_' +
-                                                                   df[FormatGcamDataFrame.GCAM_NODES_FIELD].str[2])
+                                                                   df[self.gcam_nodes_field].str[2])
         # pivot out the years and keep only needed fields
         piv = pd.pivot_table(df,
-                             values=FormatGcamDataFrame.GCAM_LANDALLOC_FIELD,
+                             values=self.gcam_landalloc_field,
                              index=[FormatGcamDataFrame.GCAM_REGION_FIELD,
                                     FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD,
                                     FormatGcamDataFrame.DEMETER_REGID_FIELD,
@@ -167,7 +196,7 @@ class FormatGcamDataFrame:
 
 def format_gcam_data(df, f_out=None, start_year=2010, through_year=2100, region_name_field='gcam_region_name',
                      region_id_field='gcam_region_id', basin_name_field='glu_name', basin_id_field='basin_id',
-                     output_to_csv=False):
+                     output_to_csv=False, gcam_landalloc_field='land-allocation', gcam_nodes_field='child-nodes'):
     """Convenience wrapper for the `FormatGcamDataFrame` class.  Formats the data frame that `gcamwrapper` produces into
     the format the Demeter requires.
 
@@ -201,6 +230,11 @@ def format_gcam_data(df, f_out=None, start_year=2010, through_year=2100, region_
     :param output_to_csv:               If True, file will be output to the location specified in the f_out parameter
     :type output_to_csv:                bool
 
+    :param gcam_landalloc_field:        Field name for land-allocation in the GCAM database output for land allocation
+    :type gcam_landalloc_field:         str
+
+    :param gcam_nodes_field:            Field name for gcam nodes field in the GCAM database output for land allocation
+    :type gcam_nodes_field:             str
 
     :return:                            Data frame; optionally, save as file
 
@@ -209,6 +243,7 @@ def format_gcam_data(df, f_out=None, start_year=2010, through_year=2100, region_
 
     # instantiate the formatting class
     c = FormatGcamDataFrame(df, f_out, start_year, through_year, region_name_field, region_id_field, basin_name_field,
-                            basin_id_field, output_to_csv)
+                            basin_id_field, output_to_csv, gcam_landalloc_field=gcam_landalloc_field,
+                            gcam_nodes_field=gcam_nodes_field)
 
     return c.format_land_data()
