@@ -14,16 +14,15 @@ import demeter.demeter_io.reader as rdr
 
 
 class ValidationException(Exception):
-    def __init__(self,*args,**kwargs):
-        Exception.__init__(self,*args,**kwargs)
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)
 
 
 class ApplyConstraints:
 
     def __init__(self, allreg, allaez, final_landclasses, user_years, ixr_ixm, allregaez, spat_region, allregnumber,
-                 spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_agg, gcam_ludata, ngrids,
-                 constrain_names, spat_landclasses, spat_agg, spat_ludata, map_luc_steps, map_luc,
-                 constraint_files):
+                 spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_array, gcam_ludata, ngrids,
+                 constraint_names, observed_landclasses, observed_array, spat_ludata, constraint_files, logger):
 
         self.allreg = allreg
         self.allaez = allaez
@@ -41,16 +40,15 @@ class ApplyConstraints:
         self.gcam_regionnumber = gcam_regionnumber
         self.gcam_aez = gcam_aez
         self.gcam_landname = gcam_landname
-        self.gcam_agg = gcam_agg
+        self.gcam_array = gcam_array
         self.gcam_ludata = gcam_ludata
         self.ngrids = ngrids
-        self.constrain_names = constrain_names
-        self.spat_landclasses = spat_landclasses
-        self.spat_agg = spat_agg
+        self.constraint_names = constraint_names
+        self.observed_landclasses = observed_landclasses
+        self.observed_array = observed_array
         self.spat_ludata = spat_ludata
-        self.map_luc_steps = map_luc_steps
-        self.map_luc = map_luc
         self.constraint_files = constraint_files
+        self.logger = logger
 
         # assign array holding constraints
         self.cons_data = self.compile_constraints()
@@ -91,16 +89,16 @@ class ApplyConstraints:
         spat_ludataharm = np.zeros((self.ngrids, self.l_flcs))
 
         # assign the amount of PFT after splitting based upon user specification
-        for idx, i in enumerate(self.spat_landclasses):
+        for idx, i in enumerate(self.observed_landclasses):
 
             # assign target row
-            t = self.spat_agg[idx, :]
+            t = self.observed_array[idx, :]
 
             # if non-permitted constrain assignment occurred in spatial allocation rules file, exit
             if np.sum(t) > 1:
-                print("\nERROR: Aggregation numbers for PFT {0} in spatial allocation file sum up to more than 1.".format(i))
-                print("Please correct and try again.")
-                print("Exiting...\n")
+                self.logger.error("\nERROR: Aggregation numbers for PFT {0} in spatial allocation file sum up to more than 1.".format(i))
+                self.logger.error("Please correct and try again.")
+                self.logger.error("Exiting...\n")
                 raise ValidationException
 
             # if individual values sum to greater than 1
@@ -185,7 +183,7 @@ class ApplyConstraints:
         for reg, met, gix in ixr_ixm_ixg:
 
             # set target value
-            t = self.gcam_agg[gix, :]
+            t = self.gcam_array[gix, :]
 
             # create array of index from GCAM land use data that meets criteria
             regaezlandind = np.where((self.gcam_regionnumber == self.allregnumber[reg])
@@ -194,9 +192,9 @@ class ApplyConstraints:
 
             # check for missing aggregation setting in GCAM allocation file
             if np.sum(t) == 0:
-                print("\nERROR: No aggregation class defined for PFT {0} in the GCAM allocation file".format(self.gcam_landclasses(gix)))
-                print("Please correct and try again.")
-                print("Exiting...\n")
+                self.logger.error("\nERROR: No aggregation class defined for PFT {0} in the GCAM allocation file".format(self.gcam_landclasses(gix)))
+                self.logger.error("Please correct and try again.")
+                self.logger.error("Exiting...\n")
                 raise ValidationException
 
             # Examine the case of one-to-many recombination (e.g., rockicedesert to snow and sparse). Data is split into

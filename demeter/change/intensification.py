@@ -118,7 +118,7 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
 
 
 def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
-                     cons_data_sub_o, reg, metnumber, order_rules, final_landclasses, errortol, constrain_rules,
+                     cons_data_sub_o, reg, metnumber, order_rules, final_landclasses, errortol, constraint_rules,
                      target_change, transition_rules, land_mismatch):
     """
     Calculate intensification.  Follow user-defined order of treatment.
@@ -153,7 +153,7 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
             # print("\nIntensification desired for:  {0}, {1}".format(fcs, int_target))
 
             # retrieve constraints for the PFT (e.g., soil quality, protection status, etc.)
-            cons_rules_pft = constrain_rules[:, pft]
+            cons_rules_pft = constraint_rules[:, pft]
 
             # add kernel density to the constraints and normalize their value
             kdc = kernel_vector_sub[:, pft] / np.nanmax([0.00000001, np.nanmax(kernel_vector_sub[:, pft])])
@@ -259,7 +259,7 @@ def _create_summary(reg_idx, allregnumber, spat_ludata, spat_landmatrix, gcam_la
 def apply_intensification(log, pass_number, c, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
                           spat_landmatrix, gcam_landmatrix, yr_idx, d_regid_nm, target_change, spat_ludataharm,
                           spat_met, kernel_vector, cons_data, final_landclasses,spat_ludataharm_orig_steps, yr,
-                          land_mismatch, constrain_rules, transition_rules, transitions):
+                          land_mismatch, constraint_rules, transition_rules, transitions):
     """
     There are two ways to expand land covers:
     1) on grid-cells where they do exist (intensification, at the expense of contracting land covers)
@@ -321,7 +321,7 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
         # calculate intensification
         citz = _intensification(c.diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
                                 cons_data_sub, reg_idx, metnumber, order_rules, final_landclasses, c.errortol,
-                                constrain_rules, target_change, transition_rules, land_mismatch)
+                                constraint_rules, target_change, transition_rules, land_mismatch)
 
         # apply intensification
         spat_ludataharm[reg_met_mask], trans_mat, target_change, target_intensification = citz
@@ -330,14 +330,14 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
         transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
-    non_chg = np.sum(abs(target_change[:, :, :])) / 2.
+    non_chg = np.sum(abs(target_change[:, :, :])) / 2.0
 
     if non_chg > 0:
         non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(abs(land_mismatch[:, :, :].flatten())) * 100
     else:
         non_chg_per = 0
 
-    log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
+    # log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
 
     # close file if diagnostic
     if c.diagnostic == 1:

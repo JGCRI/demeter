@@ -7,27 +7,35 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov)
 """
-import numpy as np
+
+
 import os
+import logging
+
+import numpy as np
 import pandas as pd
+import gcam_reader
 
 
 class ValidationException(Exception):
     """Validation exception for error in runtime test."""
-    def __init__(self,*args,**kwargs):
-        Exception.__init__(self,*args,**kwargs)
+    def __init__(self, *args):
+        Exception.__init__(self, *args)
 
 
-def to_dict(f, header=False, delim=',', swap=False):
-    """
-    Return a dictionary of key: value pairs.  Supports only key to one value.
+def to_dict(f, header=False, delim=',', swap=False, value_col=1):
+    """Return a dictionary of key: value pairs.  Supports only key to one value.
 
     :param f:           Full path to input file
     :param header:      If header exists True, else False (default)
     :param delim:       Set delimiter as string; default is comma
     :param swap:        Change the order of the key, value pair
+    :param value_col:   Column index of dict values (or keys if swap is True)
+
     :return:            Key: value pair dictionary
+
     """
+
     d = {}
     with open(f) as get:
         for idx, line in enumerate(get):
@@ -41,9 +49,9 @@ def to_dict(f, header=False, delim=',', swap=False):
 
             # add key: value pair to dict
             if swap:
-                d[item[1]] = item[0]
+                d[item[value_col]] = item[0]
             else:
-                d[item[0]] = item[1]
+                d[item[0]] = item[value_col]
 
     return d
 
@@ -60,7 +68,7 @@ def to_list(f, header=True, delim=','):
     """
 
     l = []
-    with open(f, 'rU') as get:
+    with open(f) as get:
         for idx, line in enumerate(get):
 
             # skip header if exists
@@ -76,24 +84,25 @@ def to_list(f, header=True, delim=','):
     return l
 
 
-def read_alloc(f, lc_col, output_level=3, delim=','):
-    """
-    Converts an allocation file to a numpy array.  Returns final land cover class and target
+def read_allocation_data(f, lc_col, output_level=3, delim=','):
+    """Converts an allocation file to a numpy array.  Returns final land cover class and target
     land cover class names as lists.
 
     :param f:               Input allocation file with header
     :param lc_col:          Target land cover field name in header (located a zero index)
     :param output_level     If 3 all variables will be returned (default); 2, target lcs list and array; 3, array
     :param delim:           Delimiter type; default is comma
-    :return:                List of final land cover classes, list of target land cover classes,
-                            numpy array of allocation values
+
+    :return:                [0] List of final land cover classes
+                            [1]list of target land cover classes
+                            [2]  numpy array of allocation values
     """
 
     # make target land cover field name lower case
     col = lc_col.lower()
 
     # check for empty file; if blank return empty array
-    if os.stat(f).st_size != 0:
+    if os.stat(f).st_size > 0:
 
         # import file as a pandas dataframe
         df = pd.read_csv(f, delimiter=delim)
@@ -102,34 +111,33 @@ def read_alloc(f, lc_col, output_level=3, delim=','):
         df.columns = [c.lower() for c in df.columns]
 
         # extract target land cover classes as a list; make lower case
-        tcs = df[col].str.lower().tolist()
+        target_land_classes = df[col].str.lower().tolist()
 
         # extract final land cover classes as a list; remove target land cover field name
-        fcs = [i for i in df.columns if i != col]
+        final_land_classes = [i for i in df.columns if i != col]
 
         # extract target land cover values only from the dataframe and create Numpy array
-        arr = df[fcs].values
+        land_cover_array = df[final_land_classes].values
 
         if output_level == 3:
-            return fcs, tcs, arr
+            return final_land_classes, target_land_classes, land_cover_array
 
         elif output_level == 2:
-            return tcs, arr
+            return target_land_classes, land_cover_array
 
         elif output_level == 1:
-            return arr
+            return land_cover_array
 
     else:
         return list(), np.empty(shape=0, dtype=np.float)
 
 
-def _check_constraints(log_obj, allocate, actual):
-    """
-    Checks to see if all land classes that are in the projection file are accounted for in the allocation file.
+def _check_constraints(allocate, actual):
+    """Checks to see if all land classes that are in the projection file are accounted for in the allocation file.
 
-    :param log_obj:             logger object
     :param allocate:            land classes from the allocation file
     :param actual:              land classes from the projection file
+
     """
 
     # make lower case
@@ -148,32 +156,34 @@ def _check_constraints(log_obj, allocate, actual):
     if (l_alloc > 0) and (l_act > 0):
         m1 = "Land classes in allocation file but not in projected model data:  {0}".format(alloc_extra)
         m2 = "Land classes in projected model but not in allocation file:  {0}".format(act_extra)
-        log_obj.warning(m1)
-        log_obj.warning(m2)
+        logging.warning(m1)
+        logging.warning(m2)
 
     elif (l_alloc > 0) and (l_act == 0):
         m1 = "Land classes in allocation file but not in projected model data:  {0}".format(alloc_extra)
-        log_obj.warning(m1)
+        logging.warning(m1)
 
     elif (l_alloc == 0) and (l_act > 0):
         m2 = "Land classes in projected model but not in allocation file:  {0}".format(act_extra)
-        log_obj.warning(m2)
+        logging.warning(m2)
 
 
 def _get_steps(df, start_step, end_step):
-    """
-    Create a list of projected time steps from the header that are within the user specified range
+    """Create a list of projected time steps from the header that are within the user specified range
 
     :param df:                  Projected data, data frame
     :param start_step:          First time step value
     :param end_step:            End time step value
+
     :return:                    List of target steps
+
     """
 
     l = []
     for i in df.columns:
         try:
             y = int(i)
+            print(y)
             if start_step <= y <= end_step:
                 l.append(y)
         except ValueError:
@@ -182,12 +192,75 @@ def _get_steps(df, start_step, end_step):
     return l
 
 
-def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_dict, agg_level, metric_seq,
-                   area_factor=1000):
+def read_gcam_land(db_path, db_file, f_queries, d_basin_name, subreg, crop_water_src):
+    """Query GCAM database for irrigated land area per region, subregion, and crop type.
+
+    :param db_path:         Full path to the input GCAM database
+    :param f_queries:       Full path to the XML query file
+    :param d_basin_name:    A dictionary of 'basin_glu_name' : basin_id
+    :param subreg:          Agg level of GCAM database: either AEZ or BASIN
+    :param crop_water_src:  Filter for crop type: one of IRR, RFD, or BOTH
+
+    :return:                A pandas DataFrame containing region, subregion,
+                            crop type, and irrigated area per year in thousands km2
+
+    """
+
+    # instantiate GCAM db
+    conn = gcam_reader.LocalDBConn(db_path, db_file, suppress_gabble=False)
+
+    # get queries
+    q = gcam_reader.parse_batch_query(f_queries)
+
+    # assume target query is first in query list
+    land_alloc = conn.runQuery(q[0])
+
+    # split 'land-allocation' column into components
+    if subreg == 'AEZ':
+        raise ValueError("Using AEZs are no longer supported with `gcam_reader`")
+
+    elif subreg == 'BASIN':
+        # expected format: landclass_basin-glu-name_USE_management
+        cnames = ['landclass', 'metric_id', 'use', 'mgmt']
+
+        # clean data: simplify biomass_type to just 'biomass'; temporarily
+        # change Root_Tuber to RootTuber so we can split on underscores
+        land_alloc['land-allocation'].replace(r'^biomass_[^_]*_', r'biomass_', regex=True, inplace=True)
+        land_alloc['land-allocation'] = land_alloc['land-allocation'].str.replace('Root_Tuber', 'RootTuber')
+        land_alloc[cnames] = land_alloc['land-allocation'].str.split('_', expand=True)
+        land_alloc['landclass'] = land_alloc['landclass'].str.replace('RootTuber', 'Root_Tuber')
+
+        land_alloc['metric_id'] = land_alloc['metric_id'].map(d_basin_name)
+        land_alloc.drop('mgmt', axis=1, inplace=True)
+
+    # filter out irrigated or rainfed crops, as specified in the config file
+    if crop_water_src != 'BOTH':
+        land_alloc = land_alloc[land_alloc['use'] == crop_water_src]
+
+    # drop unused columns
+    land_alloc.drop(['Units', 'scenario', 'land-allocation', 'use'], axis=1, inplace=True)
+
+    # sum hi and lo management allocation (and biomass_type)
+    land_alloc = land_alloc.groupby(['region', 'landclass', 'metric_id', 'Year']).sum()
+    land_alloc.reset_index(inplace=True)
+
+    # convert shape
+    piv = pd.pivot_table(land_alloc, values='value',
+                         index=['region', 'landclass', 'metric_id'],
+                         columns='Year', fill_value=0)
+    piv.reset_index(inplace=True)
+    piv['metric_id'] = piv['metric_id'].astype(np.int64)
+    piv.columns = piv.columns.astype(str)
+
+    return piv
+
+
+def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, timestep, scenario, region_dict, agg_level, metric_seq,
+                   area_factor=1000, logger=None):
     """
     Read and process the GCAM land allocation output file.
 
-    :param f:                   GCAM land allocation file
+    :param gcam_data:           GCAM land allocation file or data frame from gcam_reader
     :param name_col:            Field name of the column containing the region and either AEZ or basin number
     :param metric:              AEZ or Basin
     :param start_yr:            User-defined GCAM start year to process from configuration file
@@ -205,12 +278,14 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
                                     allreg:                 Numpy array of unique region names
                                     allregnumber:           Numpy array of unique region numbers
                                     allregaez:              List of lists, metric ids per region
+
     """
-    # read GCAM output file as a dataframe; skip title row
-    gdf = pd.read_csv(f, header=0)
+
+    # if land allocation data is not already a DataFrame, read GCAM output file and skip title row
+    gdf = gcam_data if isinstance(gcam_data, pd.DataFrame) else pd.read_csv(gcam_data)
 
     # make sure all land classes in the projected file are in the allocation file and vice versa
-    _check_constraints(log, gcam_landclasses, gdf['landclass'].tolist())
+    _check_constraints(gcam_landclasses, gdf['landclass'].tolist())
 
     # assign user-defined scenario to data frame
     gdf['scenario'] = scenario
@@ -222,26 +297,26 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
         pass
 
     # create a list of GCAM years from header that are within the user specified year range
-    user_years = _get_steps(gdf, start_yr, end_yr)
+    model_year_list_int = list(range(start_yr, end_yr + timestep, timestep))
 
     # create land use area per year array converted from thousands km using area_factor
-    target_years = [str(yr) for yr in user_years]
-    gcam_ludata = gdf[target_years].values * area_factor
+    model_year_list_str = [str(yr) for yr in model_year_list_int]
 
-    # create field for land class
+    gcam_data_array_km = gdf[model_year_list_str].values * area_factor
+
+    # create field for land class all lower case
     gdf['gcam_landname'] = gdf['landclass'].apply(lambda x: x.lower())
 
-    unique_metric_list = np.sort(gdf['metric_id'].unique())
-
-    # get a list of metrics that are in the master list but not the projected data
-    metric_not_in_prj = sorted(list(set(metric_seq) - set(unique_metric_list)))
+    # get a list of basin ids that are in the master list but not the projected data
+    unique_basin_list = np.sort(gdf['metric_id'].unique())
+    basins_not_in_prj = sorted(list(set(metric_seq) - set(unique_basin_list)))
 
     # create dictionary to look up metric id to its index to act as a proxy for non-sequential values
     sequence_metric_dict = {i: ix+1 for ix, i in enumerate(gdf['metric_id'].sort_values().unique())}
 
     max_prj_metric = max([sequence_metric_dict[k] for k in sequence_metric_dict.keys()]) + 1
 
-    for i in metric_not_in_prj:
+    for i in basins_not_in_prj:
         sequence_metric_dict[i] = max_prj_metric
         max_prj_metric += 1
 
@@ -287,45 +362,45 @@ def read_gcam_file(log, f, gcam_landclasses, start_yr, end_yr, scenario, region_
     allregnumber.sort()
     allmetric = np.unique(gcam_metric)
 
-    # create a list of lists of AEZ or Basin ids per region; add blank list for Taiwan if running GCAM REGION-AEZ
+    # create a list of lists of basin ids per region; add blank list for Taiwan if running GCAM REGION-AEZ
     xdf = gdf.groupby('gcam_regionnumber')['gcam_metric'].apply(list)
     allregaez = xdf.apply(lambda x: list(np.unique(x))).tolist()
 
     # log the number of regions and metric_ids
-    log.info('Number of regions from projected file:  {0}'.format(len(allregnumber)))
-    log.info('Number of basins or AEZs from projected file:  {0}'.format(len(allmetric)))
+    logger.info('Number of regions from projected file:  {0}'.format(len(allregnumber)))
+    logger.info('Number of basins from projected file:  {0}'.format(len(allmetric)))
 
     # add Taiwan region space holder if aggregated by GCAM region
     if agg_level == 2:
         taiwan_idx = np.where(allreg == 'Taiwan')[0][0]-1
         allregaez.insert(taiwan_idx, [])
 
-    return [user_years, gcam_ludata, gcam_metric, gcam_landname, gcam_regionnumber, allreg, allregnumber, allregaez,
+    return [model_year_list_int, gcam_data_array_km, gcam_metric, gcam_landname, gcam_regionnumber, allreg, allregnumber, allregaez,
             allmetric, metric_id_array, sequence_metric_dict]
 
 
-def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region_seq):
-    """
-    Read and process base layer land cover file.
+def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, region_seq, logger=None):
+    """Read and process base layer land cover file.
 
-    :param c:                           Configuration object
-    :param spat_landclasses:            A list of land classes represented in the observed data
+    :param config:                           Configuration object
+    :param observed_landclasses:            A list of land classes represented in the observed data
     :param sequence_metric_dict:        A dictionary of projected metric ids to their original id
     :param metric_seq:                  An ordered list of expected metric ids
     :param region_seq:                  An ordered list of expected region ids
-    :return:
+
     """
-    df = pd.read_csv(c.first_mod_file)
+
+    df = pd.read_csv(config.observed_lu_file, compression='infer')
 
     # rename columns as lower case
     df.columns = [i.lower() for i in df.columns]
 
     # create array with only spatial land cover values
     try:
-        spat_ludata = df[spat_landclasses].values
+        spat_ludata = df[observed_landclasses].values
     except KeyError as e:
-        log.error('Fields are listed in the spatial allocation file that do not exist in the base layer.')
-        log.error(e)
+        logger.error('Fields are listed in the spatial allocation file that do not exist in the base layer.')
+        logger.error(e)
 
     # create array of latitude, longitude coordinates
     try:
@@ -340,24 +415,24 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
         spat_metric_region = None
 
     # create array of grid ids
-    spat_grid_id = df[c.pkey].values
+    spat_grid_id = df[config.observed_id_field].values
 
     # create array of water areas
     try:
         spat_water = df['water'].values
     except KeyError:
-        log.warning('Water not represented in base layer.  Representing water as 0 percent of grid.')
+        logger.warning('Water not represented in base layer.  Representing water as 0 percent of grid.')
         spat_water = np.zeros_like(spat_grid_id)
 
     spat_region = df['region_id'].values
-    spat_metric = df['{0}_id'.format(c.metric.lower())].values
+    spat_metric = df['{0}_id'.format(config.metric)].values
 
     # ensure that the observed data represents all expected region ids
     unique_spat_region = np.unique(spat_region)
     valid_region_test = set(region_seq) - set(unique_spat_region)
 
     if len(valid_region_test) > 0:
-        log.error('Observed spatial data must have all regions represented.')
+        logger.error('Observed spatial data must have all regions represented.')
         raise ValidationException
 
     # ensure that the observed data represents all expected metric ids
@@ -365,7 +440,7 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
     valid_metric_test = set(metric_seq) - set(unique_spat_metric)
 
     if len(valid_metric_test) > 0:
-        log.error('Observed spatial data must have all {}_id represented.'.format(c.metric.lower()))
+        logger.error('Observed spatial data must have all {}_id represented.'.format(config.metric))
         raise ValidationException
 
     # account for 0 designation in observed data for unclassified
@@ -379,18 +454,18 @@ def read_base(log, c, spat_landclasses, sequence_metric_dict, metric_seq, region
     ngrids = len(df)
 
     # change spatial region value for Taiwan from 30 to 11 for China to account for GCAM allocation procedure
-    if c.model.lower() == 'gcam' and c.agg_level == 2:
+    if config.model.lower() == 'gcam' and config.agg_level == 2:
         spat_region[spat_region == 30] = 11
 
     # cell area from lat: lat_correction_factor * (lat_km at equator * lon_km at equator) * (resolution squared) = sqkm
-    cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 * 110.57) * (c.resin**2)
+    cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 * 110.57) * (config.spatial_resolution**2)
 
     # create an array with the actual percentage of the grid cell included in the data; some are cut by AEZ or Basin
     #   polygons others have no-data in land cover
-    celltrunk = (np.sum(spat_ludata, axis=1) + spat_water) / (c.resin ** 2)
+    celltrunk = (np.sum(spat_ludata, axis=1) + spat_water) / (config.spatial_resolution ** 2)
 
     # adjust land cover area based on the percentage of the grid cell represented
-    spat_ludata = spat_ludata / (c.resin ** 2) * np.transpose([cellarea, ] * len(spat_landclasses))
+    spat_ludata = spat_ludata / (config.spatial_resolution ** 2) * np.transpose([cellarea, ] * len(observed_landclasses))
 
     return [spat_ludata, spat_water, spat_coords, spat_metric_region, spat_grid_id, spat_metric, spat_region, ngrids,
             cellarea, celltrunk, sequence_metric_dict]

@@ -1,91 +1,61 @@
+"""Logger
+
+@author   Chris R. Vernon
+@email:   chris.vernon@pnnl.gov
+
+License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
+
 """
-Class to build logger.
 
-Copyright (c) 2017, Battelle Memorial Institute
-
-Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
-
-@author:  Chris R. Vernon (PNNL)
-"""
 import logging
 import sys
 
 
 class Logger:
+    """Initialize project-wide logger. The logger outputs to both stdout and a file."""
 
-    LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    # output format for log string
+    LOG_FORMAT_STRING = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
-    def __init__(self, log_file, scenario, console_off=False):
+    def __init__(self):
 
-        self.f = log_file
-        self.scenario = scenario
-        self.console_off = console_off
+        # initialize logger instance
+        self.logger = logging.getLogger('demeter_runtime')
+        self.logger.setLevel(logging.INFO)
+
+        # generate log formatter
+        self.log_format = logging.Formatter(self.LOG_FORMAT_STRING)
+
+        # logger console handler
+        self.console_handler()
+
+    def console_handler(self):
+        """Construct console handler."""
+
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(self.log_format)
+        self.logger.addHandler(console_handler)
+
+    def file_handler(self, logfile, write_logfile):
+        """Construct file handler."""
+
+        # logger file handler
+        if write_logfile:
+            file_handler = logging.FileHandler(logfile)
+            file_handler.setLevel(logging.INFO)
+            file_handler.setFormatter(self.log_format)
+            self.logger.addHandler(file_handler)
 
     @staticmethod
-    def get_logger(scenario):
-        """
-        Instantiate logger.  Use scenario name in log message.
+    def close_logger():
+        """Shutdown logger."""
 
-        :param scenario:                    user defined scenario name from config
-        :return                             logger instance
-        """
-        return logging.getLogger(scenario)
+        # Remove logging handlers
+        logger = logging.getLogger()
 
-    @classmethod
-    def console_handler(cls):
-        """
-        Handler to log to console.
+        for handler in logger.handlers[:]:
+            handler.close()
+            logger.removeHandler(handler)
 
-        :return:                            console handler object
-        """
-        # create console handler
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.INFO)
-
-        # add formatter to handler
-        ch.setFormatter(logging.Formatter(cls.LOG_FORMAT))
-
-        return ch
-
-    @classmethod
-    def set_file(cls, f):
-        """
-        Instantiate file logger.
-
-        :param f:                           full path and file name to log file
-        """
-        # instantiate log file
-        logging.basicConfig(filename=f, level=logging.DEBUG, format=cls.LOG_FORMAT)
-
-    def make_log(self):
-        """
-        Create console and file log instance.
-
-        :return:                            logger object
-        """
-        # instantiate logger
-        log = self.get_logger(self.scenario)
-
-        if self.console_off is False:
-
-            # create console handler
-            ch = self.console_handler()
-
-            # add console handler to logger
-            log.addHandler(ch)
-
-        # create file logging functionality
-        self.set_file(self.f)
-
-        return log
-
-    def close_logger(self, log):
-        """
-        Close filehandler.
-        :return:
-        """
-        handlers = log.handlers[:]
-        for h in handlers:
-            h.flush()
-            h.close()
-            log.removeHandler(h)
+        logging.shutdown()
