@@ -32,7 +32,6 @@ jobs:
             pip install scipy==1.6.3
             pip install requests==2.25.1
             pip install git+https://github.com/JGCRI/gcam_reader.git
-            pip install
 
         - name: Test and generate coverage report
           run: |
