@@ -6,11 +6,6 @@ def readme():
         return f.read()
 
 
-def get_requirements():
-    with open('requirements.txt') as f:
-        return f.read().split()
-
-
 setup(
     name='demeter',
     version='1.2.0',
@@ -22,7 +17,13 @@ setup(
     author_email='chris.vernon@pnnl.gov',
     description='A land use land cover disaggregation and land change analytic model',
     long_description=readme(),
-    install_requires=get_requirements(),
-    dependency_links=["https://github.com/JGCRI/gcam_reader.git"],
+    long_description_content_type="text/markdown",
+    install_requires=['configobj==5.0.6',
+                      'numpy==1.20.3',
+                      'pandas>=1.2.4',
+                      'scipy==1.6.3',
+                      'requests==2.25.1',
+                      'gcam_reader==1.2.0'],
+    dependency_links=['git+https://github.com/JGCRI/gcam_reader@master#egg=gcam_reader-1.2.0'],
     include_package_data=True
 )
