@@ -20,7 +20,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=['configobj==5.0.6',
                       'numpy==1.20.3',
-                      'pandas>=1.2.4',
+                      'pandas==1.2.4',
                       'scipy==1.6.3',
                       'requests==2.25.1',
                       'gcam_reader==1.2.0'],
