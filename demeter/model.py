@@ -10,13 +10,9 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 import argparse
 import os
-import sys
 import time
-import traceback
-import logging
 
 from demeter.config_reader import ReadConfig
-from demeter.logger import Logger
 from demeter.process import ProcessStep
 from demeter.staging import Stage
 
@@ -99,7 +95,7 @@ def run_model(**kwargs):
     """Convenience wrapper for the 'demeter.Model' class to run all time steps sequentially."""
 
     # instantiate the model class
-    model = Model(kwargs)
+    model = Model(**kwargs)
 
     # run all steps then clean up
     model.execute()

@@ -61,12 +61,21 @@ class ReadConfig:
             allocation_params = input_params.get('ALLOCATION', None)
             observed_params = input_params.get('OBSERVED', None)
             projected_params = input_params.get('PROJECTED', None)
-            output_params = self.config.get('OUTPUTS', None)
-            diagnostic_params = output_params.get('DIAGNOSTICS', None)
+            output_params = self.config.get('OUTPUTS', {})
+            diagnostic_params = self.config.get('OUTPUTS', {}).get('DIAGNOSTICS')
             run_params = self.config.get('PARAMS', None)
 
+        # choice to write log to file
+        self.write_logfile = params.get('write_logfile', None)
+
+        if self.write_logfile is None:
+            self.write_logfile = run_params.get('write_logfile', True)
+
         # choice to write outputs
-        self.write_outputs = run_params.get('write_outputs', False)
+        self.write_outputs = params.get('write_outputs', None)
+
+        if self.write_outputs is None:
+            self.write_outputs = run_params.get('write_outputs', True)
 
         # scenario is used to build the output directory name
         self.scenario = run_params.get('scenario', 'example')
@@ -96,6 +105,7 @@ class ReadConfig:
 
         # observed data
         self.observed_lu_file = os.path.join(self.observed_dir, observed_params.get('observed_lu_file', 'gcam_reg32_basin235_modis_v6_2010_mirca_2000_0p5deg_sqdeg_wgs84_07may2021.zip'))
+        self.logger.info(f'Using `observed_lu_file`:  {self.observed_lu_file}')
 
         # projected data
         # look for this first in code; this only comes in from the main function - not the config file
@@ -136,7 +146,6 @@ class ReadConfig:
             self.extensification_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('extensification_file', 'expansion_diag.csv'))
 
         # initialize file logger
-        self.write_logfile = run_params.get('write_logfile', False)
         self.run_desc = run_params.get('run_desc', 'demeter_example')
         log_basename = f"logfile_{self.scenario}_{self.dt}.log"
         self.create_dir(self.log_output_dir)
