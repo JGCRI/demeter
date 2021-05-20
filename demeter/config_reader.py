@@ -46,7 +46,6 @@ class ReadConfig:
             allocation_params = params
             observed_params = params
             projected_params = params
-            reference_params = params
             output_params = params
             diagnostic_params = params
             run_params = params
@@ -62,10 +61,21 @@ class ReadConfig:
             allocation_params = input_params.get('ALLOCATION', None)
             observed_params = input_params.get('OBSERVED', None)
             projected_params = input_params.get('PROJECTED', None)
-            reference_params = input_params.get('REFERENCE', None)
-            output_params = self.config.get('OUTPUTS', None)
-            diagnostic_params = output_params.get('DIAGNOSTICS', None)
+            output_params = self.config.get('OUTPUTS', {})
+            diagnostic_params = self.config.get('OUTPUTS', {}).get('DIAGNOSTICS')
             run_params = self.config.get('PARAMS', None)
+
+        # choice to write log to file
+        self.write_logfile = params.get('write_logfile', None)
+
+        if self.write_logfile is None:
+            self.write_logfile = run_params.get('write_logfile', True)
+
+        # choice to write outputs
+        self.write_outputs = params.get('write_outputs', None)
+
+        if self.write_outputs is None:
+            self.write_outputs = run_params.get('write_outputs', True)
 
         # scenario is used to build the output directory name
         self.scenario = run_params.get('scenario', 'example')
@@ -84,39 +94,40 @@ class ReadConfig:
         self.observed_dir = os.path.join(self.input_dir, input_params.get('observed_dir', 'observed'))
         self.constraints_dir = os.path.join(self.input_dir, input_params.get('constraints_dir', 'constraints'))
         self.projected_dir = os.path.join(self.input_dir, input_params.get('projected_dir', 'projected'))
-        self.reference_dir = os.path.join(self.input_dir, input_params.get('reference_dir', 'reference'))
 
         # allocation files
-        self.spatial_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('spatial_allocation_file', 'gcam_regbasin_modis_v6_type5_5arcmin_observed_alloc.csv'))
-        self.gcam_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('gcam_allocation_file', 'gcam_regbasin_modis_v6_type5_5arcmin_projected_alloc.csv'))
-        self.kernel_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('kernel_allocation_file', 'kernel_density_weighting.csv'))
-        self.transition_order_file = os.path.join(self.allocation_dir, allocation_params.get('transition_order_file', 'transition_priority.csv'))
-        self.treatment_order_file = os.path.join(self.allocation_dir, allocation_params.get('treatment_order_file', 'treatment_order.csv'))
-        self.constraints_file = os.path.join(self.allocation_dir, allocation_params.get('constraints_file', 'constraint_weighting.csv'))
+        self.spatial_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('spatial_allocation_file', 'csdms_observed_allocation.csv'))
+        self.gcam_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('gcam_allocation_file', 'csdms_projected_allocation.csv'))
+        self.kernel_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('kernel_allocation_file', 'csdms_kernel_weighting_allocation.csv'))
+        self.transition_order_file = os.path.join(self.allocation_dir, allocation_params.get('transition_order_file', 'csdms_transition_allocation.csv'))
+        self.treatment_order_file = os.path.join(self.allocation_dir, allocation_params.get('treatment_order_file', 'csdms_order_allocation.csv'))
+        self.constraints_file = os.path.join(self.allocation_dir, allocation_params.get('constraints_file', 'csdms_constraint_allocation.csv'))
 
         # observed data
-        self.observed_lu_file = os.path.join(self.observed_dir, observed_params.get('observed_lu_file', 'gcam_reg32_basin235_modis_v6_2010_5arcmin_sqdeg_wgs84_11Jul2019.zip'))
+        self.observed_lu_file = os.path.join(self.observed_dir, observed_params.get('observed_lu_file', 'gcam_reg32_basin235_modis_v6_2010_mirca_2000_0p5deg_sqdeg_wgs84_07may2021.zip'))
+        self.logger.info(f'Using `observed_lu_file`:  {self.observed_lu_file}')
 
         # projected data
-        self.projected_lu_file = os.path.join(self.projected_dir, projected_params.get('projected_lu_file', 'gcam_ref_scenario_reg32_basin235_v5p1p3.csv'))
-        self.gcam_database = projected_params.get('gcam_database', None)
-        self.crop_type = self.valid_string(projected_params.get('crop_type', 'BOTH').upper(), 'crop_type', ['IRR', 'RFD', 'BOTH'])
+        # look for this first in code; this only comes in from the main function - not the config file
+        self.gcamwrapper_df = params.get('gcamwrapper_df', None)
 
-        if self.gcam_database is not None:
-            self.gcam_database_dir = os.path.dirname(self.gcam_database)
-            self.gcam_database_name = os.path.basename(self.gcam_database)
+        if (projected_params is not None) and (self.gcamwrapper_df is None):
+            self.projected_lu_file = os.path.join(self.projected_dir, projected_params.get('projected_lu_file', None))
+            self.gcam_database = projected_params.get('gcam_database', None)
+            self.crop_type = self.valid_string(projected_params.get('crop_type', 'BOTH').upper(), 'crop_type', ['IRR', 'RFD', 'BOTH'])
+            self.gcam_query = pkg_resources.resource_filename('demeter', 'data/query_land_reg32_basin235_gcam5p0.xml')
+
+            if self.gcam_database is not None:
+                self.gcam_database_dir = os.path.dirname(self.gcam_database)
+                self.gcam_database_name = os.path.basename(self.gcam_database)
 
         # reference data
-        self.gcam_region_names_file = os.path.join(self.reference_dir, reference_params.get('gcam_region_names_file', 'gcam_regions_32.csv'))
-        self.gcam_region_coords_file = os.path.join(self.reference_dir, reference_params.get('gcam_region_coords_file', 'regioncoord.csv'))
-        self.gcam_country_coords_file = os.path.join(self.reference_dir, reference_params.get('gcam_country_coords_file', 'countrycoord.csv'))
-        self.gcam_basin_names_file = os.path.join(self.reference_dir, reference_params.get('gcam_basin_names_file', 'gcam_basin_lookup.csv'))
-        self.gcam_query = os.path.join(self.reference_dir, projected_params.get('gcam_query', 'query_land_reg32_basin235_gcam5p0.xml'))
+        self.gcam_region_names_file = pkg_resources.resource_filename('demeter', 'data/gcam_regions_32.csv')
+        self.gcam_basin_names_file = pkg_resources.resource_filename('demeter', 'data/gcam_basin_lookup.csv')
 
         # output directories
         self.diagnostics_output_dir = os.path.join(self.output_dir, output_params.get('diagnostics_output_dir', 'diagnostics'))
         self.log_output_dir = os.path.join(self.output_dir, output_params.get('log_output_dir', 'log_files'))
-        self.kernel_maps_output_dir = os.path.join(self.output_dir, output_params.get('kernel_maps_output_dir', 'kernel_density'))
         self.transitions_tabular_output_dir = os.path.join(self.output_dir, output_params.get('transitions_tabular_output_dir', 'transition_tabular'))
         self.transitions_maps_output_dir = os.path.join(self.output_dir, output_params.get('transitions_maps_output_dir', 'transition_maps'))
         self.intensification_pass1_output_dir = os.path.join(self.output_dir, output_params.get('intensification_pass1_output_dir', 'luc_intensification_pass1'))
@@ -128,13 +139,13 @@ class ReadConfig:
         self.lu_shapefile_output_dir = os.path.join(self.output_dir, output_params.get('lu_shapefile_output_dir', 'spatial_landcover_shapefile'))
 
         # diagnostics
-        self.harmonization_coefficent_array = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('harmonization_coefficent_array', 'harmonization_coeff.npy'))
-        self.intensification_pass1_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('intensification_pass1_file', 'intensification_pass_one_diag.csv'))
-        self.intensification_pass2_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('intensification_pass2_file', 'intensification_pass_two_diag.csv'))
-        self.extensification_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('extensification_file', 'expansion_diag.csv'))
+        if diagnostic_params is not None:
+            self.harmonization_coefficent_array = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('harmonization_coefficent_array', 'harmonization_coeff.npy'))
+            self.intensification_pass1_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('intensification_pass1_file', 'intensification_pass_one_diag.csv'))
+            self.intensification_pass2_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('intensification_pass2_file', 'intensification_pass_two_diag.csv'))
+            self.extensification_file = os.path.join(self.diagnostics_output_dir, diagnostic_params.get('extensification_file', 'expansion_diag.csv'))
 
         # initialize file logger
-        self.write_logfile = run_params.get('write_logfile', True)
         self.run_desc = run_params.get('run_desc', 'demeter_example')
         log_basename = f"logfile_{self.scenario}_{self.dt}.log"
         self.create_dir(self.log_output_dir)
@@ -147,29 +158,23 @@ class ReadConfig:
         self.agg_level = self.valid_integer(run_params.get('agg_level', 2), 'agg_level', [1, 2])
         self.observed_id_field = run_params.get('observed_id_field', 'target_fid')
         self.start_year = self.ck_yr(run_params.get('start_year', 2010), 'start_year')
-        self.end_year = self.ck_yr(run_params.get('end_year', 2010), 'end_year')
+        self.end_year = self.ck_yr(run_params.get('end_year', 2015), 'end_year')
         self.use_constraints = self.valid_integer(run_params.get('use_constraints', 1), 'use_constraints', [0, 1])
         self.spatial_resolution = self.valid_limit(run_params.get('spatial_resolution', 0.25), 'spatial_resolution', [0.0, 1000000.0], 'float')
         self.errortol = self.valid_limit(run_params.get('errortol', 0.001), 'errortol', [0.0, 1000000.0], 'float')
-        self.timestep = self.valid_limit(run_params.get('timestep', 1), 'timestep', [1, 1000000], 'int')
+        self.timestep = self.valid_limit(run_params.get('timestep', 5), 'timestep', [1, 1000000], 'int')
         self.proj_factor = self.valid_limit(run_params.get('proj_factor', 1000), 'proj_factor', [1, 10000000000], 'int')
         self.diagnostic = self.valid_integer(run_params.get('diagnostic', 0), 'diagnostic', [0, 1])
         self.intensification_ratio = self.valid_limit(run_params.get('intensification_ratio', 0.8), 'intensification_ratio', [0.0, 1.0], 'float')
         self.stochastic_expansion = self.valid_integer(run_params.get('stochastic_expansion', 0), 'stochastic_expansion', [0, 1])
         self.selection_threshold = self.valid_limit(run_params.get('selection_threshold', 0.75), 'intensification_ratio', [0.0, 1.0], 'float')
         self.kernel_distance = self.valid_limit(run_params.get('kernel_distance', 10), 'kernel_distance', [0, 10000000000], 'int')
-        self.map_kernels = self.valid_integer(run_params.get('map_kernels', 0), 'map_kernels', [0, 1])
-        self.map_luc_pft = self.valid_integer(run_params.get('map_luc_pft', 0), 'map_luc_pft', [0, 1])
-        self.map_luc_steps = self.valid_integer(run_params.get('map_luc_steps', 0), 'map_luc_steps', [0, 1])
-        self.map_transitions = self.valid_integer(run_params.get('map_transitions', 0), 'map_transitions', [0, 1])
         self.target_years_output = self.set_target(run_params.get('target_years_output', 'all'))
         self.save_tabular = self.valid_integer(run_params.get('save_tabular', 1), 'save_tabular', [0, 1])
         self.tabular_units = self.valid_string(run_params.get('tabular_units', 'sqkm'), 'tabular_units', ['sqkm', 'fraction'])
         self.save_transitions = self.valid_integer(run_params.get('save_transitions', 0), 'save_transitions', [0, 1])
         self.save_shapefile = self.valid_integer(run_params.get('save_shapefile', 0), 'save_shapefile', [0, 1])
         self.save_netcdf_yr = self.valid_integer(run_params.get('save_netcdf_yr', 0), 'save_netcdf_yr', [0, 1])
-        self.save_netcdf_lc = self.valid_integer(run_params.get('save_netcdf_lc', 0), 'save_netcdf_lc', [0, 1])
-        self.save_ascii_max = self.valid_integer(run_params.get('save_ascii_max', 0), 'save_ascii_max', [0, 1])
 
         # create and validate constraints input file full paths
         self.constraint_files = self.get_constraints()
@@ -177,20 +182,8 @@ class ReadConfig:
         self.logger.info(f'Using `run_dir`:  {self.run_dir}')
 
         # turn on tabular land cover data output if writing a shapefile
-        if self.save_shapefile == 1:
-            self.save_tabular = 1
-
         if self.diagnostic:
             self.create_dir(self.diagnostics_output_dir)
-
-        if self.map_kernels:
-            self.create_dir(self.kernel_maps_output_dir)
-
-        if self.map_luc_pft:
-            self.create_dir(self.map_luc_pft)
-
-        if self.map_transitions:
-            self.create_dir(self.transitions_maps_output_dir)
 
         if self.save_tabular or self.save_shapefile:
             self.create_dir(self.lu_csv_output_dir)
@@ -201,8 +194,6 @@ class ReadConfig:
         if self.save_shapefile:
             self.create_dir(self.lu_shapefile_output_dir)
 
-        if self.save_netcdf_yr or self.save_netcdf_lc:
-            self.create_dir(self.lu_netcdf_output_dir)
 
     @staticmethod
     def ck_type(v, p, tp):
@@ -382,13 +373,14 @@ class ReadConfig:
 
         """
 
-        try:
-            if os.path.isdir(d) is False:
-                os.makedirs(d)
+        if self.write_outputs:
+            try:
+                if os.path.isdir(d) is False:
+                    os.makedirs(d)
 
-        except:
-            logging.error("ERROR:  Failed to create directory.")
-            raise
+            except:
+                logging.error("ERROR:  Failed to create directory.")
+                raise
 
     @staticmethod
     def ck_agg(a):

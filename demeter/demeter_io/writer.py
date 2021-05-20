@@ -8,13 +8,9 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com); Caleb J. Braun (caleb.braun@pnnl.gov)
 """
 import os
-import matplotlib.pyplot as plt
-from matplotlib import cm
 import numpy as np
 from scipy import io as sio
-import shapefile
-
-import demeter.demeter_io.reader as rdr
+import pandas as pd
 
 
 def array_to_csv(arr, out_file):
@@ -37,83 +33,9 @@ def save_array(arr, out_file):
     np.save(out_file, arr)
 
 
-def to_shp(c, yr, final_landclasses):
-    """
-    Build shapefile containing landcover per grid location.
-
-    :param c:                       config object
-    :param yr:                      target year
-    :param final_landclasses:       list of final land classes
-    """
-
-    # instantiate the writer object
-    w = shapefile.Writer(shapeType=shapefile.POINT)
-
-    # field list
-    fields = ['latitude', 'longitude', '{0}_id'.format(c.metric.lower()), 'region_id', 'water']
-
-    # set schema
-    w.field('latitude', 'F', decimal=10)
-    w.field('longitude', 'F', decimal=10)
-    w.field('{0}_id'.format(c.metric.lower()), 'C')
-    w.field('region_id', 'C')
-    w.field('water', 'F', decimal=10)
-
-    # prep string for record
-    s = 'w.record(lat, lon, met, reg, wat,'
-
-    # add functional type fields and prepare record string
-    for idx, fci in enumerate(final_landclasses):
-
-        fc = fci.lower()
-
-        w.field(fc, 'F', decimal=10)
-
-        fields.append(fc)
-
-        # append fields to record string
-        if idx+1 < len(final_landclasses):
-            s += "float(r[d['{0}']]),".format(fc)
-
-        else:
-            s += "float(r[d['{0}']]))".format(fc)
-
-    # read landcover CSV
-    with open(os.path.join(c.lc_per_step_csv, 'landcover_{0}_timestep.csv'.format(yr))) as get:
-
-        # get the header as a list
-        hdr = get.next().strip().split(',')
-
-        # get the index locations of field to write in input file
-        d = {k: hdr.index(k) for k in fields}
-
-        for row in get:
-
-            # row to list
-            r = [i.lower() for i in row.strip().split(',')]
-
-            lat = float(r[d['latitude']])
-            lon = float(r[d['longitude']])
-            met = r[d['{0}_id'.format(c.metric.lower())]]
-            reg = r[d['region_id']]
-            wat = float(r[d['water']])
-
-            # add geometry to shapefile
-            w.point(lon, lat)
-
-            # add attribute to shapefile
-            eval(s)
-
-    # save output
-    out_shp = os.path.join(c.lc_per_step_shp, 'landcover_{0}_timestep.shp'.format(yr))
-    w.save(out_shp)
-
-
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
-                    spat_ludataharm, metric, units='fraction'):
-    """
-    Save land cover data for each time step as a CSV file.
-    """
+                    spat_ludataharm, metric, units='fraction', write_outputs=False):
+    """Save land cover data for each time step as a CSV file."""
 
     # create out path and file name
     lc_ts_file = os.path.join(c.lu_csv_output_dir, 'landcover_{0}_timestep.csv'.format(yr))
@@ -147,7 +69,11 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
         arr[:, 4:] = np.true_divide(arr[:, 4:], arr[:, 4:].sum(axis=1, keepdims=True))
 
     # save to file
-    np.savetxt(lc_ts_file, arr, fmt='%g', delimiter=',', header=hdr, comments='')
+    if write_outputs:
+        np.savetxt(lc_ts_file, arr, fmt='%g', delimiter=',', header=hdr, comments='')
+
+    columns = hdr.split(',')
+    return pd.DataFrame(data=arr, columns=columns)
 
 
 def write_transitions(s, c, step, transitions):
@@ -341,200 +267,6 @@ def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step, model
             lns[:] = lon
             times[:] = years
             lc_frac[:] = lc_yearly[:, :, :, lc_index]
-
-
-def map_kernel_density(spatdata, kerneldata, lat, lon, pft_name, yr, out_path):
-    """
-    Maps kernel density computed through convolution filter
-
-    :param spatdata:
-    :param kerneldata:
-    :param lat:
-    :param lon:
-    :param pftname:
-    :param year:
-    :param outpathfig:
-    :param filename:
-    :return:
-    """
-    # set map extent
-    extent = [lon[0], lon[-1], lat[-1], lat[0]]
-
-    # set up figure
-    fig = plt.figure()
-    ax1 = fig.add_subplot(211)
-    ax1.set_title(pft_name + ' cover:', fontsize=6)
-    ax2 = fig.add_subplot(212)
-    ax2.set_title(pft_name + ' kernel density:', fontsize=6)
-
-    # set color map
-    cmap = cm.get_cmap('jet')
-
-    # stage image
-    ax1.imshow(spatdata, cmap=cmap, extent=extent, interpolation='nearest', origin='upper', aspect='auto')
-    ax2.imshow(kerneldata, cmap=cmap, extent=extent, interpolation='nearest', origin='upper', aspect='auto')
-
-    # save file
-    plt.savefig(os.path.join(out_path, "kernel_density_{0}_{1}.png".format(pft_name, yr)), dpi=300)
-
-    # clear the figure so it may be used elsewhere
-    fig.clf()
-
-    # close the figure
-    plt.close(fig)
-
-
-def map_luc(spat_ludataharm, spat_ludataharm_orig, cellindexresin, lat, lon, final_landclasses, yr, region_file,
-            country_file, out_dir, process_type):
-    """
-    Map land use change for each PFT.
-
-    :return:
-    """
-    # create lengths for arrays
-    l_lat = len(lat)
-    l_lon = len(lon)
-    l_fcs = len(final_landclasses)
-
-    # set map extent
-    mapextent = [lon[0], lon[-1], lat[-1], lat[0]]
-
-    # set up arrays
-    pft_orig = np.zeros((l_lat, l_lon)) * np.nan
-    pft_now = np.zeros((l_lat, l_lon)) * np.nan
-
-    # load region and country boundary files
-    reg_coords = rdr.csv_to_array(region_file)
-    country_coords = rdr.csv_to_array(country_file)
-
-    for pft in range(l_fcs):
-
-        # get name of target PFT
-        pft_name = final_landclasses[pft]
-
-        # populate change arrays
-        pft_orig[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :])] = spat_ludataharm_orig[:, pft]
-        pft_now[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :])] = spat_ludataharm[:, pft]
-        pft_change = pft_now - pft_orig
-
-        # set up figure and axes
-        fig = plt.figure(figsize=(10, 14))
-        ax1 = plt.subplot2grid((3, 8), (0, 0), colspan=7)
-        ax1b = plt.subplot2grid((3, 8), (0, 7))
-        ax2 = plt.subplot2grid((3, 8), (1, 0), colspan=7)
-        ax2b = plt.subplot2grid((3, 8), (1, 7))
-        ax3 = plt.subplot2grid((3, 8), (2, 0), colspan=7)
-        ax3b = plt.subplot2grid((3, 8), (2, 7))
-
-        # set titles
-        ax1.set_title("{0} {1} BEFORE:".format(yr, pft_name), fontsize=10)
-        ax2.set_title("{0} {1} AFTER:".format(yr, pft_name), fontsize=10)
-        ax3.set_title("{0} {1} CHANGE:".format(yr, pft_name), fontsize=10)
-
-        # color bar for before and after plots
-        cmapbfaf = cm.get_cmap('YlOrBr')
-
-        # plot before
-        a1 = ax1.imshow(pft_orig, cmap=cmapbfaf, extent=mapextent, interpolation='nearest', origin='upper',
-                        aspect='auto')
-        ax1.plot(reg_coords[0, :], reg_coords[1, :], color='black', linestyle='-', linewidth=0.5)
-        ax1.plot(country_coords[0, :], country_coords[1, :], color='0.8', linestyle='-', linewidth=0.2)
-        ax1.axis(mapextent)
-        fig.colorbar(a1, cax=ax1b, orientation='vertical')
-
-        # plot after
-        a2 = ax2.imshow(pft_now, cmap=cmapbfaf, extent=mapextent, interpolation='nearest', origin='upper',
-                        aspect='auto')
-        ax2.plot(reg_coords[0, :], reg_coords[1, :], color='black', linestyle='-', linewidth=0.5)
-        ax2.plot(country_coords[0, :], country_coords[1, :], color='0.8', linestyle='-', linewidth=0.2)
-        ax2.axis(mapextent)
-        fig.colorbar(a2, cax=ax2b, orientation='vertical')
-
-        # color bar for change plot
-        cmapchg = cm.get_cmap('seismic')
-
-        # plot change
-        barmin = np.nanmin(pft_change) / 2.
-        barmax = np.nanmax(pft_change) / 2.
-        barmax = np.nanmax(abs(np.array([barmin, barmax]))) / 2.
-        barmin = barmax * -1
-        a3 = ax3.imshow(pft_change, vmin=barmin, vmax=barmax, cmap=cmapchg, extent=mapextent,
-                        interpolation='nearest', origin='upper', aspect='auto')
-        ax3.plot(reg_coords[0, :], reg_coords[1, :], color='black', linestyle='-', linewidth=0.5)
-        ax3.plot(country_coords[0, :], country_coords[1, :], color='0.8', linestyle='-', linewidth=0.2)
-        ax3.axis(mapextent)
-        fig.colorbar(a3, cax=ax3b, orientation='vertical')
-
-        # save file
-        plt.savefig(os.path.join(out_dir, "luc_{0}_{1}_{2}.png".format(pft_name, yr, process_type)), dpi=300)
-
-        # clear figure
-        fig.clf()
-
-        # close plot object
-        plt.close(fig)
-
-
-def map_transitions(s, c, step, transitions, dpi=150):
-    """
-    Map land cover transitions for each time step.
-
-    :param s:
-    :param c:
-    """
-
-    for index in np.unique(s.order_rules):
-
-        from_pft = np.where(s.order_rules == index)[0][0]
-        from_fcs = s.final_landclasses[from_pft]
-
-        for idx in np.arange(1, len(s.transition_rules[from_pft]), 1):
-
-            to_pft = np.where(s.transition_rules[from_pft, :] == idx)[0][0]
-            to_fcs = s.final_landclasses[to_pft]
-
-            # create data array
-            arr = np.hstack((
-                s.spat_coords, # latitude, longitude
-                np.reshape(s.spat_region, (-1, 1)),
-                np.reshape(s.spat_aez, (-1, 1)),
-                np.reshape(transitions[:, to_pft, from_pft], (-1, 1))))
-
-            # create map extent
-            ext = [s.lon[0], s.lon[-1], s.lat[-1], s.lat[0]]
-
-            # build nan array
-            arr_t = np.zeros(shape=(len(s.lat), len(s.lon))) * np.nan
-
-            # convert sqkm to fraction of area
-            # km_to_fract = np.tile(np.cos(np.radians(s.lat)) * 111.32**2 * (180. / len(s.lat))**2, len(s.lon), 1).T
-
-            # reshape transitions array for map
-            lu = np.reshape(transitions[:, to_pft, from_pft], (-1, 1)) / np.tile(s.cellarea, (1, 1)).T
-
-            # populate array
-            arr_t[np.int_(s.cellindexresin[0, :]), np.int_(s.cellindexresin[1, :])] = lu[:, 0]
-
-            # create figure
-            fig = plt.figure(figsize=(12, 5))
-
-            # set up axis
-            ax1 = plt.subplot2grid((3, 8), (0, 0), colspan=7, rowspan=3)
-            ax1.set_title('Transition from {0} to {1}:'.format(from_fcs, to_fcs), fontsize=10)
-            clr = cm.get_cmap('YlOrBr')
-            a1 = ax1.imshow(arr_t, cmap=clr, extent=ext, interpolation='nearest', origin='upper', aspect='auto')
-            ax1.axis(ext)
-            fig.colorbar(a1, orientation='vertical')
-
-            # create out file name
-            f = os.path.join(c.transiton_map_dir, 'lc_transitons_{0}_to_{1}_{2}.png'.format(from_fcs, to_fcs, step))
-
-            # save figure
-            plt.savefig(f, dpi=dpi)
-
-            # clean up
-            fig.clf()
-            plt.close(fig)
 
 
 def arr_to_ascii(arr, r_ascii, xll=-180, yll=-90, cellsize=0.25, nodata=-9999):

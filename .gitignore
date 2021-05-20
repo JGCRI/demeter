@@ -1,5 +1,5 @@
-# temporary removal of tests
-demeter/tests/
+# example script
+demeter/example.py
 
 # example dir for docker
 example/

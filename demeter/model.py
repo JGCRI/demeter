@@ -10,13 +10,9 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 import argparse
 import os
-import sys
 import time
-import traceback
-import logging
 
 from demeter.config_reader import ReadConfig
-from demeter.logger import Logger
 from demeter.process import ProcessStep
 from demeter.staging import Stage
 
@@ -26,7 +22,7 @@ class ValidationException(Exception):
         Exception.__init__(self, *args)
 
 
-class Demeter:
+class Model:
     """Run the Demeter model.
 
     :param root_dir:                        Full path with filename and extension to the directory containing the
@@ -37,11 +33,6 @@ class Demeter:
 
         self.config = ReadConfig(kwargs)
 
-        self.s = None
-        self.process_step = None
-        self.rg = None
-        self.f = None
-
     def initialize(self):
         """Setup model."""
         # create log header
@@ -49,6 +40,34 @@ class Demeter:
 
         # prepare data for processing
         self.s = Stage(self.config)
+
+        # build step generator
+        self.step_generator = self.build_generator()
+
+    def build_generator(self):
+        """Construct step generator."""
+
+        # run for each time step
+        for idx, step in enumerate(self.s.user_years):
+            yield ProcessStep(self.config, self.s, idx, step, write_outputs=self.config.write_outputs)
+
+    def process_step(self):
+        """Process a single time step."""
+
+        try:
+            step = next(self.step_generator)
+            return step.output_df
+
+        except:
+            self.cleanup()
+
+    def cleanup(self):
+        """Clean up logger and model instance."""
+
+        self.config.logger.info('END')
+
+        # close all open log handlers
+        self.config.logger_ini.close_logger()
 
     def execute(self):
         """Execute main downscaling routine."""
@@ -64,15 +83,24 @@ class Demeter:
             # run for each time step
             for idx, step in enumerate(self.s.user_years):
 
-                ProcessStep(self.config, self.s, idx, step)
+                ProcessStep(self.config, self.s, idx, step, write_outputs=self.config.write_outputs)
 
         finally:
 
             self.config.logger.info('PERFORMANCE:  Model completed in {0} minutes'.format((time.time() - t0) / 60))
-            self.config.logger.info('END')
+            self.cleanup()
 
-            # close all open log handlers
-            self.config.logger_ini.close_logger()
+
+def run_model(**kwargs):
+    """Convenience wrapper for the 'demeter.Model' class to run all time steps sequentially."""
+
+    # instantiate the model class
+    model = Model(**kwargs)
+
+    # run all steps then clean up
+    model.execute()
+
+    return model
 
 
 if __name__ == '__main__':
@@ -95,7 +123,7 @@ if __name__ == '__main__':
         raise ValidationException
 
     # instantiate and run demeter
-    dm = Demeter(config_file=args.config_file,
+    dm = Model(config_file=args.config_file,
                  run_dir=args.run_dir,
                  start_year=args.start_year,
                  end_year=args.end_year,

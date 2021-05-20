@@ -20,6 +20,7 @@ import pandas as pd
 import demeter.demeter_io.reader as rdr
 import demeter.demeter_io.writer as wdr
 import demeter.reconcile as rec
+import demeter.preprocess_data as proc
 
 from demeter.constraints import ApplyConstraints
 from demeter.weight.kernel_density import KernelDensity
@@ -105,7 +106,7 @@ class Stage:
             m = list(range(1, 19, 1))
 
         # read in region ids
-        rdf = pd.read_csv(os.path.join(self.config.reference_dir, 'gcam_regions_32.csv'), usecols=['gcam_region_id'])
+        rdf = pd.read_csv(self.config.gcam_region_names_file, usecols=['gcam_region_id'])
         r = sorted(rdf['gcam_region_id'].tolist())
 
         return m, r
@@ -120,22 +121,38 @@ class Stage:
         # set start time
         t0 = time.time()
 
-        if self.config.gcam_database is None:
-            self.config.logger.info(f"Using projected GCAM data from:  {self.config.projected_lu_file}")
-            projected_land_cover_file = self.config.projected_lu_file
+        if self.config.gcamwrapper_df is not None:
 
-        else:
+            self.config.logger.info(f"Using projected GCAM data from `gcamwrapper` data frame")
+            projected_land_cover_file = proc.format_gcam_data(self.config.gcamwrapper_df,
+                                                              f_out='',
+                                                              start_year=self.config.start_year,
+                                                              through_year=self.config.end_year,
+                                                              region_name_field='gcam_region_name',
+                                                              region_id_field='gcam_region_id',
+                                                              basin_name_field='glu_name',
+                                                              basin_id_field='basin_id',
+                                                              output_to_csv=False)
+
+        elif self.config.gcam_database is not None:
+
             self.config.logger.info(f"Using projected GCAM data from:  {self.config.gcam_database}")
             projected_land_cover_file = rdr.read_gcam_land(self.config.gcam_database_dir,
                                                            self.config.gcam_database_name,
                                                            self.config.gcam_query, self.d_bsnnm_id,
                                                            self.config.metric, self.config.crop_type)
 
+
+        else:
+            self.config.logger.info(f"Using projected GCAM data from:  {self.config.projected_lu_file}")
+            projected_land_cover_file = self.config.projected_lu_file
+
         # extract and process data contained from the land allocation GCAM output file
         gcam_data = rdr.read_gcam_file(projected_land_cover_file,
                                        self.gcam_landclasses,
                                        start_yr=self.config.start_year,
                                        end_yr=self.config.end_year,
+                                       timestep=self.config.timestep,
                                        scenario=self.config.scenario,
                                        region_dict=self.d_regnm_id,
                                        agg_level=self.config.agg_level,
@@ -206,11 +223,11 @@ class Stage:
 
         # apply user-defined constraints to base land use layer data and GCAM land use data
         self.cst = ApplyConstraints(self.allreg, self.allaez, self.final_landclasses, self.user_years, self.ixr_idm,
-                                   self.allregaez, self.spat_region, self.allregnumber, self.spat_aez,
-                                   self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
-                                   self.gcam_array, self.gcam_ludata, self.ngrids, self.constraint_names,
-                                   self.observed_landclasses, self.observed_array, self.spat_ludata, self.config.map_luc_steps,
-                                   self.config.map_luc_pft, self.config.constraint_files, self.config.logger)
+                                    self.allregaez, self.spat_region, self.allregnumber, self.spat_aez,
+                                    self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
+                                    self.gcam_array, self.gcam_ludata, self.ngrids, self.constraint_names,
+                                    self.observed_landclasses, self.observed_array, self.spat_ludata,
+                                    self.config.constraint_files, self.config.logger)
 
         # apply spatial constraints
         self.spat_ludataharm, self.spat_ludataharm_orig_steps, self.spat_ludataharm_orig = self.cst.apply_spat_constraints()
@@ -228,8 +245,7 @@ class Stage:
 
         # instantiate kernel density class
         self.kd = KernelDensity(self.config.spatial_resolution, self.spat_coords, self.final_landclasses,
-                                self.config.kernel_distance, self.ngrids, self.config.kernel_maps_output_dir,
-                                self.order_rules, self.config.map_kernels)
+                                self.config.kernel_distance, self.ngrids, self.order_rules)
 
         # preprocess year-independent kernel density data
         self.lat, self.lon, self.cellindexresin, self.pft_maps, self.kernel_maps, self.kernel_vector, self.weights = self.kd.preprocess_kernel_density()

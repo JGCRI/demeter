@@ -264,7 +264,7 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
     else:
         non_chg_per = 0
 
-    log.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
+    # log.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
 
     # close file if diagnostic
     if c.diagnostic == 1:
