@@ -155,7 +155,7 @@ Defines the order in which final land classes are downscaled.  This will influen
 
 For example:
 
-| category | order | demeter_class_2 | demeter_class_3 |
+| category | order | 
 | --- | :---: |
 | demeter_class_1 | 3 |
 | demeter_class_2 | 2 |
