@@ -15,10 +15,10 @@ Set up Demeter using the following steps:
 2.  Download the example data using the following in a Python prompt:
     ```python
     import demeter
-    
+
     # the directory that you want to download and extract the example data to
     data_dir = "<my data download location>"
-    
+
     # download and unzip the package data to your local machine
     demeter.get_package_data(data_dir)
     ```
@@ -27,7 +27,7 @@ Set up Demeter using the following steps:
 
     ```python
     import demeter
-    
+
     # the path and file name that my example configuration (.ini) file was downloaded to
     config_file = '<path to my example config file>/demeter_config.ini'
 
@@ -88,33 +88,93 @@ This file is the formatted GCAM run output for land allocation projections.  Sin
 
 ### Allocation files:
 
-#### *Constraint weighting:*
+#### *Projected land class allocation:*
 
-A weight for each constraint, with a value ranging from -1.0 to 1.0, can be applied to each land class.  If no constraints are desired, a user should simply provide a header-only file.  For example, for a given land class, the weight for the soil quality constraint with a value of -1 indicates that one land class is fully constrained inversely (e.g., grasslands are opportunistic and grow readily in areas with a low soil quality); a weight of 0 indicates that soil quality exerts no constraint to the land class (e.g., forest, etc.); a weight of 1 for soil quality indicates that high soil quality will highly influence where the type will be spatially allocated (e.g. cropland).  These constraints are developed in separate files as described in the following Constraints section.  See the constraint weighting file in the example inputs for reference.
+This file defines how the land-use and land-cover classes in the GCAM projected land allocation data will be binned into final classes.  See the projected land class allocation file in the example inputs for reference.   
 
-#### *Kernel density weighting:*
+For example:
 
-Weight the degree to which land classes subjected to a kernel density filter will be utilized during expansion to each class.  Value from 0.0 to 1.0. See the kernel density weighting file in the example inputs for reference.
-
-#### *Transition Priority:*
-
-This ordering defines the preferential order of final land allocation (e.g., crops expanding into grasslands rather than forests).  See the priority allocation file in the example inputs for reference.  See the priority allocation file in the example inputs for reference.  
-
-#### *Treatment order:*
-
-Defines the order in which final land classes are downscaled.  This will influence the results (e.g., if crops are downscaled first and overtake grassland, grassland will not be available for shrubs to overtake when processing shrub land).  See the treatment order file in the example inputs for reference.
+| category | demeter_class_1 | demeter_class_2 | demeter_class_3 |
+| --- | :---: | :---: | :---: |
+| gcam_class_1 | 0 | 0 | 1 |
+| gcam_class_2 | 0 | 0 | 1 |
+| gcam_class_3 | 0 | 1 | 0 |
+| gcam_class_4 | 0 | 1 | 0 |
+| gcam_class_5 | 1 | 0 | 0 |
 
 #### *Observational spatial data class allocation:*
 
 This file defines how the land-use and land-cover classes in the OSD will be binned into final land classes for output, which can be defined by the user and serve to place projected land allocation data from GCAM on a common scale with the on-the-ground representation of land-use and land-cover represented in the OSD.  See the Observed spatial data class allocation file in the example inputs for reference.
 
-#### *Projected land class allocation:*
+For example:
 
-This file defines how the land-use and land-cover classes in the GCAM projected land allocation data will be binned into final classes.  See the projected land class allocation file in the example inputs for reference.   
+| category | demeter_class_1 | demeter_class_2 | demeter_class_3 |
+| --- | :---: | :---: | :---: |
+| observed_class_1 | 1 | 0 | 0 |
+| observed_class_2 | 1 | 0 | 0 |
+| observed_class_3 | 0 | 1 | 0 |
+| observed_class_4 | 0 | 1 | 0 |
+| observed_class_5 | 0 | 0 | 1 |
+
+#### *Constraint weighting:*
+
+Constraints such as soil quality may be desirable to the user and can be prepared by assigning a weighted value from 0.0 to 1.0 for each grid cell in the OSD. Spatial maps of constraints should be provided by the user for application during the downscaling process. Users should note that constraining a grid cell to 0.0 may impede the ability to be able to achieve a projected land allocation from GCAM since land area is being excluded that GCAM expects.  Each constraint file must have two fields:  fid and weight.  The fid field should correspond to the fid field in the OSD input and the weight field should be the weight of the constraint per the cell corresponding to the OSD input.  Each file should be a CSV with no header.
+
+For example:
+
+| category | demeter_class_1 | demeter_class_2 | demeter_class_3 |
+| --- | :---: | :---: | :---: |
+| nutrient_availability | 0.0 | 0.4 | 0.0 |
+| soil_quality | 0.0 | 0.2 | 0.0 |
+
+#### *Kernel density weighting:*
+
+Weight the degree to which land classes subjected to a kernel density filter will be utilized during expansion to each class.  Value from 0.0 to 1.0. See the kernel density weighting file in the example inputs for reference.
+
+For example:
+
+| category | demeter_class_1 | demeter_class_2 | demeter_class_3 |
+| --- | :---: | :---: | :---: |
+| kernel_density | 1.0 | 0.4 | 1.0 |
+
+#### *Transition Priority:*
+
+This ordering defines the preferential order of final land allocation (e.g., crops expanding into grasslands rather than forests).  See the priority allocation file in the example inputs for reference.  See the priority allocation file in the example inputs for reference.  
+
+For example:
+
+| category | demeter_class_1 | demeter_class_2 | demeter_class_3 |
+| --- | :---: | :---: | :---: |
+| demeter_class_1 | 0 | 1 | 2 |
+| demeter_class_2 | 1 | 0 | 2 |
+| demeter_class_3 | 1 | 2 | 0 |
+
+#### *Treatment order:*
+
+Defines the order in which final land classes are downscaled.  This will influence the results (e.g., if crops are downscaled first and overtake grassland, grassland will not be available for shrubs to overtake when processing shrub land).  See the treatment order file in the example inputs for reference.
+
+For example:
+
+| category | order | demeter_class_2 | demeter_class_3 |
+| --- | :---: |
+| demeter_class_1 | 3 |
+| demeter_class_2 | 2 |
+| demeter_class_3 | 1 |
 
 #### *Constraints (not required):*
 
-As discussed earlier, constraints such as soil quality may be desirable to the user and can be prepared by assigning a weighted value from 0.0 to 1.0 for each grid cell in the OSD. Spatial maps of constraints should be provided by the user for application during the downscaling process. Users should note that constraining a grid cell to 0.0 may impede the ability to be able to achieve a projected land allocation from GCAM since land area is being excluded that GCAM expects.  Each constraint file must have two fields:  fid and weight.  The fid field should correspond to the fid field in the OSD input and the weight field should be the weight of the constraint per the cell corresponding to the OSD input.  Each file should be a CSV with no header.
+A weight for each constraint, with a value ranging from -1.0 to 1.0, can be applied to each land class.  If no constraints are desired, a user should simply provide a header-only file.  For example, for a given land class, the weight for the soil quality constraint with a value of -1 indicates that one land class is fully constrained inversely (e.g., grasslands are opportunistic and grow readily in areas with a low soil quality); a weight of 0 indicates that soil quality exerts no constraint to the land class (e.g., forest, etc.); a weight of 1 for soil quality indicates that high soil quality will highly influence where the type will be spatially allocated (e.g. cropland).  These constraints are developed in separate files as described in the following Constraints section.  See the constraint weighting file in the example inputs for reference.
+
+For example:
+
+| target_fid | value |
+| :---: | :---: |
+| 1 | 0.5 |
+| 2 | 0.7 |
+| 3 | 0.9 |
+| 4 | 0.0 |
+| 5 | 0.1 |
+
 
 ### Configuration file:
 
@@ -122,36 +182,25 @@ Demeter’s configuration file allows the user to customize each run and define 
 
 | Level | Parameter | Description |
 | --- | --- | --- |
-|  STRUCTURE |	root_dir | The full path of the root directory where the inputs and outputs directory are stored |
-|  STRUCTURE |	in_dir	| The name of the input directory |
-|  STRUCTURE |	out_dir	 | The name of the output directory |
+|  STRUCTURE |	run_dir | The full path of the root directory where the inputs and outputs directory are stored |
+|  STRUCTURE |	input_dir	| The name of the input directory |
+|  STRUCTURE |	output_dir	 | The name of the output directory |
 | INPUTS | allocation_dir |	The name of the directory that holds the allocation files
 | INPUTS | observed_dir	| The name of the directory that holds the observed spatial data file
 | INPUTS | constraints_dir | The name of the directory that holds the constraints files
 | INPUTS | projected_dir |	The name of the directory that holds the GCAM projected land allocation file
-| INPUTS - ALLOCATION |	spatial_allocation	|The file name with extension of the observed spatial data class allocation
-| INPUTS - ALLOCATION |	gcam_allocation	|The file name with extension of the projected land class allocation
-| INPUTS - ALLOCATION |	kernel_allocation	|The file name with extension of the kernel density weighting
-| INPUTS - ALLOCATION |	priority_allocation|	The file name with extension of the priority allocation
-| INPUTS - ALLOCATION |	treatment_order	|The file name with extension of the treatment order
-| INPUTS - ALLOCATION |	constraints|	The file name with extension of the constraint weighting
+| INPUTS - ALLOCATION |	spatial_allocation_file	|The file name with extension of the observed spatial data class allocation
+| INPUTS - ALLOCATION |	gcam_allocation_file	|The file name with extension of the projected land class allocation
+| INPUTS - ALLOCATION |	kernel_allocation_file	|The file name with extension of the kernel density weighting
+| INPUTS - ALLOCATION |	transition_order_file|	The file name with extension of the priority allocation
+| INPUTS - ALLOCATION |	treatment_order_file	|The file name with extension of the treatment order
+| INPUTS - ALLOCATION |	constraints_file|	The file name with extension of the constraint weighting
 | INPUTS - OBSERVED |	observed_lu_data	|The file name with extension of the observational spatial data
 | INPUTS - PROJECTED |	projected_lu_data|	The file name with extension of the projected land allocation data from GCAM
-| OUTPUTS | diag_dir|	The name of the directory that diagnostics outputs will be kept
-| OUTPUTS  |	log_dir|	The name of the directory that the log file outputs will be kept
-| OUTPUTS  |	transition_tabular|	The name of the directory that tabular land transition outputs will be kept
-| OUTPUTS  |	luc_ts_luc	|The name of the directory that the land use change per time step map outputs will be kept
-| OUTPUTS  |	lc_per_step_csv	|The name of the directory that the tabular land change per time step outputs will be kept
-| OUTPUTS  |	lc_per_step_nc	|The name of the directory that the NetCDF land change per time step outputs will be kept
-| OUTPUTS - DIAGNOSTICS |	harm_coeff|	The file name with extension of the NumPy array that will hold the harmonization coefficient data
-| OUTPUTS - DIAGNOSTICS |	intense_pass1_diag|	The file name with extension of the CSV that will hold the land allocation per time step per functional type for the first pass of intensification
-| OUTPUTS - DIAGNOSTICS |	intense_pass2_diag	|The file name with extension of the CSV that will hold the land allocation per time step per functional type for the second pass of intensification
-| OUTPUTS - DIAGNOSTICS |	expansion_diag	|The file name with extension of the CSV that will hold the land allocation per time step per functional type for the expansion pass
-| PARAMS |	model | The model name providing the projected land allocation data (e.g., GCAM)
-| PARAMS |	metric	 | Subregion type (either AEZ or BASIN)
+| OUTPUTS | diagnostics_output_dir|	The name of the directory that diagnostics outputs will be kept
+| OUTPUTS  | log_output_dir |	The name of the directory that the log file outputs will be kept
 | PARAMS |	scenario	 | Scenario name
 | PARAMS |	run_desc	 | The description of the current run
-| PARAMS |	agg_level	 | 1 if only by metric, 2 if by region and metric
 | PARAMS |	observed_id_field	 | Observed spatial data unique field name (e.g. target_fid)
 | PARAMS |	start_year | 	First time step to process (e.g., 2005)
 | PARAMS |	end_year | 	Last time step to process (e.g., 2100)
