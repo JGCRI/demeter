@@ -8,9 +8,9 @@ Demeter is an open source Python package that was built to disaggregate projecti
 
 # Getting Started with Demeter
 Set up Demeter using the following steps:
-1.  Install Demeter using pip:
+1.  Install Demeter from GitHub:
     ```bash
-    pip install demeter
+    python -m pip install -e git+http://github.com/JGCRI/demeter.git#egg=demeter
     ```
 2.  Download the example data using the following in a Python prompt:
     ```python
