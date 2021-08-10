@@ -14,7 +14,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-import gcam_reader
+import gcamreader
 
 
 class ValidationException(Exception):
@@ -207,17 +207,17 @@ def read_gcam_land(db_path, db_file, f_queries, d_basin_name, subreg, crop_water
     """
 
     # instantiate GCAM db
-    conn = gcam_reader.LocalDBConn(db_path, db_file, suppress_gabble=False)
+    conn = gcamreader.LocalDBConn(db_path, db_file, suppress_gabble=False)
 
     # get queries
-    q = gcam_reader.parse_batch_query(f_queries)
+    q = gcamreader.parse_batch_query(f_queries)
 
     # assume target query is first in query list
     land_alloc = conn.runQuery(q[0])
 
     # split 'land-allocation' column into components
     if subreg == 'AEZ':
-        raise ValueError("Using AEZs are no longer supported with `gcam_reader`")
+        raise ValueError("Using AEZs are no longer supported with `gcamreader`")
 
     elif subreg == 'BASIN':
         # expected format: landclass_basin-glu-name_USE_management
@@ -260,7 +260,7 @@ def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, timestep, scen
     """
     Read and process the GCAM land allocation output file.
 
-    :param gcam_data:           GCAM land allocation file or data frame from gcam_reader
+    :param gcam_data:           GCAM land allocation file or data frame from gcamreader
     :param name_col:            Field name of the column containing the region and either AEZ or basin number
     :param metric:              AEZ or Basin
     :param start_yr:            User-defined GCAM start year to process from configuration file

@@ -11,7 +11,7 @@ WORKDIR /code
 
 # install dependencies
 RUN pip install --upgrade pip \
-    && pip install git+https://github.com/JGCRI/gcam_reader.git \
+    && pip install gcamreader \
     && pip install --trusted-host pypi.python.org --requirement requirements.txt
 
 # copy package
