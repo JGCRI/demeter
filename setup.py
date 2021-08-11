@@ -24,6 +24,6 @@ setup(
                       'pandas~=1.2.4',
                       'scipy~=1.6.3',
                       'requests~=2.20.0',
-                      'gcamreader~=1.2.4'],
+                      'gcamreader>=1.2.5'],
     include_package_data=True
 )
