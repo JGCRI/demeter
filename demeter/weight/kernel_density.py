@@ -12,7 +12,6 @@ import numpy as np
 
 from scipy import ndimage
 import threading
-from numba import jit
 from multiprocessing.dummy import Pool as ThreadPool
 
 import demeter.demeter_io.writer as wdr
