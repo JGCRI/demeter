@@ -57,7 +57,7 @@ class ProcessStep:
                                                            self.s.weights, self.s.spat_ludataharm)
 
         # create transition array to store data
-        self.transitions = np.zeros(shape=(self.l_spat_region, self.l_order_rules, self.l_order_rules))
+        #self.transitions = np.zeros(shape=(self.l_spat_region, self.l_order_rules, self.l_order_rules))
 
     def intense_pass(self, pass_num):
         """Conduct the first pass of intensification."""
@@ -75,12 +75,10 @@ class ProcessStep:
                                                  self.s.d_regid_nm, self.target_change, self.s.spat_ludataharm,
                                                  self.s.spat_aez, self.s.kernel_vector, self.s.cst.cons_data,
                                                  self.s.final_landclasses, self.s.spat_ludataharm_orig_steps, self.step,
-                                                 self.land_mismatch, self.s.constraint_rules, self.s.transition_rules,
-                                                 self.transitions)
+                                                 self.land_mismatch, self.s.constraint_rules, self.s.transition_rules)
 
         # unpack
-        self.s.spat_ludataharm, self.s.spat_ludataharm_orig_steps, self.land_mismatch, self.s.cons_data, \
-        self.transitions, self.target_change = itz_pass
+        self.s.spat_ludataharm, self.s.spat_ludataharm_orig_steps, self.land_mismatch, self.s.cons_data, self.target_change = itz_pass
 
     def expansion_pass(self):
         """
@@ -93,12 +91,12 @@ class ProcessStep:
         exp_pass = exp.apply_expansion(self.config.logger, self.config, self.s.allregnumber, self.s.allregaez, self.s.spat_ludataharm,
                                        self.s.spat_region, self.s.spat_aez, self.s.kernel_vector, self.s.cons_data,
                                        self.s.order_rules, self.s.final_landclasses, self.s.constraint_rules,
-                                       self.s.transition_rules, self.land_mismatch, self.transitions,
+                                       self.s.transition_rules, self.land_mismatch,
                                        self.s.spat_ludataharm_orig_steps, self.target_change, self.step)
 
         # unpack
         self.s.spat_ludataharm, self.s.spat_ludataharm_orig_steps, self.land_mismatch, self.s.cons_data, \
-        self.transitions, self.target_change = exp_pass
+        self.target_change = exp_pass
 
     def outputs(self):
         """
@@ -129,11 +127,11 @@ class ProcessStep:
         fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T
 
         # optionally save land cover transitions as a CSV
-        if (self.config.save_transitions == 1) and (self.step in self.config.target_years_output):
+        #if (self.config.save_transitions == 1) and (self.step in self.config.target_years_output):
 
-            self.config.logger.info("Saving land cover transition files for time step {0}...".format(self.step))
+         #   self.config.logger.info("Saving land cover transition files for time step {0}...".format(self.step))
 
-            wdr.write_transitions(self.s, self.config, self.step, self.transitions)
+          #  wdr.write_transitions(self.s, self.config, self.step, self.transitions)
 
         # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
         if (self.config.save_netcdf_yr == 1) and (self.step in self.config.target_years_output):
@@ -141,9 +139,9 @@ class ProcessStep:
             self.config.logger.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
 
             # create out path and file name for NetCDF file
-            netcdf_yr_out = os.path.join(self.config.lc_per_step_nc, 'lc_yearly_{0}.nc'.format(self.step))
+            netcdf_yr_out = os.path.join(self.config.lu_csv_output_dir, 'lc_yearly_{0}.nc'.format(self.step))
 
-            wdr.to_netcdf_yr(fraction_lu, self.s.cellindexresin, self.s.lat, self.s.lon, self.config.resin,
+            wdr.to_netcdf_yr(fraction_lu, self.s.cellindexresin, self.s.lat, self.s.lon, 0.05,
                              self.s.final_landclasses, self.step, self.config.model, netcdf_yr_out)
 
         # save land cover data for the time step
@@ -171,6 +169,7 @@ class ProcessStep:
 
         # apply second pass of intensification
         self.intense_pass(2)
-
+        if self.step == 2010:
+            self.expansion_pass()
         # outputs
         return self.outputs()

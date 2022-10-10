@@ -11,6 +11,9 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import numpy as np
 
 from scipy import ndimage
+import threading
+from numba import jit
+from multiprocessing.dummy import Pool as ThreadPool
 
 import demeter.demeter_io.writer as wdr
 
@@ -72,8 +75,11 @@ class KernelDensity:
 
         # create empty arrays used in kernel density calculation
         pft_maps = np.zeros((l_lat, l_lon, self.l_fcs))
+        #pft_map_single = np.zeros((l_lat, l_lon, 1))
         kernel_maps = np.zeros((l_lat, l_lon, self.l_fcs))
+        #kernel_map_single = np.zeros((l_lat, l_lon, 1))
         kernel_vector = np.zeros((self.ngrids, self.l_fcs))
+        kernel_vector_temp = np.zeros((self.ngrids, self.l_fcs))
         weights = np.zeros((self.kernel_distance, self.kernel_distance))
 
         return pft_maps, kernel_maps, kernel_vector, weights
@@ -136,6 +142,7 @@ class KernelDensity:
 
         return [lat, lon, cellindexresin, pft_maps, kernel_maps, kernel_vector, weights]
 
+
     def apply_convolution(self, cellindexresin, pft_maps, kernel_maps, lat, lon, yr, kernel_vector, weights,
                           spat_ludataharm):
         """
@@ -143,28 +150,36 @@ class KernelDensity:
 
         :return:
         """
+        pool = ThreadPool(10)
+        aux_val=np.unique(self.order_rules)
 
-        for pft_order in np.unique(self.order_rules):
-
-            # get target PFT
+        def handle_single_pft(pft_order):
             pft = np.where(self.order_rules == pft_order)[0][0]
 
             # get final land class name
             flc = self.final_landclasses[pft]
-
+            print(pft)
             # populate pft_maps array with base land use layer data
             pft_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft] = spat_ludataharm[:, pft]
-
+            # print(pft_maps.shape)
             # apply image filter
+
             kernel_maps[:, :, pft] = ndimage.filters.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
 
             # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
             #   while we might need them.
             # TODO:  remove the min value
             min_seed = 0.0000000001
-            kernel_maps[:, :, pft][kernel_maps[:, :, pft] == 0] = min_seed #np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
-
+            kernel_maps[:, :, pft][
+                kernel_maps[:, :,
+                pft] == 0] = min_seed  # np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
+            # print(kernel_maps.shape)
             # reshaping to the spatial grid-cell data (vector)
             kernel_vector[:, pft] = kernel_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft]
 
+
+        pool.map(handle_single_pft, aux_val)
+        pool.terminate()
         return kernel_vector
+
+
