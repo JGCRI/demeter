@@ -149,15 +149,16 @@ class KernelDensity:
 
         :return:
         """
-        pool = ThreadPool(10)
+        pool = ThreadPool(len(np.unique(self.order_rules)))
+        #pool=ThreadPool(10)
         aux_val=np.unique(self.order_rules)
-
+         #
         def handle_single_pft(pft_order):
             pft = np.where(self.order_rules == pft_order)[0][0]
 
             # get final land class name
             flc = self.final_landclasses[pft]
-            print(pft)
+            #print(pft)
             # populate pft_maps array with base land use layer data
             pft_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft] = spat_ludataharm[:, pft]
             # print(pft_maps.shape)
