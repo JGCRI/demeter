@@ -115,7 +115,7 @@ class DemeterToNetcdf:
 
         for index, i in enumerate(columns):
 
-            print(f"Processing: {i} in year {target_year}")
+            print(f"Processing LT for ncdf : {i} in year {target_year} in scenario {self.scenario_name}")
 
             temp_lu_file = lu_file[['latitude', 'longitude', i]].copy()
 
