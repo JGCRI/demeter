@@ -138,7 +138,7 @@ class DemeterToNetcdf:
             temp_lu_file = temp_lu_file.set_index(['lat', 'lon'])
 
             ds = temp_lu_file.to_xarray()
-            ds = ds.sortby(['lon','lat'])
+            ds = ds.sortby(['lat','lon'])
 
             ds = ds.reindex(lat=self.latitude_list,
                             lon=self.longitude_list)

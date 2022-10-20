@@ -13,8 +13,32 @@ import numpy as np
 from scipy import ndimage
 import threading
 from multiprocessing.dummy import Pool as ThreadPool
-
+from itertools import repeat
 import demeter.demeter_io.writer as wdr
+
+
+def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, cellindexresin,
+                      spat_ludataharm, kernel_maps, kernel_vector,weights):
+    pft = np.where(order_rules == pft_order)[0][0]
+    # get final land class name
+    flc = final_landclasses[pft]
+    # print(pft)
+    # populate pft_maps array with base land use layer data
+    pft_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft] = spat_ludataharm[:, pft]
+    # print(pft_maps.shape)
+    # apply image filter
+
+    kernel_maps[:, :, pft] = ndimage.filters.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
+
+    # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
+    # while we might need them.
+
+    min_seed = 0.0000000001
+    kernel_maps[:, :, pft][
+        kernel_maps[:, :, pft] == 0] = min_seed  # np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
+    # print(kernel_maps.shape)
+    # reshaping to the spatial grid-cell data (vector)
+    kernel_vector[:, pft] = kernel_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft]
 
 
 class KernelDensity:
@@ -152,34 +176,17 @@ class KernelDensity:
         pool = ThreadPool(len(np.unique(self.order_rules)))
         #pool=ThreadPool(10)
         aux_val=np.unique(self.order_rules)
-         #
-        def handle_single_pft(pft_order):
-            pft = np.where(self.order_rules == pft_order)[0][0]
-
-            # get final land class name
-            flc = self.final_landclasses[pft]
-            #print(pft)
-            # populate pft_maps array with base land use layer data
-            pft_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft] = spat_ludataharm[:, pft]
-            # print(pft_maps.shape)
-            # apply image filter
-
-            kernel_maps[:, :, pft] = ndimage.filters.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
-
-            # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
-            #   while we might need them.
-            # TODO:  remove the min value
-            min_seed = 0.0000000001
-            kernel_maps[:, :, pft][
-                kernel_maps[:, :,
-                pft] == 0] = min_seed  # np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
-            # print(kernel_maps.shape)
-            # reshaping to the spatial grid-cell data (vector)
-            kernel_vector[:, pft] = kernel_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft]
+        order_rules= self.order_rules
+        final_landclasses= self.final_landclasses
 
 
-        pool.map(handle_single_pft, aux_val)
+
+        pool.starmap(handle_single_pft, zip(aux_val,repeat(order_rules),repeat(final_landclasses),
+                                                                  repeat(pft_maps),repeat(cellindexresin),
+                                                                  repeat(spat_ludataharm),
+                                                                  repeat(kernel_maps), repeat(kernel_vector),repeat(weights)))
         pool.terminate()
         return kernel_vector
+
 
 
