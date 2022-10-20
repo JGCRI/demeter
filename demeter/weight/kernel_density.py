@@ -19,6 +19,11 @@ import demeter.demeter_io.writer as wdr
 
 def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, cellindexresin,
                       spat_ludataharm, kernel_maps, kernel_vector,weights):
+    """
+    Helper function to handle pft convultion filters. This is used to parallelize the convultion filter operation to speed up processing.
+
+
+    """
     pft = np.where(order_rules == pft_order)[0][0]
     # get final land class name
     flc = final_landclasses[pft]

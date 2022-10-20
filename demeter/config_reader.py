@@ -188,6 +188,9 @@ class ReadConfig:
         if self.save_tabular or self.save_shapefile:
             self.create_dir(self.lu_csv_output_dir)
 
+        if self.save_netcdf_yr:
+            self.create_dir(self.lu_netcdf_output_dir)
+
         if self.save_transitions:
             self.create_dir(self.transitions_tabular_output_dir)
 

@@ -11,6 +11,7 @@ import os
 import numpy as np
 from scipy import io as sio
 import pandas as pd
+from demeter import ncdf_conversion as nc
 
 
 def array_to_csv(arr, out_file):
@@ -34,7 +35,7 @@ def save_array(arr, out_file):
 
 
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
-                    spat_ludataharm, metric, units='fraction', write_outputs=False):
+                    spat_ludataharm, metric, units='fraction', write_outputs=False, write_ncdf=False,sce="default",resolution=0.05):
     """Save land cover data for each time step as a CSV file."""
 
     # create out path and file name
@@ -73,6 +74,18 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
         np.savetxt(lc_ts_file, arr, fmt='%g', delimiter=',', header=hdr, comments='')
 
     columns = hdr.split(',')
+
+    if write_ncdf:
+        x= nc.DemeterToNetcdf(scenario_name= str(sce),
+                       project_name="demeter_ncdf",
+                       start_year=2005,
+                       end_year=2005,
+                       resolution= resolution)
+
+        x.process_output(input_file_directory=c.lu_csv_output_dir,
+                         output_file_directory=c.lu_netcdf_output_dir,
+                         target_year=yr)
+
     return pd.DataFrame(data=arr, columns=columns)
 
 

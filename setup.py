@@ -10,7 +10,7 @@ def readme():
 setup(
     name='demeter',
     version='1.2.1',
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     packages=find_packages(),
     url='https://github.com/JGCRI/demeter',
     license='BSD 2-Clause',

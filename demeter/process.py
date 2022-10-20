@@ -34,6 +34,8 @@ class ProcessStep:
         self.l_order_rules = len(self.s.order_rules)
         self.l_fcs = len(s.final_landclasses)
         self.write_outputs = write_outputs
+        self.sce = self.config.scenario
+        self.res = self.config.spatial_resolution
 
         # populate
         self.output_df = self.process()
@@ -134,24 +136,18 @@ class ProcessStep:
           #  wdr.write_transitions(self.s, self.config, self.step, self.transitions)
 
         # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
-        if (self.config.save_netcdf_yr == 1) and (self.step in self.config.target_years_output):
 
-            self.config.logger.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
-
-            # create out path and file name for NetCDF file
-            netcdf_yr_out = os.path.join(self.config.lu_csv_output_dir, 'lc_yearly_{0}.nc'.format(self.step))
-
-            wdr.to_netcdf_yr(fraction_lu, self.s.cellindexresin, self.s.lat, self.s.lon, 0.05,
-                             self.s.final_landclasses, self.step, self.config.model, netcdf_yr_out)
 
         # save land cover data for the time step
         if (self.config.save_tabular == 1) and (self.step in self.config.target_years_output):
 
             self.config.logger.info("Generating projected land cover data for time step {0}...".format(self.step))
-
+            write_ncdf = False
+            if self.config.save_netcdf_yr ==1:
+                write_ncdf =True
             return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
-                                self.config.metric, self.config.tabular_units, self.write_outputs)
+                                self.config.metric, self.config.tabular_units, self.write_outputs,write_ncdf,self.sce,self.res)
 
     def process(self):
         """
