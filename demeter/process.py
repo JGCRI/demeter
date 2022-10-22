@@ -165,7 +165,6 @@ class ProcessStep:
 
         # apply second pass of intensification
         self.intense_pass(2)
-        if self.step == 2010:
-            self.expansion_pass()
+
         # outputs
         return self.outputs()

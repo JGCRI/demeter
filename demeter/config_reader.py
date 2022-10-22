@@ -49,6 +49,7 @@ class ReadConfig:
             output_params = params
             diagnostic_params = params
             run_params = params
+            mapping_params = params
 
         else:
 
@@ -63,7 +64,9 @@ class ReadConfig:
             projected_params = input_params.get('PROJECTED', None)
             output_params = self.config.get('OUTPUTS', {})
             diagnostic_params = self.config.get('OUTPUTS', {}).get('DIAGNOSTICS')
+            mapping_params = input_params.get('MAPPING', None)
             run_params = self.config.get('PARAMS', None)
+
 
         # choice to write log to file
         self.write_logfile = params.get('write_logfile', None)
@@ -94,6 +97,7 @@ class ReadConfig:
         self.observed_dir = os.path.join(self.input_dir, input_params.get('observed_dir', 'observed'))
         self.constraints_dir = os.path.join(self.input_dir, input_params.get('constraints_dir', 'constraints'))
         self.projected_dir = os.path.join(self.input_dir, input_params.get('projected_dir', 'projected'))
+        self.mapping_dir = os.path.join(self.input_dir, input_params.get('mapping_dir', 'mapping'))
 
         # allocation files
         self.spatial_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('spatial_allocation_file', 'csdms_observed_allocation.csv'))
@@ -102,6 +106,13 @@ class ReadConfig:
         self.transition_order_file = os.path.join(self.allocation_dir, allocation_params.get('transition_order_file', 'csdms_transition_allocation.csv'))
         self.treatment_order_file = os.path.join(self.allocation_dir, allocation_params.get('treatment_order_file', 'csdms_order_allocation.csv'))
         self.constraints_file = os.path.join(self.allocation_dir, allocation_params.get('constraints_file', 'csdms_constraint_allocation.csv'))
+
+        #Mapping files
+        self.gcam_region_names_file = os.path.join(self.mapping_dir, mapping_params.get('region_mapping_file',
+                                                                                        'gcam_regions_32.csv'))
+        self.gcam_basin_names_file = os.path.join(self.mapping_dir, mapping_params.get('basin_mapping_file',
+                                                                                           'gcam_basin_lookup.csv'))
+
 
         # observed data
         self.observed_lu_file = os.path.join(self.observed_dir, observed_params.get('observed_lu_file', 'gcam_reg32_basin235_modis_v6_2010_mirca_2000_0p5deg_sqdeg_wgs84_07may2021.zip'))
@@ -122,8 +133,7 @@ class ReadConfig:
                 self.gcam_database_name = os.path.basename(self.gcam_database)
 
         # reference data
-        self.gcam_region_names_file = pkg_resources.resource_filename('demeter', 'data/gcam_regions_32.csv')
-        self.gcam_basin_names_file = pkg_resources.resource_filename('demeter', 'data/gcam_basin_lookup.csv')
+
 
         # output directories
         self.diagnostics_output_dir = os.path.join(self.output_dir, output_params.get('diagnostics_output_dir', 'diagnostics'))
