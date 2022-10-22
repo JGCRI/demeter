@@ -1,5 +1,6 @@
 [![build](https://github.com/JGCRI/demeter/actions/workflows/build.yml/badge.svg)](https://github.com/JGCRI/demeter/actions/workflows/build.yml)
 [![DOI](https://zenodo.org/badge/101879773.svg)](https://zenodo.org/badge/latestdoi/101879773)
+[![codecov](https://codecov.io/gh/JGCRI/demeter/branch/master/graph/badge.svg?token=7K2g3PsFUG)](https://codecov.io/gh/JGCRI/demeter)
 
 # Demeter
 
