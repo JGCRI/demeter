@@ -75,6 +75,9 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
 
     columns = hdr.split(',')
 
+    if write_outputs == False:
+        write_ncdf = False
+
     if write_ncdf:
         x= nc.DemeterToNetcdf(scenario_name= str(sce),
                        project_name="",
