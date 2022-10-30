@@ -11,7 +11,6 @@ import pkg_resources
 import unittest
 
 import pandas as pd
-
 from demeter import Model
 
 
@@ -19,9 +18,9 @@ class TestOutputs(unittest.TestCase):
     """Test configuration integrity."""
 
     RUN_DIR = pkg_resources.resource_filename('demeter', 'tests/data')
-    GCAMWRAPPER_DF = pd.read_pickle(pkg_resources.resource_filename('demeter', 'tests/data/inputs/projected/land_df.pkl'))
-    COMP_2010 = pd.read_pickle(pkg_resources.resource_filename('demeter', 'tests/data/comp_data/demeter_2010.pkl'))
-    COMP_2015 = pd.read_pickle(pkg_resources.resource_filename('demeter', 'tests/data/comp_data/demeter_2015.pkl'))
+    GCAMWRAPPER_DF = pd.read_pickle(pkg_resources.resource_filename('demeter', 'tests/data/inputs/projected/land_df.pickle'))
+    COMP_2010 = pd.read_pickle(pkg_resources.resource_filename('demeter', 'tests/data/comp_data/demeter_2010.pickle'))
+    COMP_2015 = pd.read_pickle(pkg_resources.resource_filename('demeter', 'tests/data/comp_data/demeter_2015.pickle'))
 
     def test_proj_outputs_using_args(self):
         """Test for projection outputs by passing arguments"""
