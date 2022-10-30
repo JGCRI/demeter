@@ -34,13 +34,17 @@ class DemeterToNetcdf:
                  resolution: float = 0.05,
                  project_name: str = "",
                  scenario_name: str = "",
-                 demeter_version: str = "1.31"):
+                 demeter_version: str = "1.31",
+                 csv_input= True,
+                 df=pd.DataFrame(data=None, columns=['a'])):
 
         self.base_year_file = base_year_file
         self.resolution = resolution
         self.project_name = project_name
         self.scenario_name = scenario_name
         self.demeter_version = demeter_version
+        self.csv_input= csv_input
+        self.df = df
 
         # get a list of years to process
         self.year_list = [i for i in range(start_year, end_year + year_interval, year_interval)]
@@ -106,8 +110,11 @@ class DemeterToNetcdf:
         target_file_name = os.path.join(input_file_directory, f"landcover_{target_year}_timestep.csv")
 
         # read in outputs to a data frame
-        lu_file = pd.read_csv(target_file_name, index_col=False)
-
+        if self.csv_input:
+           lu_file = pd.read_csv(target_file_name, index_col=False)
+        else:
+            print("Reading ncdf data from array")
+            lu_file = self.df
         # drop coordinate fields
         lu_file_for_col = lu_file.drop(['latitude', 'longitude'], axis=1)
 

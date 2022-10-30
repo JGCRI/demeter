@@ -139,7 +139,11 @@ class ProcessStep:
 
 
         # save land cover data for the time step
-        if (self.config.save_tabular == 1) and (self.step in self.config.target_years_output):
+        if (self.write_outputs) and (self.step in self.config.target_years_output):
+            if self.config.save_tabular == 1:
+                write_csv= True
+            else:
+                write_csv = False
 
             self.config.logger.info("Generating projected land cover data for time step {0}...".format(self.step))
             write_ncdf = False
@@ -147,7 +151,7 @@ class ProcessStep:
                 write_ncdf =True
             return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
-                                self.config.metric, self.config.tabular_units, self.write_outputs,write_ncdf,self.sce,self.res)
+                                self.config.metric, self.config.tabular_units, self.write_outputs,write_ncdf,self.sce,self.res,write_csv)
 
     def process(self):
         """
