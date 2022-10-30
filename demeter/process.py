@@ -139,7 +139,7 @@ class ProcessStep:
 
 
         # save land cover data for the time step
-        if (self.write_outputs) and (self.step in self.config.target_years_output):
+        if (self.config.save_netcdf_yr == 1) and (self.step in self.config.target_years_output):
             if self.config.save_tabular == 1:
                 write_csv= True
             else:

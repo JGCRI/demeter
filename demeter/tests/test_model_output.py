@@ -37,7 +37,8 @@ class TestOutputs(unittest.TestCase):
         # process first year
         demeter_2010 = model.process_step()
         demeter_2015 = model.process_step()
-
+        print(demeter_2010.head())
+        print(self.COMP_2010.head())
         # cleanup logger
         model.cleanup()
 
