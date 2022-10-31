@@ -35,7 +35,7 @@ def save_array(arr, out_file):
 
 
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
-                    spat_ludataharm, metric, units='fraction', write_outputs=False, write_ncdf=False,sce="default",resolution=0.05,write_csv=False):
+                    spat_ludataharm, metric, units='fraction', write_outputs=False, write_ncdf=False,sce="default",resolution=0.05,write_csv=False,regrid_res=0.05):
     """Save land cover data for each time step as a CSV file."""
 
     # create out path and file name
@@ -85,6 +85,7 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
                        end_year=2005,
                        resolution= resolution,
                        csv_input=write_csv,
+                       regrid_resolution=regrid_res,
                        df=pd.DataFrame(data=arr, columns=columns))
 
         x.process_output(input_file_directory=c.lu_csv_output_dir,

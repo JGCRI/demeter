@@ -36,7 +36,7 @@ class ProcessStep:
         self.write_outputs = write_outputs
         self.sce = self.config.scenario
         self.res = self.config.spatial_resolution
-
+        self.regrid_res = self.config.regrid_resolution
         # populate
         self.output_df = self.process()
 
@@ -151,7 +151,7 @@ class ProcessStep:
                 write_ncdf =True
             return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
-                                self.config.metric, self.config.tabular_units, self.write_outputs,write_ncdf,self.sce,self.res,write_csv)
+                                self.config.metric, self.config.tabular_units, self.write_outputs,write_ncdf,self.sce,self.res,write_csv,self.regrid_res)
 
     def process(self):
         """

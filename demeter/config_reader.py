@@ -50,6 +50,7 @@ class ReadConfig:
             diagnostic_params = params
             run_params = params
             mapping_params = params
+            ncdf_params = params
 
         else:
 
@@ -65,7 +66,9 @@ class ReadConfig:
             output_params = self.config.get('OUTPUTS', {})
             diagnostic_params = self.config.get('OUTPUTS', {}).get('DIAGNOSTICS')
             mapping_params = input_params.get('MAPPING', None)
+            ncdf_params = input_params.get('NCDF_PARAM', None)
             run_params = self.config.get('PARAMS', None)
+
 
 
         # choice to write log to file
@@ -171,6 +174,7 @@ class ReadConfig:
         self.end_year = self.ck_yr(run_params.get('end_year', 2015), 'end_year')
         self.use_constraints = self.valid_integer(run_params.get('use_constraints', 1), 'use_constraints', [0, 1])
         self.spatial_resolution = self.valid_limit(run_params.get('spatial_resolution', 0.25), 'spatial_resolution', [0.0, 1000000.0], 'float')
+        self.regrid_resolution = self.valid_limit(run_params.get('regrid_resolution', self.spatial_resolution), 'regrid_resolution', [0.0, 1000000.0], 'float')
         self.errortol = self.valid_limit(run_params.get('errortol', 0.001), 'errortol', [0.0, 1000000.0], 'float')
         self.timestep = self.valid_limit(run_params.get('timestep', 5), 'timestep', [1, 1000000], 'int')
         self.proj_factor = self.valid_limit(run_params.get('proj_factor', 1000), 'proj_factor', [1, 10000000000], 'int')

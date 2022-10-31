@@ -34,6 +34,7 @@ class DemeterToNetcdf:
                  ymin: float = -90,
                  ymax: float = 90,
                  resolution: float = 0.05,
+                 regrid_resolution: float= 0.05,
                  project_name: str = "im3",
                  scenario_name: str = "",
                  demeter_version: str = "1.31",
@@ -47,7 +48,8 @@ class DemeterToNetcdf:
         self.demeter_version = demeter_version
         self.csv_input= csv_input
         self.df = df
-        self.regrid_resolution = False
+        self.regrid_resolution = regrid_resolution
+        self.regrid = False
 
         # get a list of years to process
         self.year_list = [i for i in range(start_year, end_year + year_interval, year_interval)]
@@ -119,13 +121,13 @@ class DemeterToNetcdf:
         """
 
         # distance between centroid and edge of grid cell
-        center_spacing = 0.125 / 2
+        center_spacing = self.regrid_resolution / 2
 
         if ascending:
-            return np.arange(coord_min + center_spacing, coord_max, 0.125).round(decimals)
+            return np.arange(coord_min + center_spacing, coord_max, self.regrid_resolution).round(decimals)
 
         else:
-            return np.arange(coord_max - center_spacing, coord_min, -0.125).round(decimals)
+            return np.arange(coord_max - center_spacing, coord_min, -self.regrid_resolution).round(decimals)
 
     def process_output(self,
                        input_file_directory: str,
@@ -187,7 +189,11 @@ class DemeterToNetcdf:
             ds = temp_lu_file.to_xarray()
             ds = ds.sortby(['lat','lon'])
 
-            if self.regrid_resolution:
+            if self.resolution != self.regrid_resolution:
+                self.regrid = True
+
+            if self.regrid:
+               print("Regridding option selected for NCDFs. Regridding to "+ str(self.regrid_resolution)+ " degrees.")
 
                ds = ds.groupby_bins("lon",self.longitude_regrid_list).mean()
                ds = ds.groupby_bins("lat", self.latitude_regrid_list).mean()
