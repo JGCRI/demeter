@@ -3,6 +3,8 @@ from datetime import date
 import xarray as xr
 import pandas as pd
 import numpy as np
+from scipy import stats
+
 
 
 
@@ -32,7 +34,7 @@ class DemeterToNetcdf:
                  ymin: float = -90,
                  ymax: float = 90,
                  resolution: float = 0.05,
-                 project_name: str = "",
+                 project_name: str = "im3",
                  scenario_name: str = "",
                  demeter_version: str = "1.31",
                  csv_input= True,
@@ -45,6 +47,7 @@ class DemeterToNetcdf:
         self.demeter_version = demeter_version
         self.csv_input= csv_input
         self.df = df
+        self.regrid_resolution = False
 
         # get a list of years to process
         self.year_list = [i for i in range(start_year, end_year + year_interval, year_interval)]
@@ -54,6 +57,11 @@ class DemeterToNetcdf:
 
         # positive to negative scaling required for latitude output
         self.latitude_list = self.generate_scaled_coordinates(ymin, ymax, ascending=False)
+
+        self.longitude_regrid_list = self.generate_regrid_coordinates(xmin, xmax, ascending=True)
+
+        # positive to negative scaling required for latitude output
+        self.latitude_regrid_list = self.generate_regrid_coordinates(ymin, ymax, ascending=True)
 
     def generate_scaled_coordinates(self,
                                     coord_min: float,
@@ -87,6 +95,38 @@ class DemeterToNetcdf:
         else:
             return np.arange(coord_max - center_spacing, coord_min, -self.resolution).round(decimals)
 
+    def generate_regrid_coordinates(self,
+                                    coord_min: float,
+                                    coord_max: float,
+                                    ascending: bool = True,
+                                    decimals: int = 3) -> np.array:
+        """Generate a list of evenly-spaced coordinate pairs for the output grid based on lat, lon values.
+
+        :param coord_min:                   Minimum coordinate in range.
+        :type coord_min:                    float
+
+        :param coord_max:                   Maximum coordinate in range.
+        :type coord_max:                    float
+
+        :param ascending:                   Ascend coordinate values if True; descend if False
+        :type ascending:                    bool
+
+        :param decimals:                    Number of desired decimals to round to.
+        :type decimals:                     int
+
+        :returns:                           Array of coordinate values.
+
+        """
+
+        # distance between centroid and edge of grid cell
+        center_spacing = 0.125 / 2
+
+        if ascending:
+            return np.arange(coord_min + center_spacing, coord_max, 0.125).round(decimals)
+
+        else:
+            return np.arange(coord_max - center_spacing, coord_min, -0.125).round(decimals)
+
     def process_output(self,
                        input_file_directory: str,
                        output_file_directory: str,
@@ -119,7 +159,7 @@ class DemeterToNetcdf:
         lu_file_for_col = lu_file.drop(['latitude', 'longitude'], axis=1)
 
         columns = lu_file_for_col.columns
-
+        PFT_index =-1
         for index, i in enumerate(columns):
 
             print(f"Processing LT for ncdf : {i} in year {target_year} in scenario {self.scenario_name}")
@@ -147,11 +187,19 @@ class DemeterToNetcdf:
             ds = temp_lu_file.to_xarray()
             ds = ds.sortby(['lat','lon'])
 
-            ds = ds.reindex(lat=self.latitude_list,
-                            lon=self.longitude_list)
+            if self.regrid_resolution:
 
+               ds = ds.groupby_bins("lon",self.longitude_regrid_list).mean()
+               ds = ds.groupby_bins("lat", self.latitude_regrid_list).mean()
 
+               ds=ds.rename({'lat_bins':'lat',
+                             'lon_bins':'lon'})
+               ds = ds.reindex(lat=self.latitude_regrid_list,
+                               lon=self.longitude_regrid_list)
 
+            else:
+               ds = ds.reindex(lat=self.latitude_list,
+                               lon=self.longitude_list)
             # define encoding here
             encoding = {str(i): DemeterToNetcdf.COMPRESSION_PARAMETERS}
 
@@ -167,9 +215,9 @@ class DemeterToNetcdf:
                 ds[i].attrs["long_name"] = i
 
                 if i not in ["region_id", "basin_id"]:
-                   ds = ds.rename({i: f"PFT{index}"})
-                   encoding = {f"PFT{index}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
-
+                   ds = ds.rename({i: f"PFT{PFT_index+1}"})
+                   encoding = {f"PFT{PFT_index+1}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
+                   PFT_index = PFT_index+1
                 ds.to_netcdf(output_file_path,
                              mode="a",
                              encoding=encoding,
@@ -194,9 +242,9 @@ class DemeterToNetcdf:
                                 "lon": "longitude"})
 
                 if i not in ["region_id", "basin_id"]:
-                    ds = ds.rename({i: f"PFT{index}"})
-                    encoding = {f"PFT{index}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
-
+                    ds = ds.rename({i: f"PFT{PFT_index+1}"})
+                    encoding = {f"PFT{PFT_index+1}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
+                    PFT_index = PFT_index +1
                 ds.to_netcdf(output_file_path,
                              encoding=encoding,
                              engine='netcdf4',
