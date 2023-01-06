@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demeter &mdash; Demeter 1.3.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Demeter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Demeter</a><ul>
+<li><a class="reference internal" href="#a-land-use-and-land-cover-disaggregation-and-change-detection-model">A land-use and land-cover disaggregation and change detection model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#getting-started-with-demeter">Getting Started with Demeter</a><ul>
+<li><a class="reference internal" href="#id1">Setup</a><ul>
+<li><a class="reference internal" href="#observed-spatial-data">Observed spatial data:</a></li>
+<li><a class="reference internal" href="#projected-land-allocation-data">Projected land allocation data:</a></li>
+<li><a class="reference internal" href="#allocation-files">Allocation files:</a><ul>
+<li><a class="reference internal" href="#projected-land-class-allocation"><em>Projected land class allocation:</em></a></li>
+<li><a class="reference internal" href="#observational-spatial-data-class-allocation"><em>Observational spatial data class allocation:</em></a></li>
+<li><a class="reference internal" href="#constraint-weighting"><em>Constraint weighting:</em></a></li>
+<li><a class="reference internal" href="#kernel-density-weighting"><em>Kernel density weighting:</em></a></li>
+<li><a class="reference internal" href="#transition-priority"><em>Transition Priority:</em></a></li>
+<li><a class="reference internal" href="#treatment-order"><em>Treatment order:</em></a></li>
+<li><a class="reference internal" href="#constraints-not-required"><em>Constraints (not required):</em></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration-file">Configuration file:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Demeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Demeter</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/readme.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a class="reference external image-reference" href="https://github.com/JGCRI/demeter/actions/workflows/build.yml"><img alt="build" src="https://github.com/JGCRI/demeter/actions/workflows/build.yml/badge.svg" /></a>
+<a class="reference external image-reference" href="https://zenodo.org/badge/latestdoi/101879773"><img alt="DOI" src="https://zenodo.org/badge/101879773.svg" /></a>
+<a class="reference external image-reference" href="https://codecov.io/gh/JGCRI/demeter"><img alt="codecov" src="https://codecov.io/gh/JGCRI/demeter/branch/master/graph/badge.svg?token=7K2g3PsFUG" /></a>
+<section id="demeter">
+<h1>Demeter<a class="headerlink" href="#demeter" title="Permalink to this heading"></a></h1>
+<section id="a-land-use-and-land-cover-disaggregation-and-change-detection-model">
+<h2>A land-use and land-cover disaggregation and change detection model<a class="headerlink" href="#a-land-use-and-land-cover-disaggregation-and-change-detection-model" title="Permalink to this heading"></a></h2>
+<p>Demeter is an open source Python package that was built to disaggregate projections of future land allocations generated by an integrated human-Earth systems model.  Projected land allocation from these models are traditionally transferred to Earth System Models (ESMs) in a variety of gridded formats and spatial resolutions as inputs for simulating biophysical and biogeochemical fluxes. Existing tools for performing this translation generally require a number of manual steps which introduces error and are inefficient.  Demeter makes this process seamless and repeatable by providing gridded land use and land cover change (LULCC) products downscaled directly from the Global Change Analysis Model (GCAM) in a variety of formats and resolutions commonly used by ESMs.</p>
+</section>
+</section>
+<section id="getting-started-with-demeter">
+<h1>Getting Started with Demeter<a class="headerlink" href="#getting-started-with-demeter" title="Permalink to this heading"></a></h1>
+<p>Set up Demeter using the following steps:</p>
+<ol class="arabic">
+<li><p>Install Demeter from GitHub:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">JGCRI</span><span class="o">/</span><span class="n">demeter</span><span class="o">.</span><span class="n">git</span><span class="c1">#egg=demeter</span>
+</pre></div>
+</div>
+</li>
+<li><p>Download the example data using the following in a Python prompt:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">demeter</span>
+
+<span class="c1"># the directory that you want to download and extract the example data to</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;&lt;my data download location&gt;&quot;</span>
+
+<span class="c1"># download and unzip the package data to your local machine</span>
+<span class="n">demeter</span><span class="o">.</span><span class="n">get_package_data</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>#. Setup your configuration file (.ini).  Examples are located in the “example” directory that you just downloaded.  Be sure to change the following variables to represent the local path.  See the details for custom runs in the <a class="reference external" href="#setup">Setup</a> section of this file.
+#.</p>
+<blockquote>
+<div><p>To run Demeter:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">demeter</span>
+
+<span class="c1"># the path and file name that my example configuration (.ini) file was downloaded to</span>
+<span class="n">config_file</span> <span class="o">=</span> <span class="s1">&#39;&lt;path to my example config file&gt;/demeter_config.ini&#39;</span>
+
+<span class="c1"># run all time steps</span>
+<span class="n">demeter</span><span class="o">.</span><span class="n">run_model</span><span class="p">(</span><span class="n">config_file</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span>
+                  <span class="n">write_outputs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<section id="id1">
+<h2>Setup<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>Demeter requires the setup of several input files to begin a run.  Examples of all input files can be found in the ‘examples’ directory and the expected file structure is outlined in the following:</p>
+<ul class="simple">
+<li><p>Example directory</p>
+<ul>
+<li><p>Inputs directory</p>
+<ul>
+<li><p>Allocation directory</p>
+<ul>
+<li><p>Constraint weighting file</p>
+<ul>
+<li><p>GCAM landclass allocation file</p></li>
+<li><p>Kernel density weighting file</p></li>
+<li><p>Spatial landclass allocation file</p></li>
+<li><p>Transition priority file</p></li>
+<li><p>Treatment order file</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Observed spatial data directory</p>
+<ul>
+<li><p>Observed spatial data file</p></li>
+</ul>
+</li>
+<li><p>Constraint data directory</p>
+<ul>
+<li><p>Constraint files</p></li>
+</ul>
+</li>
+<li><p>Projected GCAM land allocation directory</p>
+<ul>
+<li><p>GCAM land allocation file</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>The following describes the requirements and format of each input.</p>
+<section id="observed-spatial-data">
+<h3>Observed spatial data:<a class="headerlink" href="#observed-spatial-data" title="Permalink to this heading"></a></h3>
+<p>This file represents the area in square degrees of each land class existing within a grid cell.  The grid cell size is defined by the user.  This file must be presented as a comma-separated values (CSV) file having a header in the first row and must contain the field names and fields described in Table 1.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>fid</p></td>
+<td><p>Unique integer ID for each grid cell latitude, longitude</p></td>
+</tr>
+<tr class="row-odd"><td><p>landclass</p></td>
+<td><p>Each land class field name (e.g., shrub, grass, etc.).  Field names must not include commas.</p></td>
+</tr>
+<tr class="row-even"><td><p>region_id</p></td>
+<td><p>The integer ID of the GCAM region that the grid cell is contained in.  Exact field name spelling required.</p></td>
+</tr>
+<tr class="row-odd"><td><p>metric_id</p></td>
+<td><p>The integer ID of the GCAM basin that the grid cell is contained in.  Exact field name spelling required.</p></td>
+</tr>
+<tr class="row-even"><td><p>latitude</p></td>
+<td><p>The geographic latitude value of the grid cell centroid as a signed float.  Exact field name spelling required.</p></td>
+</tr>
+<tr class="row-odd"><td><p>longitude</p></td>
+<td><p>The geographic longitude value of the grid cell centroid as a signed float.  Exact field name spelling required.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Table 1.</strong>  Observed spatial data required fields and their descriptions.</p>
+</section>
+<section id="projected-land-allocation-data">
+<h3>Projected land allocation data:<a class="headerlink" href="#projected-land-allocation-data" title="Permalink to this heading"></a></h3>
+<p>This file is the formatted GCAM run output for land allocation projections.  Since the format of this file can vary based on GCAM user preference, the file must be formatted to meet Demeter input requirements as described in Table 2.  The file must be a CSV file having the header in the first row.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>region</p></td>
+<td><p>The text name of the GCAM region. Exact field name spelling required.</p></td>
+</tr>
+<tr class="row-odd"><td><p>landclass</p></td>
+<td><p>Each land class field name (e.g., shrub, grass, etc.).  Field names must not include commas.</p></td>
+</tr>
+<tr class="row-even"><td><p>year</p></td>
+<td><p>Each year of the GCAM run as an integer (e.g., 2005, 2010, etc.)</p></td>
+</tr>
+<tr class="row-odd"><td><p>metric_id</p></td>
+<td><p>The integer ID of the GCAM basin.  Exact field name spelling required.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Table 2.</strong> Projected land allocation required fields from GCAM.</p>
+</section>
+<section id="allocation-files">
+<h3>Allocation files:<a class="headerlink" href="#allocation-files" title="Permalink to this heading"></a></h3>
+<section id="projected-land-class-allocation">
+<h4><em>Projected land class allocation:</em><a class="headerlink" href="#projected-land-class-allocation" title="Permalink to this heading"></a></h4>
+<p>This file defines how the land-use and land-cover classes in the GCAM projected land allocation data will be binned into final classes.  See the projected land class allocation file in the example inputs for reference.</p>
+<p>For example:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>category</p></th>
+<th class="head"><p>demeter_class_1</p></th>
+<th class="head"><p>demeter_class_2</p></th>
+<th class="head"><p>demeter_class_3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>gcam_class_1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>gcam_class_2</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>gcam_class_3</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>gcam_class_4</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>gcam_class_5</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="observational-spatial-data-class-allocation">
+<h4><em>Observational spatial data class allocation:</em><a class="headerlink" href="#observational-spatial-data-class-allocation" title="Permalink to this heading"></a></h4>
+<p>This file defines how the land-use and land-cover classes in the OSD will be binned into final land classes for output, which can be defined by the user and serve to place projected land allocation data from GCAM on a common scale with the on-the-ground representation of land-use and land-cover represented in the OSD.  See the Observed spatial data class allocation file in the example inputs for reference.</p>
+<p>For example:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>category</p></th>
+<th class="head"><p>demeter_class_1</p></th>
+<th class="head"><p>demeter_class_2</p></th>
+<th class="head"><p>demeter_class_3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>observed_class_1</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>observed_class_2</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>observed_class_3</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>observed_class_4</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>observed_class_5</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="constraint-weighting">
+<h4><em>Constraint weighting:</em><a class="headerlink" href="#constraint-weighting" title="Permalink to this heading"></a></h4>
+<p>Constraints such as soil quality may be desirable to the user and can be prepared by assigning a weighted value from 0.0 to 1.0 for each grid cell in the OSD. Spatial maps of constraints should be provided by the user for application during the downscaling process. Users should note that constraining a grid cell to 0.0 may impede the ability to be able to achieve a projected land allocation from GCAM since land area is being excluded that GCAM expects.  Each constraint file must have two fields:  fid and weight.  The fid field should correspond to the fid field in the OSD input and the weight field should be the weight of the constraint per the cell corresponding to the OSD input.  Each file should be a CSV with no header.</p>
+<p>For example:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>category</p></th>
+<th class="head"><p>demeter_class_1</p></th>
+<th class="head"><p>demeter_class_2</p></th>
+<th class="head"><p>demeter_class_3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>nutrient_availability</p></td>
+<td><p>0.0</p></td>
+<td><p>0.4</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>soil_quality</p></td>
+<td><p>0.0</p></td>
+<td><p>0.2</p></td>
+<td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="kernel-density-weighting">
+<h4><em>Kernel density weighting:</em><a class="headerlink" href="#kernel-density-weighting" title="Permalink to this heading"></a></h4>
+<p>Weight the degree to which land classes subjected to a kernel density filter will be utilized during expansion to each class.  Value from 0.0 to 1.0. See the kernel density weighting file in the example inputs for reference.</p>
+<p>For example:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>category</p></th>
+<th class="head"><p>demeter_class_1</p></th>
+<th class="head"><p>demeter_class_2</p></th>
+<th class="head"><p>demeter_class_3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>kernel_density</p></td>
+<td><p>1.0</p></td>
+<td><p>0.4</p></td>
+<td><p>1.0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="transition-priority">
+<h4><em>Transition Priority:</em><a class="headerlink" href="#transition-priority" title="Permalink to this heading"></a></h4>
+<p>This ordering defines the preferential order of final land allocation (e.g., crops expanding into grasslands rather than forests).  See the priority allocation file in the example inputs for reference.  See the priority allocation file in the example inputs for reference.</p>
+<p>For example:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>category</p></th>
+<th class="head"><p>demeter_class_1</p></th>
+<th class="head"><p>demeter_class_2</p></th>
+<th class="head"><p>demeter_class_3</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>demeter_class_1</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>demeter_class_2</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>demeter_class_3</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="treatment-order">
+<h4><em>Treatment order:</em><a class="headerlink" href="#treatment-order" title="Permalink to this heading"></a></h4>
+<p>Defines the order in which final land classes are downscaled.  This will influence the results (e.g., if crops are downscaled first and overtake grassland, grassland will not be available for shrubs to overtake when processing shrub land).  See the treatment order file in the example inputs for reference.</p>
+<p>For example:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>category</p></th>
+<th class="head"><p>order</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>demeter_class_1</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-odd"><td><p>demeter_class_2</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>demeter_class_3</p></td>
+<td><p>1</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="constraints-not-required">
+<h4><em>Constraints (not required):</em><a class="headerlink" href="#constraints-not-required" title="Permalink to this heading"></a></h4>
+<p>A weight for each constraint, with a value ranging from -1.0 to 1.0, can be applied to each land class.  If no constraints are desired, a user should simply provide a header-only file.  For example, for a given land class, the weight for the soil quality constraint with a value of -1 indicates that one land class is fully constrained inversely (e.g., grasslands are opportunistic and grow readily in areas with a low soil quality); a weight of 0 indicates that soil quality exerts no constraint to the land class (e.g., forest, etc.); a weight of 1 for soil quality indicates that high soil quality will highly influence where the type will be spatially allocated (e.g. cropland).  These constraints are developed in separate files as described in the following Constraints section.  See the constraint weighting file in the example inputs for reference.</p>
+<p>For example:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>target_fid</p></th>
+<th class="head"><p>value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>0.7</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>0.9</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>0.1</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="configuration-file">
+<h3>Configuration file:<a class="headerlink" href="#configuration-file" title="Permalink to this heading"></a></h3>
+<p>Demeter’s configuration file allows the user to customize each run and define where file inputs are and outputs will be.  The configuration options and hierarchical level are described in Table 3.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Level</p></th>
+<th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>STRUCTURE</p></td>
+<td><p>run_dir</p></td>
+<td><p>The full path of the root directory where the inputs and outputs directory are stored</p></td>
+</tr>
+<tr class="row-odd"><td><p>STRUCTURE</p></td>
+<td><p>input_dir</p></td>
+<td><p>The name of the input directory</p></td>
+</tr>
+<tr class="row-even"><td><p>STRUCTURE</p></td>
+<td><p>output_dir</p></td>
+<td><p>The name of the output directory</p></td>
+</tr>
+<tr class="row-odd"><td><p>INPUTS</p></td>
+<td><p>allocation_dir</p></td>
+<td><p>The name of the directory that holds the allocation files</p></td>
+</tr>
+<tr class="row-even"><td><p>INPUTS</p></td>
+<td><p>observed_dir</p></td>
+<td><p>The name of the directory that holds the observed spatial data file</p></td>
+</tr>
+<tr class="row-odd"><td><p>INPUTS</p></td>
+<td><p>constraints_dir</p></td>
+<td><p>The name of the directory that holds the constraints files</p></td>
+</tr>
+<tr class="row-even"><td><p>INPUTS</p></td>
+<td><p>projected_dir</p></td>
+<td><p>The name of the directory that holds the GCAM projected land allocation file</p></td>
+</tr>
+<tr class="row-odd"><td><p>INPUTS - ALLOCATION</p></td>
+<td><p>spatial_allocation_file</p></td>
+<td><p>The file name with extension of the observed spatial data class allocation</p></td>
+</tr>
+<tr class="row-even"><td><p>INPUTS - ALLOCATION</p></td>
+<td><p>gcam_allocation_file</p></td>
+<td><p>The file name with extension of the projected land class allocation</p></td>
+</tr>
+<tr class="row-odd"><td><p>INPUTS - ALLOCATION</p></td>
+<td><p>kernel_allocation_file</p></td>
+<td><p>The file name with extension of the kernel density weighting</p></td>
+</tr>
+<tr class="row-even"><td><p>INPUTS - ALLOCATION</p></td>
+<td><p>transition_order_file</p></td>
+<td><p>The file name with extension of the priority allocation</p></td>
+</tr>
+<tr class="row-odd"><td><p>INPUTS - ALLOCATION</p></td>
+<td><p>treatment_order_file</p></td>
+<td><p>The file name with extension of the treatment order</p></td>
+</tr>
+<tr class="row-even"><td><p>INPUTS - ALLOCATION</p></td>
+<td><p>constraints_file</p></td>
+<td><p>The file name with extension of the constraint weighting</p></td>
+</tr>
+<tr class="row-odd"><td><p>INPUTS - OBSERVED</p></td>
+<td><p>observed_lu_data</p></td>
+<td><p>The file name with extension of the observational spatial data</p></td>
+</tr>
+<tr class="row-even"><td><p>INPUTS - PROJECTED</p></td>
+<td><p>projected_lu_data</p></td>
+<td><p>The file name with extension of the projected land allocation data from GCAM</p></td>
+</tr>
+<tr class="row-odd"><td><p>OUTPUTS</p></td>
+<td><p>diagnostics_output_dir</p></td>
+<td><p>The name of the directory that diagnostics outputs will be kept</p></td>
+</tr>
+<tr class="row-even"><td><p>OUTPUTS</p></td>
+<td><p>log_output_dir</p></td>
+<td><p>The name of the directory that the log file outputs will be kept</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>scenario</p></td>
+<td><p>Scenario name</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>run_desc</p></td>
+<td><p>The description of the current run</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>observed_id_field</p></td>
+<td><p>Observed spatial data unique field name (e.g. target_fid)</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>start_year</p></td>
+<td><p>First time step to process (e.g., 2005)</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>end_year</p></td>
+<td><p>Last time step to process (e.g., 2100)</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>use_constraints</p></td>
+<td><p>1 to use constraints, 0 to ignore constraints</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>spatial_resolution</p></td>
+<td><p>Spatial resolution of the observed spatial data in decimal degrees (e.g. 0.25)</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>errortol</p></td>
+<td><p>Allowable error tolerance in square kilometres for non-accomplished change</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>timestep</p></td>
+<td><p>Time step interval (e.g., 5 years) for the output data.  This time step is the increment that Demeter will process when starting with the base year.</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>proj_factor</p></td>
+<td><p>Factor to multiply the projected land allocation by</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>diagnostic</p></td>
+<td><p>0 to not output diagnostics, 1 to output</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>intensification_ratio</p></td>
+<td><p>Ideal fraction of land change that will occur during intensification.  The remainder will be through expansion.  Value from 0.0 to 1.0.</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>stochastic_expansion</p></td>
+<td><p>0 to not conduct stochastic expansion of grid cells, 1 to conduct</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>selection_threshold</p></td>
+<td><p>Threshold above which grid cells are selected to receive expansion for a target functional type from the kernel density filter.  Value from 0.0 to 1.0; where 0 lets all land cells receive expansion and 1 only lets only the grid cells with the maximum likelihood expand.</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>kernel_distance</p></td>
+<td><p>Radius in grid cells used to build the kernel density convolution filter used during expansion</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>target_years_output</p></td>
+<td><p>Years to save data for; default is ‘all’; otherwise a semicolon delimited string (e.g., 2005; 2020)</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>save_tabular</p></td>
+<td><p>Save tabular spatial land cover as a CSV; define tabular units in tabular_units param</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>tabular_units</p></td>
+<td><p>Units to output the spatial land cover data in; either ‘sqkm’ or ‘fraction’</p></td>
+</tr>
+<tr class="row-odd"><td><p>PARAMS</p></td>
+<td><p>save_transitions</p></td>
+<td><p>0 to not write CSV files for each land transitions per land type, 1 to write</p></td>
+</tr>
+<tr class="row-even"><td><p>PARAMS</p></td>
+<td><p>save_netcdf_yr</p></td>
+<td><p>0 to not write a NetCDF file for each year of the fraction of land cover of each land class by grid cell; 1 to write</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Table 3.</strong>  Configuration file hierarchy, parameters, and descriptions.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Kanishka B. Narayan.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

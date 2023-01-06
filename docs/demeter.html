@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>demeter package &mdash; Demeter 1.3.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Demeter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">demeter package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-demeter.config_reader">demeter.config_reader module</a><ul>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig"><code class="docutils literal notranslate"><span class="pre">ReadConfig</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.DATETIME_FORMAT"><code class="docutils literal notranslate"><span class="pre">ReadConfig.DATETIME_FORMAT</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.check_exist"><code class="docutils literal notranslate"><span class="pre">ReadConfig.check_exist()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.ck_agg"><code class="docutils literal notranslate"><span class="pre">ReadConfig.ck_agg()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.ck_ts"><code class="docutils literal notranslate"><span class="pre">ReadConfig.ck_ts()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.ck_type"><code class="docutils literal notranslate"><span class="pre">ReadConfig.ck_type()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.ck_yr"><code class="docutils literal notranslate"><span class="pre">ReadConfig.ck_yr()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.create_dir"><code class="docutils literal notranslate"><span class="pre">ReadConfig.create_dir()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.get_constraints"><code class="docutils literal notranslate"><span class="pre">ReadConfig.get_constraints()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.get_outdir"><code class="docutils literal notranslate"><span class="pre">ReadConfig.get_outdir()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.set_target"><code class="docutils literal notranslate"><span class="pre">ReadConfig.set_target()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.vaild_length"><code class="docutils literal notranslate"><span class="pre">ReadConfig.vaild_length()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.valid_integer"><code class="docutils literal notranslate"><span class="pre">ReadConfig.valid_integer()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.valid_limit"><code class="docutils literal notranslate"><span class="pre">ReadConfig.valid_limit()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.config_reader.ReadConfig.valid_string"><code class="docutils literal notranslate"><span class="pre">ReadConfig.valid_string()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demeter.config_reader.ValidationException"><code class="docutils literal notranslate"><span class="pre">ValidationException</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.constraints">demeter.constraints module</a><ul>
+<li><a class="reference internal" href="#demeter.constraints.ApplyConstraints"><code class="docutils literal notranslate"><span class="pre">ApplyConstraints</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.constraints.ApplyConstraints.apply_constraints_zero"><code class="docutils literal notranslate"><span class="pre">ApplyConstraints.apply_constraints_zero()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.constraints.ApplyConstraints.apply_gcam_constraints"><code class="docutils literal notranslate"><span class="pre">ApplyConstraints.apply_gcam_constraints()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.constraints.ApplyConstraints.apply_spat_constraints"><code class="docutils literal notranslate"><span class="pre">ApplyConstraints.apply_spat_constraints()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.constraints.ApplyConstraints.build_gcam_landmatrix"><code class="docutils literal notranslate"><span class="pre">ApplyConstraints.build_gcam_landmatrix()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.constraints.ApplyConstraints.build_spat_landmatrix"><code class="docutils literal notranslate"><span class="pre">ApplyConstraints.build_spat_landmatrix()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.constraints.ApplyConstraints.compile_constraints"><code class="docutils literal notranslate"><span class="pre">ApplyConstraints.compile_constraints()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.constraints.ApplyConstraints.reg_metric_lcs_zip"><code class="docutils literal notranslate"><span class="pre">ApplyConstraints.reg_metric_lcs_zip()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demeter.constraints.ValidationException"><code class="docutils literal notranslate"><span class="pre">ValidationException</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.install_supplement">demeter.install_supplement module</a><ul>
+<li><a class="reference internal" href="#demeter.install_supplement.InstallSupplement"><code class="docutils literal notranslate"><span class="pre">InstallSupplement</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.install_supplement.InstallSupplement.DATA_VERSION_URLS"><code class="docutils literal notranslate"><span class="pre">InstallSupplement.DATA_VERSION_URLS</span></code></a></li>
+<li><a class="reference internal" href="#demeter.install_supplement.InstallSupplement.fetch_zenodo"><code class="docutils literal notranslate"><span class="pre">InstallSupplement.fetch_zenodo()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demeter.install_supplement.get_package_data"><code class="docutils literal notranslate"><span class="pre">get_package_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.logger">demeter.logger module</a><ul>
+<li><a class="reference internal" href="#demeter.logger.Logger"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.logger.Logger.LOG_FORMAT_STRING"><code class="docutils literal notranslate"><span class="pre">Logger.LOG_FORMAT_STRING</span></code></a></li>
+<li><a class="reference internal" href="#demeter.logger.Logger.close_logger"><code class="docutils literal notranslate"><span class="pre">Logger.close_logger()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.logger.Logger.console_handler"><code class="docutils literal notranslate"><span class="pre">Logger.console_handler()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.logger.Logger.file_handler"><code class="docutils literal notranslate"><span class="pre">Logger.file_handler()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.model">demeter.model module</a><ul>
+<li><a class="reference internal" href="#demeter.model.Model"><code class="docutils literal notranslate"><span class="pre">Model</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.model.Model.build_generator"><code class="docutils literal notranslate"><span class="pre">Model.build_generator()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.model.Model.cleanup"><code class="docutils literal notranslate"><span class="pre">Model.cleanup()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.model.Model.execute"><code class="docutils literal notranslate"><span class="pre">Model.execute()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.model.Model.initialize"><code class="docutils literal notranslate"><span class="pre">Model.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.model.Model.process_step"><code class="docutils literal notranslate"><span class="pre">Model.process_step()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demeter.model.ValidationException"><code class="docutils literal notranslate"><span class="pre">ValidationException</span></code></a></li>
+<li><a class="reference internal" href="#demeter.model.run_model"><code class="docutils literal notranslate"><span class="pre">run_model()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.ncdf_conversion">demeter.ncdf_conversion module</a><ul>
+<li><a class="reference internal" href="#demeter.ncdf_conversion.DemeterToNetcdf"><code class="docutils literal notranslate"><span class="pre">DemeterToNetcdf</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.ncdf_conversion.DemeterToNetcdf.COMPRESSION_PARAMETERS"><code class="docutils literal notranslate"><span class="pre">DemeterToNetcdf.COMPRESSION_PARAMETERS</span></code></a></li>
+<li><a class="reference internal" href="#demeter.ncdf_conversion.DemeterToNetcdf.generate_regrid_coordinates"><code class="docutils literal notranslate"><span class="pre">DemeterToNetcdf.generate_regrid_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.ncdf_conversion.DemeterToNetcdf.generate_scaled_coordinates"><code class="docutils literal notranslate"><span class="pre">DemeterToNetcdf.generate_scaled_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.ncdf_conversion.DemeterToNetcdf.process_output"><code class="docutils literal notranslate"><span class="pre">DemeterToNetcdf.process_output()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.preprocess_data">demeter.preprocess_data module</a><ul>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.DEMETER_METRIC_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.DEMETER_METRIC_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.DEMETER_REGID_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.DEMETER_REGID_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.GCAM_LANDCLASS_DELIM"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.GCAM_LANDCLASS_DELIM</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.GCAM_REGION_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.GCAM_REGION_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.GCAM_UNIT_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.GCAM_UNIT_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.GCAM_YEAR_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.GCAM_YEAR_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.build_basin_dict"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.build_basin_dict()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.build_regions_dict"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.build_regions_dict()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.format_land_data"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.format_land_data()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.gcam_landalloc_field"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.gcam_landalloc_field</span></code></a></li>
+<li><a class="reference internal" href="#demeter.preprocess_data.FormatGcamDataFrame.gcam_nodes_field"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.gcam_nodes_field</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demeter.preprocess_data.format_gcam_data"><code class="docutils literal notranslate"><span class="pre">format_gcam_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.process">demeter.process module</a><ul>
+<li><a class="reference internal" href="#demeter.process.ProcessStep"><code class="docutils literal notranslate"><span class="pre">ProcessStep</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.process.ProcessStep.expansion_pass"><code class="docutils literal notranslate"><span class="pre">ProcessStep.expansion_pass()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.process.ProcessStep.intense_pass"><code class="docutils literal notranslate"><span class="pre">ProcessStep.intense_pass()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.process.ProcessStep.outputs"><code class="docutils literal notranslate"><span class="pre">ProcessStep.outputs()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.process.ProcessStep.prep_step"><code class="docutils literal notranslate"><span class="pre">ProcessStep.prep_step()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.process.ProcessStep.process"><code class="docutils literal notranslate"><span class="pre">ProcessStep.process()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.reconcile">demeter.reconcile module</a><ul>
+<li><a class="reference internal" href="#demeter.reconcile.reconcile"><code class="docutils literal notranslate"><span class="pre">reconcile()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.reconcile.reg_metric_zip"><code class="docutils literal notranslate"><span class="pre">reg_metric_zip()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.reconcile.yr_reg_metric_zip"><code class="docutils literal notranslate"><span class="pre">yr_reg_metric_zip()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.staging">demeter.staging module</a><ul>
+<li><a class="reference internal" href="#demeter.staging.Stage"><code class="docutils literal notranslate"><span class="pre">Stage</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.staging.Stage.harmony"><code class="docutils literal notranslate"><span class="pre">Stage.harmony()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.staging.Stage.kernel_filter"><code class="docutils literal notranslate"><span class="pre">Stage.kernel_filter()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.staging.Stage.prep_base"><code class="docutils literal notranslate"><span class="pre">Stage.prep_base()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.staging.Stage.prep_projected"><code class="docutils literal notranslate"><span class="pre">Stage.prep_projected()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.staging.Stage.prep_reference"><code class="docutils literal notranslate"><span class="pre">Stage.prep_reference()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.staging.Stage.set_constraints"><code class="docutils literal notranslate"><span class="pre">Stage.set_constraints()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.staging.Stage.set_step_zero"><code class="docutils literal notranslate"><span class="pre">Stage.set_step_zero()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.staging.Stage.stage"><code class="docutils literal notranslate"><span class="pre">Stage.stage()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.test_read">demeter.test_read module</a></li>
+<li><a class="reference internal" href="#module-demeter">Module contents</a><ul>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.DEMETER_METRIC_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.DEMETER_METRIC_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.DEMETER_REGID_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.DEMETER_REGID_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.GCAM_LANDCLASS_DELIM"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.GCAM_LANDCLASS_DELIM</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.GCAM_REGION_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.GCAM_REGION_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.GCAM_UNIT_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.GCAM_UNIT_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.GCAM_YEAR_FIELD"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.GCAM_YEAR_FIELD</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.build_basin_dict"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.build_basin_dict()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.build_regions_dict"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.build_regions_dict()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.format_land_data"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.format_land_data()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.gcam_landalloc_field"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.gcam_landalloc_field</span></code></a></li>
+<li><a class="reference internal" href="#demeter.FormatGcamDataFrame.gcam_nodes_field"><code class="docutils literal notranslate"><span class="pre">FormatGcamDataFrame.gcam_nodes_field</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demeter.Model"><code class="docutils literal notranslate"><span class="pre">Model</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.Model.build_generator"><code class="docutils literal notranslate"><span class="pre">Model.build_generator()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.Model.cleanup"><code class="docutils literal notranslate"><span class="pre">Model.cleanup()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.Model.execute"><code class="docutils literal notranslate"><span class="pre">Model.execute()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.Model.initialize"><code class="docutils literal notranslate"><span class="pre">Model.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.Model.process_step"><code class="docutils literal notranslate"><span class="pre">Model.process_step()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demeter.format_gcam_data"><code class="docutils literal notranslate"><span class="pre">format_gcam_data()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.get_package_data"><code class="docutils literal notranslate"><span class="pre">get_package_data()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.run_model"><code class="docutils literal notranslate"><span class="pre">run_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Demeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">demeter package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/demeter.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="demeter-package">
+<h1>demeter package<a class="headerlink" href="#demeter-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demeter.change.html">demeter.change package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="demeter.change.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.change.html#module-demeter.change.expansion">demeter.change.expansion module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="demeter.change.html#demeter.change.expansion.apply_expansion"><code class="docutils literal notranslate"><span class="pre">apply_expansion()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.change.html#module-demeter.change.intensification">demeter.change.intensification module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="demeter.change.html#demeter.change.intensification.apply_intensification"><code class="docutils literal notranslate"><span class="pre">apply_intensification()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.change.html#demeter.change.intensification.diff_diagnostic"><code class="docutils literal notranslate"><span class="pre">diff_diagnostic()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.change.html#demeter.change.intensification.reg_metric_iter"><code class="docutils literal notranslate"><span class="pre">reg_metric_iter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.change.html#module-demeter.change">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="demeter.demeter_io.html">demeter.demeter_io package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="demeter.demeter_io.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.demeter_io.html#module-demeter.demeter_io.reader">demeter.demeter_io.reader module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.reader.ValidationException"><code class="docutils literal notranslate"><span class="pre">ValidationException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.reader.csv_to_array"><code class="docutils literal notranslate"><span class="pre">csv_to_array()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.reader.read_allocation_data"><code class="docutils literal notranslate"><span class="pre">read_allocation_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.reader.read_base"><code class="docutils literal notranslate"><span class="pre">read_base()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.reader.read_gcam_file"><code class="docutils literal notranslate"><span class="pre">read_gcam_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.reader.read_gcam_land"><code class="docutils literal notranslate"><span class="pre">read_gcam_land()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.reader.to_array"><code class="docutils literal notranslate"><span class="pre">to_array()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.reader.to_dict"><code class="docutils literal notranslate"><span class="pre">to_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.reader.to_list"><code class="docutils literal notranslate"><span class="pre">to_list()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.demeter_io.html#module-demeter.demeter_io.writer">demeter.demeter_io.writer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.writer.arr_to_ascii"><code class="docutils literal notranslate"><span class="pre">arr_to_ascii()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.writer.array_to_csv"><code class="docutils literal notranslate"><span class="pre">array_to_csv()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.writer.lc_timestep_csv"><code class="docutils literal notranslate"><span class="pre">lc_timestep_csv()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.writer.max_ascii_rast"><code class="docutils literal notranslate"><span class="pre">max_ascii_rast()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.writer.save_array"><code class="docutils literal notranslate"><span class="pre">save_array()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.writer.to_netcdf_lc"><code class="docutils literal notranslate"><span class="pre">to_netcdf_lc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.writer.to_netcdf_yr"><code class="docutils literal notranslate"><span class="pre">to_netcdf_yr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.demeter_io.html#demeter.demeter_io.writer.write_transitions"><code class="docutils literal notranslate"><span class="pre">write_transitions()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.demeter_io.html#module-demeter.demeter_io">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="demeter.tests.html">demeter.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="demeter.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.tests.html#module-demeter.tests.test_model_output">demeter.tests.test_model_output module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="demeter.tests.html#demeter.tests.test_model_output.TestOutputs"><code class="docutils literal notranslate"><span class="pre">TestOutputs</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="demeter.tests.html#demeter.tests.test_model_output.TestOutputs.COMP_2010"><code class="docutils literal notranslate"><span class="pre">TestOutputs.COMP_2010</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.tests.html#demeter.tests.test_model_output.TestOutputs.COMP_2015"><code class="docutils literal notranslate"><span class="pre">TestOutputs.COMP_2015</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.tests.html#demeter.tests.test_model_output.TestOutputs.GCAMWRAPPER_DF"><code class="docutils literal notranslate"><span class="pre">TestOutputs.GCAMWRAPPER_DF</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.tests.html#demeter.tests.test_model_output.TestOutputs.RUN_DIR"><code class="docutils literal notranslate"><span class="pre">TestOutputs.RUN_DIR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.tests.html#demeter.tests.test_model_output.TestOutputs.test_proj_outputs_using_args"><code class="docutils literal notranslate"><span class="pre">TestOutputs.test_proj_outputs_using_args()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.tests.html#module-demeter.tests">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="demeter.weight.html">demeter.weight package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="demeter.weight.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.weight.html#module-demeter.weight.kernel_density">demeter.weight.kernel_density module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="demeter.weight.html#demeter.weight.kernel_density.KernelDensity"><code class="docutils literal notranslate"><span class="pre">KernelDensity</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="demeter.weight.html#demeter.weight.kernel_density.KernelDensity.apply_convolution"><code class="docutils literal notranslate"><span class="pre">KernelDensity.apply_convolution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.weight.html#demeter.weight.kernel_density.KernelDensity.compute_cell_index"><code class="docutils literal notranslate"><span class="pre">KernelDensity.compute_cell_index()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.weight.html#demeter.weight.kernel_density.KernelDensity.convolution_filter"><code class="docutils literal notranslate"><span class="pre">KernelDensity.convolution_filter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.weight.html#demeter.weight.kernel_density.KernelDensity.dist_iter"><code class="docutils literal notranslate"><span class="pre">KernelDensity.dist_iter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.weight.html#demeter.weight.kernel_density.KernelDensity.global_system"><code class="docutils literal notranslate"><span class="pre">KernelDensity.global_system()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.weight.html#demeter.weight.kernel_density.KernelDensity.prep_arrays"><code class="docutils literal notranslate"><span class="pre">KernelDensity.prep_arrays()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="demeter.weight.html#demeter.weight.kernel_density.KernelDensity.preprocess_kernel_density"><code class="docutils literal notranslate"><span class="pre">KernelDensity.preprocess_kernel_density()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="demeter.weight.html#demeter.weight.kernel_density.handle_single_pft"><code class="docutils literal notranslate"><span class="pre">handle_single_pft()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="demeter.weight.html#module-demeter.weight">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-demeter.config_reader">
+<span id="demeter-config-reader-module"></span><h2>demeter.config_reader module<a class="headerlink" href="#module-demeter.config_reader" title="Permalink to this heading"></a></h2>
+<p>Reads config.ini and type cast parameters.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (<a class="reference external" href="mailto:chris&#46;vernon&#37;&#52;&#48;pnnl&#46;gov">chris<span>&#46;</span>vernon<span>&#64;</span>pnnl<span>&#46;</span>gov</a>)</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.config_reader.</span></span><span class="sig-name descname"><span class="pre">ReadConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.DATETIME_FORMAT">
+<span class="sig-name descname"><span class="pre">DATETIME_FORMAT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'%Y-%m-%d_%Hh%Mm%Ss'</span></em><a class="headerlink" href="#demeter.config_reader.ReadConfig.DATETIME_FORMAT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.check_exist">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_exist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.check_exist" title="Permalink to this definition"></a></dt>
+<dd><p>Check file or directory existence.</p>
+<p>:param f        file or directory full path
+:param kind     either ‘file’ or ‘dir’</p>
+<p>:return         either path or error</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.ck_agg">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ck_agg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.ck_agg" title="Permalink to this definition"></a></dt>
+<dd><p>Check aggregation level.  1 if by only region, 2 if by region and Basin or AEZ.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.ck_ts">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ck_ts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">st_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ed_y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.ck_ts" title="Permalink to this definition"></a></dt>
+<dd><p>Make sure time step fits in year bounds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – time step</p></li>
+<li><p><strong>st_y</strong> – start year</p></li>
+<li><p><strong>ed_y</strong> – end year</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>time step</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.ck_type">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ck_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.ck_type" title="Permalink to this definition"></a></dt>
+<dd><p>Ensure desired type conversion can be achieved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> – value</p></li>
+<li><p><strong>p</strong> – name of parameter</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.ck_yr">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ck_yr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.ck_yr" title="Permalink to this definition"></a></dt>
+<dd><p>Make sure year is four digits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – year</p></li>
+<li><p><strong>p</strong> – name of parameter</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.create_dir">
+<span class="sig-name descname"><span class="pre">create_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.create_dir" title="Permalink to this definition"></a></dt>
+<dd><p>Create directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>d</strong> – Target directory to create</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Either path or error</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.get_constraints">
+<span class="sig-name descname"><span class="pre">get_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.get_constraints" title="Permalink to this definition"></a></dt>
+<dd><p>Get a list of constraint files in dir and validate if the user has chosen to use them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of full path constraint files</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.get_outdir">
+<span class="sig-name descname"><span class="pre">get_outdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.get_outdir" title="Permalink to this definition"></a></dt>
+<dd><p>Create output directory unique name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.set_target">
+<span class="sig-name descname"><span class="pre">set_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.set_target" title="Permalink to this definition"></a></dt>
+<dd><p>Set target years to look for when output products.  Only the years in this list
+will be output.  If none specified, all will be used.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.vaild_length">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vaild_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_characters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.vaild_length" title="Permalink to this definition"></a></dt>
+<dd><p>Ensure len of string is less than or equal to value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – string</p></li>
+<li><p><strong>parameter</strong> – parameter name</p></li>
+<li><p><strong>max_characters</strong> – int of max length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.valid_integer">
+<span class="sig-name descname"><span class="pre">valid_integer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.valid_integer" title="Permalink to this definition"></a></dt>
+<dd><p>Ensure target value is an available option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> – value</p></li>
+<li><p><strong>p</strong> – name of parameter</p></li>
+<li><p><strong>l</strong> – list or tuple of available options for parameter</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.valid_limit">
+<span class="sig-name descname"><span class="pre">valid_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.valid_limit" title="Permalink to this definition"></a></dt>
+<dd><p>Ensure target value falls within limits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> – value</p></li>
+<li><p><strong>p</strong> – name of parameter</p></li>
+<li><p><strong>l</strong> – list of start and end range of acceptable values</p></li>
+<li><p><strong>typ</strong> – intended type</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.config_reader.ReadConfig.valid_string">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">valid_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ReadConfig.valid_string" title="Permalink to this definition"></a></dt>
+<dd><p>Ensure target value is an available option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> – value</p></li>
+<li><p><strong>p</strong> – name of parameter</p></li>
+<li><p><strong>l</strong> – list or tuple of available options for parameter</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>value</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="demeter.config_reader.ValidationException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.config_reader.</span></span><span class="sig-name descname"><span class="pre">ValidationException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.config_reader.ValidationException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-demeter.constraints">
+<span id="demeter-constraints-module"></span><h2>demeter.constraints module<a class="headerlink" href="#module-demeter.constraints" title="Permalink to this heading"></a></h2>
+<p>Apply user-defined constraints to base land use layer and predicted allocation data.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (PNNL); Yannick le Page (<a class="reference external" href="mailto:niquya&#37;&#52;&#48;gmail&#46;com">niquya<span>&#64;</span>gmail<span>&#46;</span>com</a>)</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.constraints.ApplyConstraints">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.constraints.</span></span><span class="sig-name descname"><span class="pre">ApplyConstraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allreg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allaez</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_years</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ixr_ixm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allregaez</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allregnumber</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_aez</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_regionnumber</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_aez</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_landname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_ludata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngrids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_ludata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.constraints.ApplyConstraints" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.constraints.ApplyConstraints.apply_constraints_zero">
+<span class="sig-name descname"><span class="pre">apply_constraints_zero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.constraints.ApplyConstraints.apply_constraints_zero" title="Permalink to this definition"></a></dt>
+<dd><p>Apply constraints that occur independent of target year.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>self</strong> – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.constraints.ApplyConstraints.apply_gcam_constraints">
+<span class="sig-name descname"><span class="pre">apply_gcam_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yr_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_landmatrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_landmatrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ixr_ixm_ixg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.constraints.ApplyConstraints.apply_gcam_constraints" title="Permalink to this definition"></a></dt>
+<dd><p>Apply user-defined constraints to GCAM land use data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>target_change; change per [region, metric, pft]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.constraints.ApplyConstraints.apply_spat_constraints">
+<span class="sig-name descname"><span class="pre">apply_spat_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.constraints.ApplyConstraints.apply_spat_constraints" title="Permalink to this definition"></a></dt>
+<dd><p>Apply user-defined constraints to base land use layer data.  This bins the spatial data into the final
+functional types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.constraints.ApplyConstraints.build_gcam_landmatrix">
+<span class="sig-name descname"><span class="pre">build_gcam_landmatrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.constraints.ApplyConstraints.build_gcam_landmatrix" title="Permalink to this definition"></a></dt>
+<dd><p>Create zero array to house GCAM land use summary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Zero 3D array of region, metric, final land classes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.constraints.ApplyConstraints.build_spat_landmatrix">
+<span class="sig-name descname"><span class="pre">build_spat_landmatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spat_ludataharm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.constraints.ApplyConstraints.build_spat_landmatrix" title="Permalink to this definition"></a></dt>
+<dd><p>Create data summary by region, metric, final land class to conduct the GCAM aggregation.</p>
+<p>:return</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.constraints.ApplyConstraints.compile_constraints">
+<span class="sig-name descname"><span class="pre">compile_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.constraints.ApplyConstraints.compile_constraints" title="Permalink to this definition"></a></dt>
+<dd><p>Create array to house constraints. Populate constraints.  Position 0 is reserved for kernel density constraints
+with are created on-the-fly later in the model.</p>
+<p>:param constraint_files                 Array of full path file names to constraint data
+:param ngrids:                          Number of grid cells in base land use layer
+:return:                                Numpy array housing [ empty (for kernel density), cons_n…]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.constraints.ApplyConstraints.reg_metric_lcs_zip">
+<span class="sig-name descname"><span class="pre">reg_metric_lcs_zip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lcs_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.constraints.ApplyConstraints.reg_metric_lcs_zip" title="Permalink to this definition"></a></dt>
+<dd><p>Create list of lists containing [region_ix, metric_ix, land cover class ix].</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="demeter.constraints.ValidationException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.constraints.</span></span><span class="sig-name descname"><span class="pre">ValidationException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.constraints.ValidationException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-demeter.install_supplement">
+<span id="demeter-install-supplement-module"></span><h2>demeter.install_supplement module<a class="headerlink" href="#module-demeter.install_supplement" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.install_supplement.InstallSupplement">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.install_supplement.</span></span><span class="sig-name descname"><span class="pre">InstallSupplement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">example_data_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.install_supplement.InstallSupplement" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Download and unpack example data supplement from Zenodo that matches the current installed
+distribution.
+:param example_data_directory:              Full path to the directory you wish to install</p>
+<blockquote>
+<div><p>the example data to.  Must be write-enabled
+for the user.</p>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.install_supplement.InstallSupplement.DATA_VERSION_URLS">
+<span class="sig-name descname"><span class="pre">DATA_VERSION_URLS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'1.3.1':</span> <span class="pre">'https://zenodo.org/record/7240315/files/config_gcam_reference.zip?download=1'}</span></em><a class="headerlink" href="#demeter.install_supplement.InstallSupplement.DATA_VERSION_URLS" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.install_supplement.InstallSupplement.fetch_zenodo">
+<span class="sig-name descname"><span class="pre">fetch_zenodo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.install_supplement.InstallSupplement.fetch_zenodo" title="Permalink to this definition"></a></dt>
+<dd><p>Download and unpack the Zenodo example data supplement for the
+current distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.install_supplement.get_package_data">
+<span class="sig-prename descclassname"><span class="pre">demeter.install_supplement.</span></span><span class="sig-name descname"><span class="pre">get_package_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">example_data_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.install_supplement.get_package_data" title="Permalink to this definition"></a></dt>
+<dd><p>Download and unpack example data supplement from Zenodo that matches the current installed
+distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>example_data_directory</strong> (<em>str</em>) – Full path to the directory you wish to install
+the example data to.  Must be write-enabled
+for the user.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-demeter.logger">
+<span id="demeter-logger-module"></span><h2>demeter.logger module<a class="headerlink" href="#module-demeter.logger" title="Permalink to this heading"></a></h2>
+<p>Logger</p>
+<p>&#64;author   Chris R. Vernon
+&#64;email:   <a class="reference external" href="mailto:chris&#46;vernon&#37;&#52;&#48;pnnl&#46;gov">chris<span>&#46;</span>vernon<span>&#64;</span>pnnl<span>&#46;</span>gov</a></p>
+<p>License:  BSD 2-Clause, see LICENSE and DISCLAIMER files</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.logger.Logger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.logger.</span></span><span class="sig-name descname"><span class="pre">Logger</span></span><a class="headerlink" href="#demeter.logger.Logger" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initialize project-wide logger. The logger outputs to both stdout and a file.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.logger.Logger.LOG_FORMAT_STRING">
+<span class="sig-name descname"><span class="pre">LOG_FORMAT_STRING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'%(asctime)s</span> <span class="pre">-</span> <span class="pre">%(name)s</span> <span class="pre">-</span> <span class="pre">%(levelname)s</span> <span class="pre">-</span> <span class="pre">%(message)s'</span></em><a class="headerlink" href="#demeter.logger.Logger.LOG_FORMAT_STRING" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.logger.Logger.close_logger">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">close_logger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.logger.Logger.close_logger" title="Permalink to this definition"></a></dt>
+<dd><p>Shutdown logger.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.logger.Logger.console_handler">
+<span class="sig-name descname"><span class="pre">console_handler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.logger.Logger.console_handler" title="Permalink to this definition"></a></dt>
+<dd><p>Construct console handler.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.logger.Logger.file_handler">
+<span class="sig-name descname"><span class="pre">file_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_logfile</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.logger.Logger.file_handler" title="Permalink to this definition"></a></dt>
+<dd><p>Construct file handler.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-demeter.model">
+<span id="demeter-model-module"></span><h2>demeter.model module<a class="headerlink" href="#module-demeter.model" title="Permalink to this heading"></a></h2>
+<p>Class to run Demeter model for all defined steps.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (<a class="reference external" href="mailto:chris&#46;vernon&#37;&#52;&#48;pnnl&#46;gov">chris<span>&#46;</span>vernon<span>&#64;</span>pnnl<span>&#46;</span>gov</a>)</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.model.Model">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.model.</span></span><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.model.Model" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Run the Demeter model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root_dir</strong> – Full path with filename and extension to the directory containing the
+directory structure.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.model.Model.build_generator">
+<span class="sig-name descname"><span class="pre">build_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.model.Model.build_generator" title="Permalink to this definition"></a></dt>
+<dd><p>Construct step generator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.model.Model.cleanup">
+<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.model.Model.cleanup" title="Permalink to this definition"></a></dt>
+<dd><p>Clean up logger and model instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.model.Model.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.model.Model.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Execute main downscaling routine.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.model.Model.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.model.Model.initialize" title="Permalink to this definition"></a></dt>
+<dd><p>Setup model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.model.Model.process_step">
+<span class="sig-name descname"><span class="pre">process_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.model.Model.process_step" title="Permalink to this definition"></a></dt>
+<dd><p>Process a single time step.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="demeter.model.ValidationException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.model.</span></span><span class="sig-name descname"><span class="pre">ValidationException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.model.ValidationException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.model.run_model">
+<span class="sig-prename descclassname"><span class="pre">demeter.model.</span></span><span class="sig-name descname"><span class="pre">run_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.model.run_model" title="Permalink to this definition"></a></dt>
+<dd><p>Convenience wrapper for the ‘demeter.Model’ class to run all time steps sequentially.</p>
+</dd></dl>
+
+</section>
+<section id="module-demeter.ncdf_conversion">
+<span id="demeter-ncdf-conversion-module"></span><h2>demeter.ncdf_conversion module<a class="headerlink" href="#module-demeter.ncdf_conversion" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.ncdf_conversion.DemeterToNetcdf">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.ncdf_conversion.</span></span><span class="sig-name descname"><span class="pre">DemeterToNetcdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_year_file:</span> <span class="pre">~typing.Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_year:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_year:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year_interval:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmin:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmax:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ymin:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ymax:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regrid_resolution:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_name:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'im3'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scenario_name:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">demeter_version:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'1.31'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csv_input=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df=Empty</span> <span class="pre">DataFrame</span> <span class="pre">Columns:</span> <span class="pre">[a]</span> <span class="pre">Index:</span> <span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.ncdf_conversion.DemeterToNetcdf" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Convert Demeter output files to a NetCDF file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_year_file</strong> (<em>str</em>) – Full path with file name and extension to the input base year file.</p></li>
+<li><p><strong>start_year</strong> (<em>int</em>) – Start year of the desired extraction.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.ncdf_conversion.DemeterToNetcdf.COMPRESSION_PARAMETERS">
+<span class="sig-name descname"><span class="pre">COMPRESSION_PARAMETERS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'complevel':</span> <span class="pre">5,</span> <span class="pre">'dtype':</span> <span class="pre">'float32',</span> <span class="pre">'zlib':</span> <span class="pre">True}</span></em><a class="headerlink" href="#demeter.ncdf_conversion.DemeterToNetcdf.COMPRESSION_PARAMETERS" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.ncdf_conversion.DemeterToNetcdf.generate_regrid_coordinates">
+<span class="sig-name descname"><span class="pre">generate_regrid_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#demeter.ncdf_conversion.DemeterToNetcdf.generate_regrid_coordinates" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a list of evenly-spaced coordinate pairs for the output grid based on lat, lon values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coord_min</strong> (<em>float</em>) – Minimum coordinate in range.</p></li>
+<li><p><strong>coord_max</strong> (<em>float</em>) – Maximum coordinate in range.</p></li>
+<li><p><strong>ascending</strong> (<em>bool</em>) – Ascend coordinate values if True; descend if False</p></li>
+<li><p><strong>decimals</strong> (<em>int</em>) – Number of desired decimals to round to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of coordinate values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.ncdf_conversion.DemeterToNetcdf.generate_scaled_coordinates">
+<span class="sig-name descname"><span class="pre">generate_scaled_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#demeter.ncdf_conversion.DemeterToNetcdf.generate_scaled_coordinates" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a list of evenly-spaced coordinate pairs for the output grid based on lat, lon values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coord_min</strong> (<em>float</em>) – Minimum coordinate in range.</p></li>
+<li><p><strong>coord_max</strong> (<em>float</em>) – Maximum coordinate in range.</p></li>
+<li><p><strong>ascending</strong> (<em>bool</em>) – Ascend coordinate values if True; descend if False</p></li>
+<li><p><strong>decimals</strong> (<em>int</em>) – Number of desired decimals to round to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of coordinate values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.ncdf_conversion.DemeterToNetcdf.process_output">
+<span class="sig-name descname"><span class="pre">process_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="headerlink" href="#demeter.ncdf_conversion.DemeterToNetcdf.process_output" title="Permalink to this definition"></a></dt>
+<dd><p>Process output for a target year for all land classes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file_directory</strong> (<em>str</em>) – Full path to the directory where demeter stores its outputs.</p></li>
+<li><p><strong>output_file_directory</strong> (<em>str</em>) – Full path to the directory where the NetCDF files should be written.</p></li>
+<li><p><strong>target_year</strong> (<em>int</em>) – Target year to process.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Xarray dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-demeter.preprocess_data">
+<span id="demeter-preprocess-data-module"></span><h2>demeter.preprocess_data module<a class="headerlink" href="#module-demeter.preprocess_data" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.preprocess_data.</span></span><span class="sig-name descname"><span class="pre">FormatGcamDataFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2010</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">through_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_name_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gcam_region_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gcam_region_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basin_name_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'glu_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basin_id_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'basin_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_csv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_landalloc_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'land-allocation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_nodes_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'child-nodes'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Format a data frame output as generated by <cite>gcamwrapper</cite> for all land categories leaving irrigated and rainfed use
+as well as management (hi, lo) separated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>DataFrame</em>) – Pandas dataframe of land allocation from gcamwrapper</p></li>
+<li><p><strong>f_out</strong> (<em>str</em>) – Full path with file name and extension to save the output</p></li>
+<li><p><strong>start_year</strong> (<em>int</em>) – Start year</p></li>
+<li><p><strong>through_year</strong> (<em>int</em>) – Through year</p></li>
+<li><p><strong>region_name_field</strong> (<em>str</em>) – Region field name in the GCAM region reference file</p></li>
+<li><p><strong>region_id_field</strong> – Region id field name in the GCAM region reference file</p></li>
+<li><p><strong>basin_name_field</strong> (<em>str</em>) – Basin GLU abbreviation field name in the GCAM basin reference file</p></li>
+<li><p><strong>basin_id_field</strong> (<em>str</em>) – Basin id field name in the GCAM basin reference file</p></li>
+<li><p><strong>output_to_csv</strong> (<em>bool</em>) – If True, file will be output to the location specified in the f_out parameter</p></li>
+<li><p><strong>gcam_landalloc_field</strong> (<em>str</em>) – Field name for land-allocation in the GCAM database output for land allocation</p></li>
+<li><p><strong>gcam_nodes_field</strong> (<em>str</em>) – Field name for gcam nodes field in the GCAM database output for land allocation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data frame; optionally, save as file</p>
+</dd>
+</dl>
+<p>Expecting this format from <cite>gcamwrapper</cite> data frame:</p>
+<blockquote>
+<div><p>region          child-nodes  year  land-allocation</p>
+</div></blockquote>
+<p>0  Africa_Eastern  Corn_AfrCstE_IRR_hi  1975         0.009381
+1  Africa_Eastern  Corn_AfrCstE_IRR_hi  1990         0.008705
+2  Africa_Eastern  Corn_AfrCstE_IRR_hi  2005         0.010365
+3  Africa_Eastern  Corn_AfrCstE_IRR_hi  2010         0.012348
+4  Africa_Eastern  Corn_AfrCstE_IRR_hi  2015         0.013194
+…</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD">
+<span class="sig-name descname"><span class="pre">DEMETER_BASIN_NAME_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'glu_name'</span></em><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD">
+<span class="sig-name descname"><span class="pre">DEMETER_LANDCLASS_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'landclass'</span></em><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.DEMETER_METRIC_FIELD">
+<span class="sig-name descname"><span class="pre">DEMETER_METRIC_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'metric_id'</span></em><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.DEMETER_METRIC_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.DEMETER_REGID_FIELD">
+<span class="sig-name descname"><span class="pre">DEMETER_REGID_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'region_id'</span></em><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.DEMETER_REGID_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.GCAM_LANDCLASS_DELIM">
+<span class="sig-name descname"><span class="pre">GCAM_LANDCLASS_DELIM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_'</span></em><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.GCAM_LANDCLASS_DELIM" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.GCAM_REGION_FIELD">
+<span class="sig-name descname"><span class="pre">GCAM_REGION_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'region'</span></em><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.GCAM_REGION_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.GCAM_UNIT_FIELD">
+<span class="sig-name descname"><span class="pre">GCAM_UNIT_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'units'</span></em><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.GCAM_UNIT_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.GCAM_YEAR_FIELD">
+<span class="sig-name descname"><span class="pre">GCAM_YEAR_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'year'</span></em><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.GCAM_YEAR_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.build_basin_dict">
+<span class="sig-name descname"><span class="pre">build_basin_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.build_basin_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Create a basin lookup dictionary from the input reference file.
+File must be comma-separated with fields titled “basin_id” and “glu_name” for the basin id and
+basin GLU abbreviation, respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary {basin_name: basin_id}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.build_regions_dict">
+<span class="sig-name descname"><span class="pre">build_regions_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.build_regions_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Create a region lookup dictionary from the input reference file.
+File must be comma-separated with fields titled “region_id” and “region” for the region id and
+GCAM region name, respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary {region_name: region_id}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.format_land_data">
+<span class="sig-name descname"><span class="pre">format_land_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.format_land_data" title="Permalink to this definition"></a></dt>
+<dd><p>Format land allocation data for use in Demeter. Optional:  save to file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Data frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.gcam_landalloc_field">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gcam_landalloc_field</span></span><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.gcam_landalloc_field" title="Permalink to this definition"></a></dt>
+<dd><p>Field name for land-allocation in the GCAM database output for land allocation</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="demeter.preprocess_data.FormatGcamDataFrame.gcam_nodes_field">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gcam_nodes_field</span></span><a class="headerlink" href="#demeter.preprocess_data.FormatGcamDataFrame.gcam_nodes_field" title="Permalink to this definition"></a></dt>
+<dd><p>Field name for gcam nodes field in the GCAM database output for land allocation</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.preprocess_data.format_gcam_data">
+<span class="sig-prename descclassname"><span class="pre">demeter.preprocess_data.</span></span><span class="sig-name descname"><span class="pre">format_gcam_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2010</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">through_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_name_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gcam_region_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gcam_region_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basin_name_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'glu_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basin_id_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'basin_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_csv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_landalloc_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'land-allocation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_nodes_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'child-nodes'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.preprocess_data.format_gcam_data" title="Permalink to this definition"></a></dt>
+<dd><p>Convenience wrapper for the <cite>FormatGcamDataFrame</cite> class.  Formats the data frame that <cite>gcamwrapper</cite> produces into
+the format the Demeter requires.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>DataFrame</em>) – Pandas dataframe of land allocation from gcamwrapper</p></li>
+<li><p><strong>f_out</strong> (<em>str</em>) – Full path with file name and extension to save the output</p></li>
+<li><p><strong>start_year</strong> (<em>int</em>) – Start year</p></li>
+<li><p><strong>through_year</strong> (<em>int</em>) – Through year</p></li>
+<li><p><strong>region_name_field</strong> (<em>str</em>) – Region field name in the GCAM region reference file</p></li>
+<li><p><strong>region_id_field</strong> – Region id field name in the GCAM region reference file</p></li>
+<li><p><strong>basin_name_field</strong> (<em>str</em>) – Basin GLU abbreviation field name in the GCAM basin reference file</p></li>
+<li><p><strong>basin_id_field</strong> (<em>str</em>) – Basin id field name in the GCAM basin reference file</p></li>
+<li><p><strong>output_to_csv</strong> (<em>bool</em>) – If True, file will be output to the location specified in the f_out parameter</p></li>
+<li><p><strong>gcam_landalloc_field</strong> (<em>str</em>) – Field name for land-allocation in the GCAM database output for land allocation</p></li>
+<li><p><strong>gcam_nodes_field</strong> (<em>str</em>) – Field name for gcam nodes field in the GCAM database output for land allocation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data frame; optionally, save as file</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-demeter.process">
+<span id="demeter-process-module"></span><h2>demeter.process module<a class="headerlink" href="#module-demeter.process" title="Permalink to this heading"></a></h2>
+<p>Processes the calculation, map creation, and logging of statistical methods used in determining land use change.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (PNNL); Yannick le Page (<a class="reference external" href="mailto:niquya&#37;&#52;&#48;gmail&#46;com">niquya<span>&#64;</span>gmail<span>&#46;</span>com</a>)</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.process.ProcessStep">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.process.</span></span><span class="sig-name descname"><span class="pre">ProcessStep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.process.ProcessStep" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Process downscaling of a time step.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.process.ProcessStep.expansion_pass">
+<span class="sig-name descname"><span class="pre">expansion_pass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.process.ProcessStep.expansion_pass" title="Permalink to this definition"></a></dt>
+<dd><p>Conduct expansion pass.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.process.ProcessStep.intense_pass">
+<span class="sig-name descname"><span class="pre">intense_pass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pass_num</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.process.ProcessStep.intense_pass" title="Permalink to this definition"></a></dt>
+<dd><p>Conduct the first pass of intensification.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.process.ProcessStep.outputs">
+<span class="sig-name descname"><span class="pre">outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.process.ProcessStep.outputs" title="Permalink to this definition"></a></dt>
+<dd><p>Create time step specific outputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spat_ludataharm</strong> – harmonized land cover in sqkm per grid cell per land class (n_cells, n_landclasses)</p></li>
+<li><p><strong>spat_ludataharm_orig</strong> – same as spat_ludataharm but for the previous time step (n_cells, n_landclasses)</p></li>
+<li><p><strong>cellarea</strong> – cell area in sqkm for each grid cell (n_cells)</p></li>
+<li><p><strong>celltrunk</strong> – actual percentage of the grid cell included in the data (n_cells)</p></li>
+<li><p><strong>l_fcs</strong> – the number of land classes</p></li>
+<li><p><strong>cellindexresin</strong> – index of x, y for grid cell location (position, n_cells)</p></li>
+<li><p><strong>lat</strong> – geographic coordinate for each latitude in grid</p></li>
+<li><p><strong>lon</strong> – geographic coordinate for each longitude in grid</p></li>
+<li><p><strong>step</strong> – time step being processed</p></li>
+<li><p><strong>region_coords</strong> – full path with extension to region coords file</p></li>
+<li><p><strong>country_coords</strong> – full path with extension to country coords file</p></li>
+<li><p><strong>luc_ts_luc</strong> – path to luc_timestep output dir</p></li>
+<li><p><strong>transitions</strong> – area in sqkm of each transition from one land class to another (n_cells, n_landclasses, n_landclasses)</p></li>
+<li><p><strong>user_years</strong> – a list of user selected years to process</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.process.ProcessStep.prep_step">
+<span class="sig-name descname"><span class="pre">prep_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.process.ProcessStep.prep_step" title="Permalink to this definition"></a></dt>
+<dd><p>Prepare step-specific data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.process.ProcessStep.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.process.ProcessStep.process" title="Permalink to this definition"></a></dt>
+<dd><p>Process downscaling of a time step.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-demeter.reconcile">
+<span id="demeter-reconcile-module"></span><h2>demeter.reconcile module<a class="headerlink" href="#module-demeter.reconcile" title="Permalink to this heading"></a></h2>
+<p>The total area in the gridded base layer data may not be equal to the projected data due to water inclusion,
+or boundary resolution, etc.  Therefore, adjustments must be make to the projected data since there is no way of
+allocating additional land.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (PNNL); Yannick le Page (<a class="reference external" href="mailto:niquya&#37;&#52;&#48;gmail&#46;com">niquya<span>&#64;</span>gmail<span>&#46;</span>com</a>)</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.reconcile.reconcile">
+<span class="sig-prename descclassname"><span class="pre">demeter.reconcile.</span></span><span class="sig-name descname"><span class="pre">reconcile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allreg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allaez</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allregnumber</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allregaez</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_aez</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_ludata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_years</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_ludata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_aez</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_regionnumber</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.reconcile.reconcile" title="Permalink to this definition"></a></dt>
+<dd><p>The total area in the gridded base layer data may not be equal to the original GCAM data due to water inclusion,
+or boundary resolution, etc.  Therefore, adjustments must be make to the GCAM data since there is no way of
+allocating additional land.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>allreg</strong> – </p></li>
+<li><p><strong>allaez</strong> – </p></li>
+<li><p><strong>allregnumber</strong> – </p></li>
+<li><p><strong>allregaez</strong> – </p></li>
+<li><p><strong>spat_aez</strong> – </p></li>
+<li><p><strong>spat_region</strong> – </p></li>
+<li><p><strong>spat_ludata</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.reconcile.reg_metric_zip">
+<span class="sig-prename descclassname"><span class="pre">demeter.reconcile.</span></span><span class="sig-name descname"><span class="pre">reg_metric_zip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allregnumber</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allregmetric</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.reconcile.reg_metric_zip" title="Permalink to this definition"></a></dt>
+<dd><p>Combine every region index to every contained metric index into a list of lists [region_ix, metric_ix] .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>allregnumber</strong> – </p></li>
+<li><p><strong>allregmetric</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.reconcile.yr_reg_metric_zip">
+<span class="sig-prename descclassname"><span class="pre">demeter.reconcile.</span></span><span class="sig-name descname"><span class="pre">yr_reg_metric_zip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yr_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_m_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.reconcile.yr_reg_metric_zip" title="Permalink to this definition"></a></dt>
+<dd><p>Create list of lists containing [yr, region_ix, metric_ix].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yr_list</strong> – </p></li>
+<li><p><strong>r_m_list</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-demeter.staging">
+<span id="demeter-staging-module"></span><h2>demeter.staging module<a class="headerlink" href="#module-demeter.staging" title="Permalink to this heading"></a></h2>
+<p>Prepare data for processing.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (PNNL); Yannick le Page (<a class="reference external" href="mailto:niquya&#37;&#52;&#48;gmail&#46;com">niquya<span>&#64;</span>gmail<span>&#46;</span>com</a>)</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.staging.Stage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.staging.</span></span><span class="sig-name descname"><span class="pre">Stage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.staging.Stage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Prepare data for processing.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.staging.Stage.harmony">
+<span class="sig-name descname"><span class="pre">harmony</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.staging.Stage.harmony" title="Permalink to this definition"></a></dt>
+<dd><p>Harmonize grid area between projected and base layer land allocation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.staging.Stage.kernel_filter">
+<span class="sig-name descname"><span class="pre">kernel_filter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.staging.Stage.kernel_filter" title="Permalink to this definition"></a></dt>
+<dd><p>Create kernel density filter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.staging.Stage.prep_base">
+<span class="sig-name descname"><span class="pre">prep_base</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.staging.Stage.prep_base" title="Permalink to this definition"></a></dt>
+<dd><p>Prepare base layer land use data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.staging.Stage.prep_projected">
+<span class="sig-name descname"><span class="pre">prep_projected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.staging.Stage.prep_projected" title="Permalink to this definition"></a></dt>
+<dd><p>Prepare projected land allocation data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.staging.Stage.prep_reference">
+<span class="sig-name descname"><span class="pre">prep_reference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.staging.Stage.prep_reference" title="Permalink to this definition"></a></dt>
+<dd><p>Read the corresponding reference file to the associated basin or AEZ metric.
+Also read in region ids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> – Full path with filename and extension to the input file</p></li>
+<li><p><strong>metric</strong> – basin or aez</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sorted list of metric ids, Sorted list of region ids</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.staging.Stage.set_constraints">
+<span class="sig-name descname"><span class="pre">set_constraints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.staging.Stage.set_constraints" title="Permalink to this definition"></a></dt>
+<dd><p>Apply constraints to projected and base layer land allocation and use data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.staging.Stage.set_step_zero">
+<span class="sig-name descname"><span class="pre">set_step_zero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.staging.Stage.set_step_zero" title="Permalink to this definition"></a></dt>
+<dd><p>Set data for initial time step</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.staging.Stage.stage">
+<span class="sig-name descname"><span class="pre">stage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.staging.Stage.stage" title="Permalink to this definition"></a></dt>
+<dd><p>Run processing that prepares data used in the processing of each time step.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-demeter.test_read">
+<span id="demeter-test-read-module"></span><h2>demeter.test_read module<a class="headerlink" href="#module-demeter.test_read" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-demeter">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-demeter" title="Permalink to this heading"></a></h2>
+<p>Demeter:  a land use land cover disaggregation and change detection model.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (PNNL); Yannick le Page (<a class="reference external" href="mailto:niquya&#37;&#52;&#48;gmail&#46;com">niquya<span>&#64;</span>gmail<span>&#46;</span>com</a>)</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.</span></span><span class="sig-name descname"><span class="pre">FormatGcamDataFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2010</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">through_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_name_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gcam_region_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gcam_region_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basin_name_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'glu_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basin_id_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'basin_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_csv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_landalloc_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'land-allocation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_nodes_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'child-nodes'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.FormatGcamDataFrame" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Format a data frame output as generated by <cite>gcamwrapper</cite> for all land categories leaving irrigated and rainfed use
+as well as management (hi, lo) separated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>DataFrame</em>) – Pandas dataframe of land allocation from gcamwrapper</p></li>
+<li><p><strong>f_out</strong> (<em>str</em>) – Full path with file name and extension to save the output</p></li>
+<li><p><strong>start_year</strong> (<em>int</em>) – Start year</p></li>
+<li><p><strong>through_year</strong> (<em>int</em>) – Through year</p></li>
+<li><p><strong>region_name_field</strong> (<em>str</em>) – Region field name in the GCAM region reference file</p></li>
+<li><p><strong>region_id_field</strong> – Region id field name in the GCAM region reference file</p></li>
+<li><p><strong>basin_name_field</strong> (<em>str</em>) – Basin GLU abbreviation field name in the GCAM basin reference file</p></li>
+<li><p><strong>basin_id_field</strong> (<em>str</em>) – Basin id field name in the GCAM basin reference file</p></li>
+<li><p><strong>output_to_csv</strong> (<em>bool</em>) – If True, file will be output to the location specified in the f_out parameter</p></li>
+<li><p><strong>gcam_landalloc_field</strong> (<em>str</em>) – Field name for land-allocation in the GCAM database output for land allocation</p></li>
+<li><p><strong>gcam_nodes_field</strong> (<em>str</em>) – Field name for gcam nodes field in the GCAM database output for land allocation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data frame; optionally, save as file</p>
+</dd>
+</dl>
+<p>Expecting this format from <cite>gcamwrapper</cite> data frame:</p>
+<blockquote>
+<div><p>region          child-nodes  year  land-allocation</p>
+</div></blockquote>
+<p>0  Africa_Eastern  Corn_AfrCstE_IRR_hi  1975         0.009381
+1  Africa_Eastern  Corn_AfrCstE_IRR_hi  1990         0.008705
+2  Africa_Eastern  Corn_AfrCstE_IRR_hi  2005         0.010365
+3  Africa_Eastern  Corn_AfrCstE_IRR_hi  2010         0.012348
+4  Africa_Eastern  Corn_AfrCstE_IRR_hi  2015         0.013194
+…</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD">
+<span class="sig-name descname"><span class="pre">DEMETER_BASIN_NAME_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'glu_name'</span></em><a class="headerlink" href="#demeter.FormatGcamDataFrame.DEMETER_BASIN_NAME_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD">
+<span class="sig-name descname"><span class="pre">DEMETER_LANDCLASS_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'landclass'</span></em><a class="headerlink" href="#demeter.FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.DEMETER_METRIC_FIELD">
+<span class="sig-name descname"><span class="pre">DEMETER_METRIC_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'metric_id'</span></em><a class="headerlink" href="#demeter.FormatGcamDataFrame.DEMETER_METRIC_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.DEMETER_REGID_FIELD">
+<span class="sig-name descname"><span class="pre">DEMETER_REGID_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'region_id'</span></em><a class="headerlink" href="#demeter.FormatGcamDataFrame.DEMETER_REGID_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.GCAM_LANDCLASS_DELIM">
+<span class="sig-name descname"><span class="pre">GCAM_LANDCLASS_DELIM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_'</span></em><a class="headerlink" href="#demeter.FormatGcamDataFrame.GCAM_LANDCLASS_DELIM" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.GCAM_REGION_FIELD">
+<span class="sig-name descname"><span class="pre">GCAM_REGION_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'region'</span></em><a class="headerlink" href="#demeter.FormatGcamDataFrame.GCAM_REGION_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.GCAM_UNIT_FIELD">
+<span class="sig-name descname"><span class="pre">GCAM_UNIT_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'units'</span></em><a class="headerlink" href="#demeter.FormatGcamDataFrame.GCAM_UNIT_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.GCAM_YEAR_FIELD">
+<span class="sig-name descname"><span class="pre">GCAM_YEAR_FIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'year'</span></em><a class="headerlink" href="#demeter.FormatGcamDataFrame.GCAM_YEAR_FIELD" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.build_basin_dict">
+<span class="sig-name descname"><span class="pre">build_basin_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.FormatGcamDataFrame.build_basin_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Create a basin lookup dictionary from the input reference file.
+File must be comma-separated with fields titled “basin_id” and “glu_name” for the basin id and
+basin GLU abbreviation, respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary {basin_name: basin_id}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.build_regions_dict">
+<span class="sig-name descname"><span class="pre">build_regions_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.FormatGcamDataFrame.build_regions_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Create a region lookup dictionary from the input reference file.
+File must be comma-separated with fields titled “region_id” and “region” for the region id and
+GCAM region name, respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary {region_name: region_id}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.format_land_data">
+<span class="sig-name descname"><span class="pre">format_land_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.FormatGcamDataFrame.format_land_data" title="Permalink to this definition"></a></dt>
+<dd><p>Format land allocation data for use in Demeter. Optional:  save to file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Data frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.gcam_landalloc_field">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gcam_landalloc_field</span></span><a class="headerlink" href="#demeter.FormatGcamDataFrame.gcam_landalloc_field" title="Permalink to this definition"></a></dt>
+<dd><p>Field name for land-allocation in the GCAM database output for land allocation</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="demeter.FormatGcamDataFrame.gcam_nodes_field">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gcam_nodes_field</span></span><a class="headerlink" href="#demeter.FormatGcamDataFrame.gcam_nodes_field" title="Permalink to this definition"></a></dt>
+<dd><p>Field name for gcam nodes field in the GCAM database output for land allocation</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.Model">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.</span></span><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.Model" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Run the Demeter model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>root_dir</strong> – Full path with filename and extension to the directory containing the
+directory structure.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.Model.build_generator">
+<span class="sig-name descname"><span class="pre">build_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.Model.build_generator" title="Permalink to this definition"></a></dt>
+<dd><p>Construct step generator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.Model.cleanup">
+<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.Model.cleanup" title="Permalink to this definition"></a></dt>
+<dd><p>Clean up logger and model instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.Model.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.Model.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Execute main downscaling routine.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.Model.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.Model.initialize" title="Permalink to this definition"></a></dt>
+<dd><p>Setup model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.Model.process_step">
+<span class="sig-name descname"><span class="pre">process_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.Model.process_step" title="Permalink to this definition"></a></dt>
+<dd><p>Process a single time step.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.format_gcam_data">
+<span class="sig-prename descclassname"><span class="pre">demeter.</span></span><span class="sig-name descname"><span class="pre">format_gcam_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2010</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">through_year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_name_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gcam_region_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gcam_region_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basin_name_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'glu_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basin_id_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'basin_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_to_csv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_landalloc_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'land-allocation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_nodes_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'child-nodes'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.format_gcam_data" title="Permalink to this definition"></a></dt>
+<dd><p>Convenience wrapper for the <cite>FormatGcamDataFrame</cite> class.  Formats the data frame that <cite>gcamwrapper</cite> produces into
+the format the Demeter requires.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>DataFrame</em>) – Pandas dataframe of land allocation from gcamwrapper</p></li>
+<li><p><strong>f_out</strong> (<em>str</em>) – Full path with file name and extension to save the output</p></li>
+<li><p><strong>start_year</strong> (<em>int</em>) – Start year</p></li>
+<li><p><strong>through_year</strong> (<em>int</em>) – Through year</p></li>
+<li><p><strong>region_name_field</strong> (<em>str</em>) – Region field name in the GCAM region reference file</p></li>
+<li><p><strong>region_id_field</strong> – Region id field name in the GCAM region reference file</p></li>
+<li><p><strong>basin_name_field</strong> (<em>str</em>) – Basin GLU abbreviation field name in the GCAM basin reference file</p></li>
+<li><p><strong>basin_id_field</strong> (<em>str</em>) – Basin id field name in the GCAM basin reference file</p></li>
+<li><p><strong>output_to_csv</strong> (<em>bool</em>) – If True, file will be output to the location specified in the f_out parameter</p></li>
+<li><p><strong>gcam_landalloc_field</strong> (<em>str</em>) – Field name for land-allocation in the GCAM database output for land allocation</p></li>
+<li><p><strong>gcam_nodes_field</strong> (<em>str</em>) – Field name for gcam nodes field in the GCAM database output for land allocation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data frame; optionally, save as file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.get_package_data">
+<span class="sig-prename descclassname"><span class="pre">demeter.</span></span><span class="sig-name descname"><span class="pre">get_package_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">example_data_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.get_package_data" title="Permalink to this definition"></a></dt>
+<dd><p>Download and unpack example data supplement from Zenodo that matches the current installed
+distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>example_data_directory</strong> (<em>str</em>) – Full path to the directory you wish to install
+the example data to.  Must be write-enabled
+for the user.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.run_model">
+<span class="sig-prename descclassname"><span class="pre">demeter.</span></span><span class="sig-name descname"><span class="pre">run_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.run_model" title="Permalink to this definition"></a></dt>
+<dd><p>Convenience wrapper for the ‘demeter.Model’ class to run all time steps sequentially.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Kanishka B. Narayan.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

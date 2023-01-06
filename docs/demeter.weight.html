@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>demeter.weight package &mdash; Demeter 1.3.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Demeter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">demeter.weight package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-demeter.weight.kernel_density">demeter.weight.kernel_density module</a><ul>
+<li><a class="reference internal" href="#demeter.weight.kernel_density.KernelDensity"><code class="docutils literal notranslate"><span class="pre">KernelDensity</span></code></a><ul>
+<li><a class="reference internal" href="#demeter.weight.kernel_density.KernelDensity.apply_convolution"><code class="docutils literal notranslate"><span class="pre">KernelDensity.apply_convolution()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.weight.kernel_density.KernelDensity.compute_cell_index"><code class="docutils literal notranslate"><span class="pre">KernelDensity.compute_cell_index()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.weight.kernel_density.KernelDensity.convolution_filter"><code class="docutils literal notranslate"><span class="pre">KernelDensity.convolution_filter()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.weight.kernel_density.KernelDensity.dist_iter"><code class="docutils literal notranslate"><span class="pre">KernelDensity.dist_iter()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.weight.kernel_density.KernelDensity.global_system"><code class="docutils literal notranslate"><span class="pre">KernelDensity.global_system()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.weight.kernel_density.KernelDensity.prep_arrays"><code class="docutils literal notranslate"><span class="pre">KernelDensity.prep_arrays()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.weight.kernel_density.KernelDensity.preprocess_kernel_density"><code class="docutils literal notranslate"><span class="pre">KernelDensity.preprocess_kernel_density()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demeter.weight.kernel_density.handle_single_pft"><code class="docutils literal notranslate"><span class="pre">handle_single_pft()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.weight">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Demeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">demeter.weight package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/demeter.weight.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="demeter-weight-package">
+<h1>demeter.weight package<a class="headerlink" href="#demeter-weight-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-demeter.weight.kernel_density">
+<span id="demeter-weight-kernel-density-module"></span><h2>demeter.weight.kernel_density module<a class="headerlink" href="#module-demeter.weight.kernel_density" title="Permalink to this heading"></a></h2>
+<p>Kernel density algorithm.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (<a class="reference external" href="mailto:chris&#46;vernon&#37;&#52;&#48;pnnl&#46;gov">chris<span>&#46;</span>vernon<span>&#64;</span>pnnl<span>&#46;</span>gov</a>); Yannick le Page (<a class="reference external" href="mailto:niquya&#37;&#52;&#48;gmail&#46;com">niquya<span>&#64;</span>gmail<span>&#46;</span>com</a>)</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="demeter.weight.kernel_density.KernelDensity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.weight.kernel_density.</span></span><span class="sig-name descname"><span class="pre">KernelDensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resolution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngrids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_rules</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.weight.kernel_density.KernelDensity" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.weight.kernel_density.KernelDensity.apply_convolution">
+<span class="sig-name descname"><span class="pre">apply_convolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cellindexresin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pft_maps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_maps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_ludataharm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.weight.kernel_density.KernelDensity.apply_convolution" title="Permalink to this definition"></a></dt>
+<dd><p>Apply convolution filter to compute kernel density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.weight.kernel_density.KernelDensity.compute_cell_index">
+<span class="sig-name descname"><span class="pre">compute_cell_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.weight.kernel_density.KernelDensity.compute_cell_index" title="Permalink to this definition"></a></dt>
+<dd><p>Compute grid-cell indices to convert from native resolution to user-defined resolution.  Do this only for
+start year.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.weight.kernel_density.KernelDensity.convolution_filter">
+<span class="sig-name descname"><span class="pre">convolution_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.weight.kernel_density.KernelDensity.convolution_filter" title="Permalink to this definition"></a></dt>
+<dd><p>Convolution filter (distance weighted, function of square of the distance).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.weight.kernel_density.KernelDensity.dist_iter">
+<span class="sig-name descname"><span class="pre">dist_iter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.weight.kernel_density.KernelDensity.dist_iter" title="Permalink to this definition"></a></dt>
+<dd><p>Create distance iterator for weight assignment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>weights</strong> – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.weight.kernel_density.KernelDensity.global_system">
+<span class="sig-name descname"><span class="pre">global_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.weight.kernel_density.KernelDensity.global_system" title="Permalink to this definition"></a></dt>
+<dd><p>Create geographic latitude and longitude coordinates for map grid system from user-defined resolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>resolution</strong> – User-defined resolution setting</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>latitude and longitude arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.weight.kernel_density.KernelDensity.prep_arrays">
+<span class="sig-name descname"><span class="pre">prep_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.weight.kernel_density.KernelDensity.prep_arrays" title="Permalink to this definition"></a></dt>
+<dd><p>Prepare empty arrays used in kernel density calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="demeter.weight.kernel_density.KernelDensity.preprocess_kernel_density">
+<span class="sig-name descname"><span class="pre">preprocess_kernel_density</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#demeter.weight.kernel_density.KernelDensity.preprocess_kernel_density" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate and map PFT kernel density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.weight.kernel_density.handle_single_pft">
+<span class="sig-prename descclassname"><span class="pre">demeter.weight.kernel_density.</span></span><span class="sig-name descname"><span class="pre">handle_single_pft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pft_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_rules</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pft_maps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellindexresin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_ludataharm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_maps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.weight.kernel_density.handle_single_pft" title="Permalink to this definition"></a></dt>
+<dd><p>Helper function to handle pft convultion filters. This is used to parallelize the convultion filter operation to speed up processing.</p>
+</dd></dl>
+
+</section>
+<section id="module-demeter.weight">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-demeter.weight" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Kanishka B. Narayan.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
