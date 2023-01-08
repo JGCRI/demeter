@@ -259,17 +259,3 @@ class DemeterToNetcdf:
         return ds
 
 
-if __name__ == "__main__":
-
-    input_file_directory = "/Users/d3y010/Downloads"
-    output_file_directory = "/Users/d3y010/Desktop"
-    target_year = 2005
-
-    # instantiate class
-    x = DemeterToNetcdf(scenario_name="rcp85cooler",
-                        project_name="im3")
-
-    # convert demeter output to a NetCDF file
-    x.process_output(input_file_directory=input_file_directory,
-                     output_file_directory=output_file_directory,
-                     target_year=target_year)

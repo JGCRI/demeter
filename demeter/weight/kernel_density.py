@@ -18,19 +18,30 @@ import demeter.demeter_io.writer as wdr
 
 
 def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, cellindexresin,
-                      spat_ludataharm, kernel_maps, kernel_vector,weights):
-    """
-    Helper function to handle pft convultion filters. This is used to parallelize the convultion filter operation to speed up processing.
+                      spat_ludataharm, kernel_maps, kernel_vector, weights):
+
+    """Helper function to handle pft convultion filters. This is passed to apply_convultiion This is used to parallelize the convultion filter operation to speed up processing.
+
+       Parameters:
+           pft_order (List[int]): The order of pfts
+           order_rules (List[str]): The order rules defined by user
+           final_landclasses (List[int]): A list of land classes
+           pft_maps (dict): A map of pfts
+           cellindexresin (Union[None, int]): Input resolution
+           spat_ludataharm (pd.Dataframe): Dataframe of land use
 
 
-    """
+       Returns:
+           list: processed convultion filters for each LT.
+
+       """
     pft = np.where(order_rules == pft_order)[0][0]
     # get final land class name
     flc = final_landclasses[pft]
-    # print(pft)
+
     # populate pft_maps array with base land use layer data
     pft_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft] = spat_ludataharm[:, pft]
-    # print(pft_maps.shape)
+
     # apply image filter
 
     kernel_maps[:, :, pft] = ndimage.filters.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
@@ -40,8 +51,8 @@ def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, celli
 
     min_seed = 0.0000000001
     kernel_maps[:, :, pft][
-        kernel_maps[:, :, pft] == 0] = min_seed  # np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
-    # print(kernel_maps.shape)
+    kernel_maps[:, :, pft] == 0] = min_seed  # np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
+
     # reshaping to the spatial grid-cell data (vector)
     kernel_vector[:, pft] = kernel_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft]
 
@@ -184,13 +195,12 @@ class KernelDensity:
         order_rules= self.order_rules
         final_landclasses= self.final_landclasses
 
-
-
-        pool.starmap(handle_single_pft, zip(aux_val,repeat(order_rules),repeat(final_landclasses),
+        pool.starmap(handle_single_pft, zip(aux_val,repeat(order_rules), repeat(final_landclasses),
                                                                   repeat(pft_maps),repeat(cellindexresin),
                                                                   repeat(spat_ludataharm),
                                                                   repeat(kernel_maps), repeat(kernel_vector),repeat(weights)))
         pool.terminate()
+
         return kernel_vector
 
 

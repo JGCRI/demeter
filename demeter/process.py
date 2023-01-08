@@ -58,8 +58,7 @@ class ProcessStep:
                                                            self.s.lat, self.s.lon, self.step, self.s.kernel_vector,
                                                            self.s.weights, self.s.spat_ludataharm)
 
-        # create transition array to store data
-        #self.transitions = np.zeros(shape=(self.l_spat_region, self.l_order_rules, self.l_order_rules))
+
 
     def intense_pass(self, pass_num):
         """Conduct the first pass of intensification."""
@@ -128,12 +127,7 @@ class ProcessStep:
         # convert land cover from sqkm per grid cell per land class to fraction (n_grids, n_landclasses)
         fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T
 
-        # optionally save land cover transitions as a CSV
-        #if (self.config.save_transitions == 1) and (self.step in self.config.target_years_output):
 
-         #   self.config.logger.info("Saving land cover transition files for time step {0}...".format(self.step))
-
-          #  wdr.write_transitions(self.s, self.config, self.step, self.transitions)
 
         # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
 
@@ -151,7 +145,7 @@ class ProcessStep:
                 write_ncdf =True
             return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
-                                self.config.metric, self.config.tabular_units, self.write_outputs,write_ncdf,self.sce,self.res,write_csv,self.regrid_res)
+                                self.config.metric, self.config.tabular_units, self.write_outputs, write_ncdf, self.sce, self.res, write_csv, self.regrid_res)
 
     def process(self):
         """
