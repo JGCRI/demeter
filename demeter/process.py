@@ -34,7 +34,9 @@ class ProcessStep:
         self.l_order_rules = len(self.s.order_rules)
         self.l_fcs = len(s.final_landclasses)
         self.write_outputs = write_outputs
-
+        self.sce = self.config.scenario
+        self.res = self.config.spatial_resolution
+        self.regrid_res = self.config.regrid_resolution
         # populate
         self.output_df = self.process()
 
@@ -56,8 +58,7 @@ class ProcessStep:
                                                            self.s.lat, self.s.lon, self.step, self.s.kernel_vector,
                                                            self.s.weights, self.s.spat_ludataharm)
 
-        # create transition array to store data
-        self.transitions = np.zeros(shape=(self.l_spat_region, self.l_order_rules, self.l_order_rules))
+
 
     def intense_pass(self, pass_num):
         """Conduct the first pass of intensification."""
@@ -75,12 +76,10 @@ class ProcessStep:
                                                  self.s.d_regid_nm, self.target_change, self.s.spat_ludataharm,
                                                  self.s.spat_aez, self.s.kernel_vector, self.s.cst.cons_data,
                                                  self.s.final_landclasses, self.s.spat_ludataharm_orig_steps, self.step,
-                                                 self.land_mismatch, self.s.constraint_rules, self.s.transition_rules,
-                                                 self.transitions)
+                                                 self.land_mismatch, self.s.constraint_rules, self.s.transition_rules)
 
         # unpack
-        self.s.spat_ludataharm, self.s.spat_ludataharm_orig_steps, self.land_mismatch, self.s.cons_data, \
-        self.transitions, self.target_change = itz_pass
+        self.s.spat_ludataharm, self.s.spat_ludataharm_orig_steps, self.land_mismatch, self.s.cons_data, self.target_change = itz_pass
 
     def expansion_pass(self):
         """
@@ -93,12 +92,12 @@ class ProcessStep:
         exp_pass = exp.apply_expansion(self.config.logger, self.config, self.s.allregnumber, self.s.allregaez, self.s.spat_ludataharm,
                                        self.s.spat_region, self.s.spat_aez, self.s.kernel_vector, self.s.cons_data,
                                        self.s.order_rules, self.s.final_landclasses, self.s.constraint_rules,
-                                       self.s.transition_rules, self.land_mismatch, self.transitions,
+                                       self.s.transition_rules, self.land_mismatch,
                                        self.s.spat_ludataharm_orig_steps, self.target_change, self.step)
 
         # unpack
         self.s.spat_ludataharm, self.s.spat_ludataharm_orig_steps, self.land_mismatch, self.s.cons_data, \
-        self.transitions, self.target_change = exp_pass
+        self.target_change = exp_pass
 
     def outputs(self):
         """
@@ -128,32 +127,25 @@ class ProcessStep:
         # convert land cover from sqkm per grid cell per land class to fraction (n_grids, n_landclasses)
         fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T
 
-        # optionally save land cover transitions as a CSV
-        if (self.config.save_transitions == 1) and (self.step in self.config.target_years_output):
 
-            self.config.logger.info("Saving land cover transition files for time step {0}...".format(self.step))
-
-            wdr.write_transitions(self.s, self.config, self.step, self.transitions)
 
         # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
-        if (self.config.save_netcdf_yr == 1) and (self.step in self.config.target_years_output):
 
-            self.config.logger.info("Saving output in NetCDF format for time step {0} per land class...".format(self.step))
-
-            # create out path and file name for NetCDF file
-            netcdf_yr_out = os.path.join(self.config.lc_per_step_nc, 'lc_yearly_{0}.nc'.format(self.step))
-
-            wdr.to_netcdf_yr(fraction_lu, self.s.cellindexresin, self.s.lat, self.s.lon, self.config.resin,
-                             self.s.final_landclasses, self.step, self.config.model, netcdf_yr_out)
 
         # save land cover data for the time step
-        if (self.config.save_tabular == 1) and (self.step in self.config.target_years_output):
+        if (self.config.save_netcdf_yr == 1) and (self.step in self.config.target_years_output):
+            if self.config.save_tabular == 1:
+                write_csv= True
+            else:
+                write_csv = False
 
             self.config.logger.info("Generating projected land cover data for time step {0}...".format(self.step))
-
+            write_ncdf = False
+            if self.config.save_netcdf_yr ==1:
+                write_ncdf =True
             return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
                                 self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
-                                self.config.metric, self.config.tabular_units, self.write_outputs)
+                                self.config.metric, self.config.tabular_units, self.write_outputs, write_ncdf, self.sce, self.res, write_csv, self.regrid_res)
 
     def process(self):
         """

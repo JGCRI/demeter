@@ -49,6 +49,8 @@ class ReadConfig:
             output_params = params
             diagnostic_params = params
             run_params = params
+            mapping_params = params
+            ncdf_params = params
 
         else:
 
@@ -63,7 +65,11 @@ class ReadConfig:
             projected_params = input_params.get('PROJECTED', None)
             output_params = self.config.get('OUTPUTS', {})
             diagnostic_params = self.config.get('OUTPUTS', {}).get('DIAGNOSTICS')
+            mapping_params = input_params.get('MAPPING', None)
+            ncdf_params = input_params.get('NCDF_PARAM', None)
             run_params = self.config.get('PARAMS', None)
+
+
 
         # choice to write log to file
         self.write_logfile = params.get('write_logfile', None)
@@ -94,6 +100,7 @@ class ReadConfig:
         self.observed_dir = os.path.join(self.input_dir, input_params.get('observed_dir', 'observed'))
         self.constraints_dir = os.path.join(self.input_dir, input_params.get('constraints_dir', 'constraints'))
         self.projected_dir = os.path.join(self.input_dir, input_params.get('projected_dir', 'projected'))
+        self.mapping_dir = os.path.join(self.input_dir, input_params.get('mapping_dir', 'mapping'))
 
         # allocation files
         self.spatial_allocation_file = os.path.join(self.allocation_dir, allocation_params.get('spatial_allocation_file', 'csdms_observed_allocation.csv'))
@@ -102,6 +109,13 @@ class ReadConfig:
         self.transition_order_file = os.path.join(self.allocation_dir, allocation_params.get('transition_order_file', 'csdms_transition_allocation.csv'))
         self.treatment_order_file = os.path.join(self.allocation_dir, allocation_params.get('treatment_order_file', 'csdms_order_allocation.csv'))
         self.constraints_file = os.path.join(self.allocation_dir, allocation_params.get('constraints_file', 'csdms_constraint_allocation.csv'))
+
+        #Mapping files
+        self.gcam_region_names_file = os.path.join(self.mapping_dir, mapping_params.get('region_mapping_file',
+                                                                                        'gcam_regions_32.csv'))
+        self.gcam_basin_names_file = os.path.join(self.mapping_dir, mapping_params.get('basin_mapping_file',
+                                                                                           'gcam_basin_lookup.csv'))
+
 
         # observed data
         self.observed_lu_file = os.path.join(self.observed_dir, observed_params.get('observed_lu_file', 'gcam_reg32_basin235_modis_v6_2010_mirca_2000_0p5deg_sqdeg_wgs84_07may2021.zip'))
@@ -122,8 +136,7 @@ class ReadConfig:
                 self.gcam_database_name = os.path.basename(self.gcam_database)
 
         # reference data
-        self.gcam_region_names_file = pkg_resources.resource_filename('demeter', 'data/gcam_regions_32.csv')
-        self.gcam_basin_names_file = pkg_resources.resource_filename('demeter', 'data/gcam_basin_lookup.csv')
+
 
         # output directories
         self.diagnostics_output_dir = os.path.join(self.output_dir, output_params.get('diagnostics_output_dir', 'diagnostics'))
@@ -161,6 +174,7 @@ class ReadConfig:
         self.end_year = self.ck_yr(run_params.get('end_year', 2015), 'end_year')
         self.use_constraints = self.valid_integer(run_params.get('use_constraints', 1), 'use_constraints', [0, 1])
         self.spatial_resolution = self.valid_limit(run_params.get('spatial_resolution', 0.25), 'spatial_resolution', [0.0, 1000000.0], 'float')
+        self.regrid_resolution = self.valid_limit(run_params.get('regrid_resolution', self.spatial_resolution), 'regrid_resolution', [0.0, 1000000.0], 'float')
         self.errortol = self.valid_limit(run_params.get('errortol', 0.001), 'errortol', [0.0, 1000000.0], 'float')
         self.timestep = self.valid_limit(run_params.get('timestep', 5), 'timestep', [1, 1000000], 'int')
         self.proj_factor = self.valid_limit(run_params.get('proj_factor', 1000), 'proj_factor', [1, 10000000000], 'int')
@@ -170,11 +184,11 @@ class ReadConfig:
         self.selection_threshold = self.valid_limit(run_params.get('selection_threshold', 0.75), 'intensification_ratio', [0.0, 1.0], 'float')
         self.kernel_distance = self.valid_limit(run_params.get('kernel_distance', 10), 'kernel_distance', [0, 10000000000], 'int')
         self.target_years_output = self.set_target(run_params.get('target_years_output', 'all'))
-        self.save_tabular = self.valid_integer(run_params.get('save_tabular', 1), 'save_tabular', [0, 1])
+        self.save_tabular = self.valid_integer(run_params.get('save_tabular', 0), 'save_tabular', [0, 1])
         self.tabular_units = self.valid_string(run_params.get('tabular_units', 'sqkm'), 'tabular_units', ['sqkm', 'fraction'])
         self.save_transitions = self.valid_integer(run_params.get('save_transitions', 0), 'save_transitions', [0, 1])
         self.save_shapefile = self.valid_integer(run_params.get('save_shapefile', 0), 'save_shapefile', [0, 1])
-        self.save_netcdf_yr = self.valid_integer(run_params.get('save_netcdf_yr', 0), 'save_netcdf_yr', [0, 1])
+        self.save_netcdf_yr = self.valid_integer(run_params.get('save_netcdf_yr', 1), 'save_netcdf_yr', [0, 1])
 
         # create and validate constraints input file full paths
         self.constraint_files = self.get_constraints()
@@ -187,6 +201,9 @@ class ReadConfig:
 
         if self.save_tabular or self.save_shapefile:
             self.create_dir(self.lu_csv_output_dir)
+
+        if self.save_netcdf_yr:
+            self.create_dir(self.lu_netcdf_output_dir)
 
         if self.save_transitions:
             self.create_dir(self.transitions_tabular_output_dir)

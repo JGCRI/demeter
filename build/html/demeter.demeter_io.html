@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>demeter.demeter_io package &mdash; Demeter 1.3.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Demeter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">demeter.demeter_io package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-demeter.demeter_io.reader">demeter.demeter_io.reader module</a><ul>
+<li><a class="reference internal" href="#demeter.demeter_io.reader.ValidationException"><code class="docutils literal notranslate"><span class="pre">ValidationException</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.reader.csv_to_array"><code class="docutils literal notranslate"><span class="pre">csv_to_array()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.reader.read_allocation_data"><code class="docutils literal notranslate"><span class="pre">read_allocation_data()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.reader.read_base"><code class="docutils literal notranslate"><span class="pre">read_base()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.reader.read_gcam_file"><code class="docutils literal notranslate"><span class="pre">read_gcam_file()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.reader.read_gcam_land"><code class="docutils literal notranslate"><span class="pre">read_gcam_land()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.reader.to_array"><code class="docutils literal notranslate"><span class="pre">to_array()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.reader.to_dict"><code class="docutils literal notranslate"><span class="pre">to_dict()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.reader.to_list"><code class="docutils literal notranslate"><span class="pre">to_list()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.demeter_io.writer">demeter.demeter_io.writer module</a><ul>
+<li><a class="reference internal" href="#demeter.demeter_io.writer.arr_to_ascii"><code class="docutils literal notranslate"><span class="pre">arr_to_ascii()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.writer.array_to_csv"><code class="docutils literal notranslate"><span class="pre">array_to_csv()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.writer.lc_timestep_csv"><code class="docutils literal notranslate"><span class="pre">lc_timestep_csv()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.writer.max_ascii_rast"><code class="docutils literal notranslate"><span class="pre">max_ascii_rast()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.writer.save_array"><code class="docutils literal notranslate"><span class="pre">save_array()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.writer.to_netcdf_lc"><code class="docutils literal notranslate"><span class="pre">to_netcdf_lc()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.writer.to_netcdf_yr"><code class="docutils literal notranslate"><span class="pre">to_netcdf_yr()</span></code></a></li>
+<li><a class="reference internal" href="#demeter.demeter_io.writer.write_transitions"><code class="docutils literal notranslate"><span class="pre">write_transitions()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-demeter.demeter_io">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Demeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">demeter.demeter_io package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/demeter.demeter_io.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="demeter-demeter-io-package">
+<h1>demeter.demeter_io package<a class="headerlink" href="#demeter-demeter-io-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-demeter.demeter_io.reader">
+<span id="demeter-demeter-io-reader-module"></span><h2>demeter.demeter_io.reader module<a class="headerlink" href="#module-demeter.demeter_io.reader" title="Permalink to this heading"></a></h2>
+<p>Read and format input data.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (<a class="reference external" href="mailto:chris&#46;vernon&#37;&#52;&#48;pnnl&#46;gov">chris<span>&#46;</span>vernon<span>&#64;</span>pnnl<span>&#46;</span>gov</a>)</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="demeter.demeter_io.reader.ValidationException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.reader.</span></span><span class="sig-name descname"><span class="pre">ValidationException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.reader.ValidationException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Validation exception for error in runtime test.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.reader.csv_to_array">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.reader.</span></span><span class="sig-name descname"><span class="pre">csv_to_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.reader.csv_to_array" title="Permalink to this definition"></a></dt>
+<dd><p>Read CSV file to NumPy array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>f</strong> – Full path to input file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.reader.read_allocation_data">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.reader.</span></span><span class="sig-name descname"><span class="pre">read_allocation_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lc_col</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.reader.read_allocation_data" title="Permalink to this definition"></a></dt>
+<dd><p>Converts an allocation file to a numpy array.  Returns final land cover class and target
+land cover class names as lists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> – Input allocation file with header</p></li>
+<li><p><strong>lc_col</strong> – Target land cover field name in header (located a zero index)</p></li>
+</ul>
+</dd>
+</dl>
+<p>:param output_level     If 3 all variables will be returned (default); 2, target lcs list and array; 3, array
+:param delim:           Delimiter type; default is comma</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>[0] List of final land cover classes
+[1]list of target land cover classes
+[2]  numpy array of allocation values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.reader.read_base">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.reader.</span></span><span class="sig-name descname"><span class="pre">read_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_metric_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.reader.read_base" title="Permalink to this definition"></a></dt>
+<dd><p>Read and process base layer land cover file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – Configuration object</p></li>
+<li><p><strong>observed_landclasses</strong> – A list of land classes represented in the observed data</p></li>
+<li><p><strong>sequence_metric_dict</strong> – A dictionary of projected metric ids to their original id</p></li>
+<li><p><strong>metric_seq</strong> – An ordered list of expected metric ids</p></li>
+<li><p><strong>region_seq</strong> – An ordered list of expected region ids</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.reader.read_gcam_file">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.reader.</span></span><span class="sig-name descname"><span class="pre">read_gcam_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gcam_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_yr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_yr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scenario</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agg_level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.reader.read_gcam_file" title="Permalink to this definition"></a></dt>
+<dd><p>Read and process the GCAM land allocation output file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gcam_data</strong> – GCAM land allocation file or data frame from gcamreader</p></li>
+<li><p><strong>name_col</strong> – Field name of the column containing the region and either AEZ or basin number</p></li>
+<li><p><strong>metric</strong> – AEZ or Basin</p></li>
+<li><p><strong>start_yr</strong> – User-defined GCAM start year to process from configuration file</p></li>
+<li><p><strong>end_yr</strong> – User-defined GCAM end year to process from configuration file</p></li>
+<li><p><strong>scenario</strong> – GCAM scenario name contained in file that the user wishes to process; set in config.ini</p></li>
+<li><p><strong>region_dict</strong> – The reference dictionary for GCAM region_name: region_id</p></li>
+<li><p><strong>metric_seq</strong> – An ordered list of expected metric ids</p></li>
+<li><p><strong>area_factor</strong> – The factor that will be a multiplier to the land use area that is in thousands km</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of the following (represents the target user-defined scenario):
+user_years:             a list of target GCAM years as int
+gcam_ludata:            Numpy array of land use area per row per year
+gcam_metric:            Numpy array of AEZ or Basin numbers per row
+gcam_landname:          Numpy array of the GCAM land use name per row
+gcam_regionnumber:      Numpy array of GCAM region numbers per row
+allreg:                 Numpy array of unique region names
+allregnumber:           Numpy array of unique region numbers
+allregaez:              List of lists, metric ids per region</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.reader.read_gcam_land">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.reader.</span></span><span class="sig-name descname"><span class="pre">read_gcam_land</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_queries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_basin_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subreg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crop_water_src</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.reader.read_gcam_land" title="Permalink to this definition"></a></dt>
+<dd><p>Query GCAM database for irrigated land area per region, subregion, and crop type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_path</strong> – Full path to the input GCAM database</p></li>
+<li><p><strong>f_queries</strong> – Full path to the XML query file</p></li>
+<li><p><strong>d_basin_name</strong> – A dictionary of ‘basin_glu_name’ : basin_id</p></li>
+<li><p><strong>subreg</strong> – Agg level of GCAM database: either AEZ or BASIN</p></li>
+<li><p><strong>crop_water_src</strong> – Filter for crop type: one of IRR, RFD, or BOTH</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pandas DataFrame containing region, subregion,
+crop type, and irrigated area per year in thousands km2</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.reader.to_array">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.reader.</span></span><span class="sig-name descname"><span class="pre">to_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.reader.to_array" title="Permalink to this definition"></a></dt>
+<dd><p>Read file to Numpy array and slice out a single field by the target index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> – </p></li>
+<li><p><strong>target_index</strong> – </p></li>
+<li><p><strong>delim</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.reader.to_dict">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.reader.</span></span><span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.reader.to_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Return a dictionary of key: value pairs.  Supports only key to one value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> – Full path to input file</p></li>
+<li><p><strong>header</strong> – If header exists True, else False (default)</p></li>
+<li><p><strong>delim</strong> – Set delimiter as string; default is comma</p></li>
+<li><p><strong>swap</strong> – Change the order of the key, value pair</p></li>
+<li><p><strong>value_col</strong> – Column index of dict values (or keys if swap is True)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Key: value pair dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.reader.to_list">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.reader.</span></span><span class="sig-name descname"><span class="pre">to_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.reader.to_list" title="Permalink to this definition"></a></dt>
+<dd><p>Retuns values as a list of integers where first column is row names and there
+is only one value column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>f</strong> – Full path to input file</p>
+</dd>
+</dl>
+<p>:param header       If header exists True, else False (default)
+:param delim:       Set delimiter as string; default is comma
+:return:            List of integers</p>
+</dd></dl>
+
+</section>
+<section id="module-demeter.demeter_io.writer">
+<span id="demeter-demeter-io-writer-module"></span><h2>demeter.demeter_io.writer module<a class="headerlink" href="#module-demeter.demeter_io.writer" title="Permalink to this heading"></a></h2>
+<p>Write data to multiple file outputs.</p>
+<p>Copyright (c) 2017, Battelle Memorial Institute</p>
+<p>Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER</p>
+<p>&#64;author:  Chris R. Vernon (<a class="reference external" href="mailto:chris&#46;vernon&#37;&#52;&#48;pnnl&#46;gov">chris<span>&#46;</span>vernon<span>&#64;</span>pnnl<span>&#46;</span>gov</a>); Yannick le Page (<a class="reference external" href="mailto:niquya&#37;&#52;&#48;gmail&#46;com">niquya<span>&#64;</span>gmail<span>&#46;</span>com</a>); Caleb J. Braun (<a class="reference external" href="mailto:caleb&#46;braun&#37;&#52;&#48;pnnl&#46;gov">caleb<span>&#46;</span>braun<span>&#64;</span>pnnl<span>&#46;</span>gov</a>)</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.writer.arr_to_ascii">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.writer.</span></span><span class="sig-name descname"><span class="pre">arr_to_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_ascii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-9999</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.writer.arr_to_ascii" title="Permalink to this definition"></a></dt>
+<dd><p>Convert a numpy array to an ASCII raster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">&#64;param arr<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D array</p>
+</dd>
+<dt class="field-even">&#64;param r_ascii<span class="colon">:</span></dt>
+<dd class="field-even"><p>Full path to outfile with extension</p>
+</dd>
+<dt class="field-odd">&#64;param xll<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Longitude coordinate for lower left corner</p>
+</dd>
+<dt class="field-even">&#64;param yll<span class="colon">:</span></dt>
+<dd class="field-even"><p>Latitude coordinate for lower left corner</p>
+</dd>
+<dt class="field-odd">&#64;param cellsize<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cell size in geographic degrees</p>
+</dd>
+<dt class="field-even">&#64;param nodata<span class="colon">:</span></dt>
+<dd class="field-even"><p>Value representing NODATA</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.writer.array_to_csv">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.writer.</span></span><span class="sig-name descname"><span class="pre">array_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.writer.array_to_csv" title="Permalink to this definition"></a></dt>
+<dd><p>Save numpy array as a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> – Input Numpy array</p></li>
+<li><p><strong>out_file</strong> – Output CSV file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.writer.lc_timestep_csv">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.writer.</span></span><span class="sig-name descname"><span class="pre">lc_timestep_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_id_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcam_regionnumber</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_water</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellarea</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spat_ludataharm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fraction'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_ncdf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_csv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regrid_res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.writer.lc_timestep_csv" title="Permalink to this definition"></a></dt>
+<dd><p>Save land cover data for each time step as a CSV file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.writer.max_ascii_rast">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.writer.</span></span><span class="sig-name descname"><span class="pre">max_ascii_rast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-9999</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.writer.max_ascii_rast" title="Permalink to this definition"></a></dt>
+<dd><p>Return the land class index containing the maximum value in the array axis.</p>
+<p>NOTE:
+Replace NaN with your nodata value.
+If all classes 0, then -9999
+If multiple classes have the same max value, get class with largest index</p>
+<dl class="field-list simple">
+<dt class="field-odd">&#64;param arr<span class="colon">:</span></dt>
+<dd class="field-odd"><p>3D array (landclass, col, row)</p>
+</dd>
+<dt class="field-even">&#64;param alg<span class="colon">:</span></dt>
+<dd class="field-even"><p>Algorithm to extract the land class index from values</p>
+</dd>
+<dt class="field-odd">&#64;param out_rast<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Full path to outfile with extension</p>
+</dd>
+<dt class="field-even">&#64;param xll<span class="colon">:</span></dt>
+<dd class="field-even"><p>Longitude coordinate for lower left corner</p>
+</dd>
+<dt class="field-odd">&#64;param yll<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Latitude coordinate for lower left corner</p>
+</dd>
+<dt class="field-even">&#64;param cellsize<span class="colon">:</span></dt>
+<dd class="field-even"><p>Cell size in geographic degrees</p>
+</dd>
+<dt class="field-odd">&#64;param nodata<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Value representing NODATA</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.writer.save_array">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.writer.</span></span><span class="sig-name descname"><span class="pre">save_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.writer.save_array" title="Permalink to this definition"></a></dt>
+<dd><p>Save numpy array to NPY file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> – Input Numpy array</p></li>
+<li><p><strong>out_file</strong> – Output NPY file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.writer.to_netcdf_lc">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.writer.</span></span><span class="sig-name descname"><span class="pre">to_netcdf_lc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spat_lc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">years</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.writer.to_netcdf_lc" title="Permalink to this definition"></a></dt>
+<dd><p>Build a NetCDF file for each land class that contains the gridded fraction
+of land cover of that land class over all simulation years.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spat_lc</strong> – A 3D array representing fraction of land cover (lat, lon, fraction landclass)</p></li>
+<li><p><strong>lat</strong> – An array of latitude values for mapping (n)</p></li>
+<li><p><strong>lon</strong> – An array of longitude values for mapping (n)</p></li>
+<li><p><strong>resin</strong> – The input spatial resolution in geographic degrees (float)</p></li>
+<li><p><strong>final_landclasses</strong> – An array of land classes (n_classes)</p></li>
+<li><p><strong>years</strong> – A list of output years (int)</p></li>
+<li><p><strong>step</strong> – The current time step (int)</p></li>
+<li><p><strong>model</strong> – The name of the model running (str)</p></li>
+<li><p><strong>out_dir</strong> – A full path string of the output directory (str)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A NetCDF classic file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.writer.to_netcdf_yr">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.writer.</span></span><span class="sig-name descname"><span class="pre">to_netcdf_yr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spat_lc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_landclasses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.writer.to_netcdf_yr" title="Permalink to this definition"></a></dt>
+<dd><p>Build a NetCDF file for each time step that contains the gridded fraction
+of land cover for each land class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spat_lc</strong> – An array of gridded data as fraction land cover (n_grids, n_landclasses)</p></li>
+<li><p><strong>map_idx</strong> – An array of cell index positions for spatially mapping the gridded data (n_grids, n_landclasses)</p></li>
+<li><p><strong>lat</strong> – An array of latitude values for mapping (n)</p></li>
+<li><p><strong>lon</strong> – An array of longitude values for mapping (n)</p></li>
+<li><p><strong>resin</strong> – The input spatial resolution in geographic degrees (float)</p></li>
+<li><p><strong>final_landclasses</strong> – An array of land classes (n_classes)</p></li>
+<li><p><strong>yr</strong> – The target time step (int)</p></li>
+<li><p><strong>model</strong> – The name of the model running (str)</p></li>
+<li><p><strong>out_file</strong> – A full path string of the output file with extension (str)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A NetCDF classic file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="demeter.demeter_io.writer.write_transitions">
+<span class="sig-prename descclassname"><span class="pre">demeter.demeter_io.writer.</span></span><span class="sig-name descname"><span class="pre">write_transitions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transitions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#demeter.demeter_io.writer.write_transitions" title="Permalink to this definition"></a></dt>
+<dd><p>Save land cover transitions per time step to a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>order_rules</strong> – </p></li>
+<li><p><strong>final_landclasses</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-demeter.demeter_io">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-demeter.demeter_io" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Kanishka B. Narayan.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

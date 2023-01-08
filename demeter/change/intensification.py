@@ -253,13 +253,15 @@ def _create_summary(reg_idx, allregnumber, spat_ludata, spat_landmatrix, gcam_la
     if pass_number == 1:
         target_intensification[target_intensification > 0] *= c.intensification_ratio
 
+
+
     return regnumber, prev_reg, target_intensification
 
 
 def apply_intensification(log, pass_number, c, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
                           spat_landmatrix, gcam_landmatrix, yr_idx, d_regid_nm, target_change, spat_ludataharm,
                           spat_met, kernel_vector, cons_data, final_landclasses,spat_ludataharm_orig_steps, yr,
-                          land_mismatch, constraint_rules, transition_rules, transitions):
+                          land_mismatch, constraint_rules, transition_rules):
     """
     There are two ways to expand land covers:
     1) on grid-cells where they do exist (intensification, at the expense of contracting land covers)
@@ -327,7 +329,7 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
         spat_ludataharm[reg_met_mask], trans_mat, target_change, target_intensification = citz
 
         # log transition
-        transitions[reg_met_mask, :, :] += trans_mat
+        #transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
     non_chg = np.sum(abs(target_change[:, :, :])) / 2.0
@@ -343,4 +345,4 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
     if c.diagnostic == 1:
         diag_file.close()
 
-    return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, transitions, target_change]
+    return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, target_change]

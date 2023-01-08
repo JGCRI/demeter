@@ -285,6 +285,7 @@ def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, timestep, scen
     gdf = gcam_data if isinstance(gcam_data, pd.DataFrame) else pd.read_csv(gcam_data)
 
     # make sure all land classes in the projected file are in the allocation file and vice versa
+
     _check_constraints(gcam_landclasses, gdf['landclass'].tolist())
 
     # assign user-defined scenario to data frame
@@ -448,6 +449,7 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
         sequence_metric_dict[0] = 0
 
     # adjust the numbering of metrics in the observed data
+
     spat_metric = np.vectorize(sequence_metric_dict.get)(spat_metric)
 
     # get the total number of grid cells

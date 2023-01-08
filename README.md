@@ -1,5 +1,6 @@
 [![build](https://github.com/JGCRI/demeter/actions/workflows/build.yml/badge.svg)](https://github.com/JGCRI/demeter/actions/workflows/build.yml)
 [![DOI](https://zenodo.org/badge/101879773.svg)](https://zenodo.org/badge/latestdoi/101879773)
+[![codecov](https://codecov.io/gh/JGCRI/demeter/branch/master/graph/badge.svg?token=7K2g3PsFUG)](https://codecov.io/gh/JGCRI/demeter)
 
 # Demeter
 
@@ -9,9 +10,11 @@ Demeter is an open source Python package that was built to disaggregate projecti
 # Getting Started with Demeter
 Set up Demeter using the following steps:
 1.  Install Demeter from GitHub:
-    ```bash
-    python -m pip install git+http://github.com/JGCRI/demeter.git#egg=demeter
-    ```
+    ```python
+    
+    pip install git+http://github.com/JGCRI/demeter.git#egg=demeter
+    
+    ```    
 2.  Download the example data using the following in a Python prompt:
     ```python
     import demeter

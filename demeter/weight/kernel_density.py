@@ -11,8 +11,50 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import numpy as np
 
 from scipy import ndimage
-
+import threading
+from multiprocessing.dummy import Pool as ThreadPool
+from itertools import repeat
 import demeter.demeter_io.writer as wdr
+
+
+def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, cellindexresin,
+                      spat_ludataharm, kernel_maps, kernel_vector, weights):
+
+    """Helper function to handle pft convultion filters. This is passed to apply_convultiion This is used to parallelize the convultion filter operation to speed up processing.
+
+       Parameters:
+           pft_order (List[int]): The order of pfts
+           order_rules (List[str]): The order rules defined by user
+           final_landclasses (List[int]): A list of land classes
+           pft_maps (dict): A map of pfts
+           cellindexresin (Union[None, int]): Input resolution
+           spat_ludataharm (pd.Dataframe): Dataframe of land use
+
+
+       Returns:
+           list: processed convultion filters for each LT.
+
+       """
+    pft = np.where(order_rules == pft_order)[0][0]
+    # get final land class name
+    flc = final_landclasses[pft]
+
+    # populate pft_maps array with base land use layer data
+    pft_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft] = spat_ludataharm[:, pft]
+
+    # apply image filter
+
+    kernel_maps[:, :, pft] = ndimage.filters.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
+
+    # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
+    # while we might need them.
+
+    min_seed = 0.0000000001
+    kernel_maps[:, :, pft][
+    kernel_maps[:, :, pft] == 0] = min_seed  # np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
+
+    # reshaping to the spatial grid-cell data (vector)
+    kernel_vector[:, pft] = kernel_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft]
 
 
 class KernelDensity:
@@ -72,8 +114,11 @@ class KernelDensity:
 
         # create empty arrays used in kernel density calculation
         pft_maps = np.zeros((l_lat, l_lon, self.l_fcs))
+        #pft_map_single = np.zeros((l_lat, l_lon, 1))
         kernel_maps = np.zeros((l_lat, l_lon, self.l_fcs))
+        #kernel_map_single = np.zeros((l_lat, l_lon, 1))
         kernel_vector = np.zeros((self.ngrids, self.l_fcs))
+        kernel_vector_temp = np.zeros((self.ngrids, self.l_fcs))
         weights = np.zeros((self.kernel_distance, self.kernel_distance))
 
         return pft_maps, kernel_maps, kernel_vector, weights
@@ -136,6 +181,7 @@ class KernelDensity:
 
         return [lat, lon, cellindexresin, pft_maps, kernel_maps, kernel_vector, weights]
 
+
     def apply_convolution(self, cellindexresin, pft_maps, kernel_maps, lat, lon, yr, kernel_vector, weights,
                           spat_ludataharm):
         """
@@ -143,28 +189,19 @@ class KernelDensity:
 
         :return:
         """
+        pool = ThreadPool(len(np.unique(self.order_rules)))
+        #pool=ThreadPool(10)
+        aux_val=np.unique(self.order_rules)
+        order_rules= self.order_rules
+        final_landclasses= self.final_landclasses
 
-        for pft_order in np.unique(self.order_rules):
-
-            # get target PFT
-            pft = np.where(self.order_rules == pft_order)[0][0]
-
-            # get final land class name
-            flc = self.final_landclasses[pft]
-
-            # populate pft_maps array with base land use layer data
-            pft_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft] = spat_ludataharm[:, pft]
-
-            # apply image filter
-            kernel_maps[:, :, pft] = ndimage.filters.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
-
-            # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
-            #   while we might need them.
-            # TODO:  remove the min value
-            min_seed = 0.0000000001
-            kernel_maps[:, :, pft][kernel_maps[:, :, pft] == 0] = min_seed #np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
-
-            # reshaping to the spatial grid-cell data (vector)
-            kernel_vector[:, pft] = kernel_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft]
+        pool.starmap(handle_single_pft, zip(aux_val,repeat(order_rules), repeat(final_landclasses),
+                                                                  repeat(pft_maps),repeat(cellindexresin),
+                                                                  repeat(spat_ludataharm),
+                                                                  repeat(kernel_maps), repeat(kernel_vector),repeat(weights)))
+        pool.terminate()
 
         return kernel_vector
+
+
+

@@ -217,7 +217,7 @@ def _reg_metric_iter(allregnumber, allregmet):
 
 
 def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met, kernel_vector, cons_data,
-                    order_rules, final_landclasses, constraint_rules, transition_rules, land_mismatch, transitions,
+                    order_rules, final_landclasses, constraint_rules, transition_rules, land_mismatch,
                     spat_ludataharm_orig_steps, target_change, yr):
 
     # open diagnostic file if user-selected
@@ -253,7 +253,7 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
 
         # apply expansion and update transitions
         spat_ludataharm[reg_met_mask], target_change, trans_mat = exp
-        transitions[reg_met_mask, :, :] += trans_mat
+        #transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
     non_chg = np.sum(abs(target_change[:, :, :])) / 2.
@@ -270,5 +270,4 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
     if c.diagnostic == 1:
         diag_file.close()
 
-    return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data,
-            transitions, target_change]
+    return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, target_change]

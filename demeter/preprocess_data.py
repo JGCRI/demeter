@@ -76,8 +76,8 @@ class FormatGcamDataFrame:
                  output_to_csv=False, gcam_landalloc_field='land-allocation', gcam_nodes_field='child-nodes'):
 
         self.df = df
-        self.f_basin_ref = pkg_resources.resource_filename('demeter', 'data/gcam_basin_lookup.csv')
-        self.f_region_ref = pkg_resources.resource_filename('demeter', 'data/gcam_regions_32.csv')
+        self.f_basin_ref = pkg_resources.resource_filename('demeter', 'tests/data/inputs/mapping/gcam_basin_lookup.csv')
+        self.f_region_ref = pkg_resources.resource_filename('demeter', 'tests/data/inputs/mapping/gcam_regions_32.csv')
         self.start_year = start_year
         self.through_year = through_year
         self.f_out = f_out
