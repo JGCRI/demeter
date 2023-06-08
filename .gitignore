@@ -144,3 +144,4 @@ dmypy.json
 
 # exclude dirs
 demeter.egg-info/
+.Rproj.user
