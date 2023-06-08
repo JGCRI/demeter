@@ -10,8 +10,68 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 import os
 import numpy as np
-
+import threading
+from multiprocessing.dummy import Pool as ThreadPool
+from itertools import repeat
 import demeter.demeter_io.writer as wdr
+
+def intense_parallel_helper(regix_metix,spat_region, order_rules, allregnumber, allregmet, spat_ludata,
+                          spat_landmatrix, gcam_landmatrix, yr_idx, d_regid_nm, target_change, spat_ludataharm,
+                          spat_met, kernel_vector, cons_data, final_landclasses,spat_ludataharm_orig_steps, yr,
+                          land_mismatch, constraint_rules, transition_rules,log, pass_number, c,diag_file):
+
+    reg_idx, met_idx = regix_metix
+   # print("processing region " + str(reg_idx))
+
+        # set previous region index to current
+        #prev_reg = reg_idx
+
+    # update user per region change
+
+        # update user per region change
+    regnumber, reg_idx, target_intensification = _create_summary(reg_idx, allregnumber, spat_ludata,
+                                                                      spat_landmatrix, gcam_landmatrix, d_regid_nm,
+                                                                      log, spat_region, yr_idx, target_change,
+                                                                      pass_number, c)
+
+    # calculate and write area diagnostic
+    # diff_diagnostic(c.diag_dir, d_regid_nm, gcam_landmatrix, spat_landmatrix, reg_idx, yr, yr_idx)
+
+    # retrieve region and metric number
+    metnumber = allregmet[reg_idx][met_idx]
+
+    # create data subset
+    reg_met_mask = (spat_region == regnumber) & (spat_met == metnumber)
+    spat_ludataharm_sub = spat_ludataharm[reg_met_mask]
+    kernel_vector_sub = kernel_vector[reg_met_mask]
+    cons_data_sub = cons_data[reg_met_mask]
+
+    # calculate intensification
+    citz = _intensification(c.diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
+                            cons_data_sub, reg_idx, metnumber, order_rules, final_landclasses, c.errortol,
+                            constraint_rules, target_change, transition_rules, land_mismatch)
+
+    # apply intensification
+    spat_ludataharm[reg_met_mask], trans_mat, target_change, target_intensification = citz
+
+    # log transition
+    # transitions[reg_met_mask, :, :] += trans_mat
+
+    # calculate non-achieved change
+
+
+    non_chg = np.sum(abs(target_change[:, :, :])) / 2.0
+
+    if non_chg > 0:
+       non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(abs(land_mismatch[:, :, :].flatten())) * 100
+    else:
+       non_chg_per = 0
+
+    #log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
+
+
+
+
 
 
 def diff_diagnostic(diag_outdir, d_regid_nm, gcam_landmatrix, spat_landmatrix, reg, yr, yr_idx):
@@ -28,6 +88,9 @@ def diff_diagnostic(diag_outdir, d_regid_nm, gcam_landmatrix, spat_landmatrix, r
     # write files
     wdr.array_to_csv(gcam_landmatrix[yr_idx, reg, :, :], gcam_out)
     wdr.array_to_csv(spat_landmatrix[reg, :, :], base_out)
+
+
+
 
 
 def reg_metric_iter(allregnumber, allregmet):
@@ -289,60 +352,16 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
     # build region_idx, metric_idx iterator
     regix_metix = reg_metric_iter(allregnumber, allregmet)
 
+    pool = ThreadPool(len(np.unique(regix_metix)))
+
+    pool.starmap(intense_parallel_helper,zip(regix_metix,repeat(spat_region), repeat(order_rules), repeat(allregnumber), repeat(allregmet), repeat(spat_ludata),
+                          repeat(spat_landmatrix), repeat(gcam_landmatrix), repeat(yr_idx), repeat(d_regid_nm), repeat(target_change), repeat(spat_ludataharm),
+                          repeat(spat_met), repeat(kernel_vector), repeat(cons_data), repeat(final_landclasses),repeat(spat_ludataharm_orig_steps), repeat(yr),
+                          repeat(land_mismatch), repeat(constraint_rules), repeat(transition_rules),repeat(log), repeat(pass_number), repeat(c),repeat(diag_file)))
     # for each region
-    for index, pkg in enumerate(regix_metix):
+    #for index, pkg in enumerate(regix_metix):
 
         # unpack index vars
-        reg_idx, met_idx = pkg
 
-        if index == 0:
-            # set previous region index to current
-            prev_reg = reg_idx
-
-        # update user per region change
-        if (index == 0) or (reg_idx != prev_reg):
-
-            # update user per region change
-            regnumber, prev_reg, target_intensification = _create_summary(reg_idx, allregnumber, spat_ludata,
-                                                                          spat_landmatrix, gcam_landmatrix, d_regid_nm,
-                                                                          log, spat_region, yr_idx, target_change,
-                                                                          pass_number, c)
-
-        # calculate and write area diagnostic
-        # diff_diagnostic(c.diag_dir, d_regid_nm, gcam_landmatrix, spat_landmatrix, reg_idx, yr, yr_idx)
-
-        # retrieve region and metric number
-        metnumber = allregmet[reg_idx][met_idx]
-
-        # create data subset
-        reg_met_mask = (spat_region == regnumber) & (spat_met == metnumber)
-        spat_ludataharm_sub = spat_ludataharm[reg_met_mask]
-        kernel_vector_sub = kernel_vector[reg_met_mask]
-        cons_data_sub = cons_data[reg_met_mask]
-
-        # calculate intensification
-        citz = _intensification(c.diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
-                                cons_data_sub, reg_idx, metnumber, order_rules, final_landclasses, c.errortol,
-                                constraint_rules, target_change, transition_rules, land_mismatch)
-
-        # apply intensification
-        spat_ludataharm[reg_met_mask], trans_mat, target_change, target_intensification = citz
-
-        # log transition
-        #transitions[reg_met_mask, :, :] += trans_mat
-
-    # calculate non-achieved change
-    non_chg = np.sum(abs(target_change[:, :, :])) / 2.0
-
-    if non_chg > 0:
-        non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(abs(land_mismatch[:, :, :].flatten())) * 100
-    else:
-        non_chg_per = 0
-
-    # log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
-
-    # close file if diagnostic
-    if c.diagnostic == 1:
-        diag_file.close()
-
+    pool.terminate()
     return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, target_change]

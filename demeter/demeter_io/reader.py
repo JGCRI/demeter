@@ -462,6 +462,7 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
     # cell area from lat: lat_correction_factor * (lat_km at equator * lon_km at equator) * (resolution squared) = sqkm
     cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 * 110.57) * (config.spatial_resolution**2)
 
+
     # create an array with the actual percentage of the grid cell included in the data; some are cut by AEZ or Basin
     #   polygons others have no-data in land cover
     celltrunk = (np.sum(spat_ludata, axis=1) + spat_water) / (config.spatial_resolution ** 2)
