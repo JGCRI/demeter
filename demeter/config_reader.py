@@ -175,6 +175,13 @@ class ReadConfig:
         self.use_constraints = self.valid_integer(run_params.get('use_constraints', 1), 'use_constraints', [0, 1])
         self.spatial_resolution = self.valid_limit(run_params.get('spatial_resolution', 0.25), 'spatial_resolution', [0.0, 1000000.0], 'float')
         self.regrid_resolution = self.valid_limit(run_params.get('regrid_resolution', self.spatial_resolution), 'regrid_resolution', [0.0, 1000000.0], 'float')
+
+        self.external_scenario_PFT_name= (run_params.get('PFT_name_to_replace','Urban'))
+        self.external_scenario = (run_params.get('ext_scenario','SSP1'))
+        self.stitch_external = self.valid_integer(run_params.get('stitch_external', 0), 'stitch_external', [1, 0])
+        self.path_to_external = (run_params.get('path_to_external',self.input_dir))
+
+
         self.errortol = self.valid_limit(run_params.get('errortol', 0.001), 'errortol', [0.0, 1000000.0], 'float')
         self.timestep = self.valid_limit(run_params.get('timestep', 5), 'timestep', [1, 1000000], 'int')
         self.proj_factor = self.valid_limit(run_params.get('proj_factor', 1000), 'proj_factor', [1, 10000000000], 'int')
