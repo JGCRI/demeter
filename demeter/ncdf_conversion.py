@@ -220,7 +220,7 @@ class DemeterToNetcdf:
 
                 ds[i].attrs["long_name"] = i
 
-                if i not in ["region_id", "basin_id"]:
+                if i not in ["region_id", "basin_id","water"]:
                    ds = ds.rename({i: f"PFT{PFT_index+1}"})
                    encoding = {f"PFT{PFT_index+1}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
                    PFT_index = PFT_index+1
@@ -247,7 +247,7 @@ class DemeterToNetcdf:
                 ds = ds.rename({"lat": "latitude",
                                 "lon": "longitude"})
 
-                if i not in ["region_id", "basin_id"]:
+                if i not in ["region_id", "basin_id","water"]:
                     ds = ds.rename({i: f"PFT{PFT_index+1}"})
                     encoding = {f"PFT{PFT_index+1}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
                     PFT_index = PFT_index +1
