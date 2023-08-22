@@ -9,7 +9,7 @@ def readme():
 
 setup(
     name='demeter',
-    version='1.3.1',
+    version='2.0.0',
     python_requires=">=3.7.1",
     packages=find_packages(),
     url='https://github.com/JGCRI/demeter',
