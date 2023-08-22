@@ -25,6 +25,7 @@ setup(
                       'scipy >=1.6.3',
                       'requests>=2.20.0',
                       'gcamreader>=1.2.5',
-                      'xarray >= 0.20.2'],
+                      'xarray >= 0.20.2',
+                      'netcdf4>= 1.6.4'],
     include_package_data=True
 )
