@@ -12,6 +12,7 @@ import numpy as np
 from scipy import io as sio
 import pandas as pd
 from demeter import ncdf_conversion as nc
+import xarray as xr
 
 
 def array_to_csv(arr, out_file):
@@ -35,7 +36,8 @@ def save_array(arr, out_file):
 
 
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
-                    spat_ludataharm, metric, units='fraction', write_outputs=False, write_ncdf=False,sce="default",resolution=0.05,write_csv=False,regrid_res=0.05):
+                    spat_ludataharm, metric, units='fraction', write_outputs=False, write_ncdf=False,sce="default",resolution=0.05,write_csv=False,regrid_res=0.05,
+                    stitch_external=0,path_to_external="",external_scenario_PFT_name="",external_scenario=""):
     """Save land cover data for each time step as a CSV file."""
 
     # create out path and file name
@@ -79,6 +81,70 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
         write_ncdf = False
 
     if write_ncdf:
+        t_joined= pd.DataFrame(data=arr, columns=columns)
+        if stitch_external==1:
+
+           path_to_sce= path_to_external+external_scenario+str(yr)+".nc"
+
+           if os.path.isfile(path_to_sce):
+               print("User has elected to stitch new scenario with current demeter scenarios. Please make sure all scenarios are stored in correct location")
+               src_raster = xr.open_dataset(path_to_sce)
+               target_resolution = (resolution, resolution)
+               resampled = src_raster
+               longitude_list = generate_scaled_coordinates_helper(-180, 180,resolution, ascending=True)
+
+               # positive to negative scaling required for latitude output
+               latitude_list = generate_scaled_coordinates_helper(-90, 90, resolution, ascending=False)
+
+
+               resampled = resampled.interp(lat=latitude_list,
+                               lon=longitude_list)
+
+
+               sce_df = resampled.to_dataframe()
+
+               # Reset the index to convert the multi-index into columns
+               sce_df.reset_index(inplace=True)
+               # Resample the raster to the target resolution
+               sce_df.dropna(inplace=True)
+               sce_df = sce_df[['lat', 'lon', 'value']]
+
+
+
+               sce_df = sce_df.rename(columns={'value': 'frac','lat':'latitude',
+                                               'lon':'longitude'})
+
+               sce_df.latitude = sce_df.latitude.round(3)
+               sce_df.longitude = sce_df.longitude.round(3)
+
+               #sce_df.to_csv('C:/Projects/sce.csv', index=False)
+               or_df = pd.DataFrame(data=arr, columns=columns)
+
+               or_df.latitude = or_df.latitude.round(3)
+               or_df.longitude = or_df.longitude.round(3)
+
+               #or_df.to_csv('C:/Projects/original.csv', index=False)
+               t_temp = pd.merge(or_df, sce_df, on=['latitude', 'longitude'], how='left')
+
+               t_temp['frac'] = np.where(t_temp['frac'].isna(), 0, t_temp['frac'])
+               t_temp['frac'] = np.where(t_temp['water'] >=0.25, 0, t_temp['frac'])
+               t_temp['adj'] = 1 - t_temp['frac']
+
+               t_temp.dropna(inplace=True)
+
+               lu_file_for_col = or_df.drop(['latitude', 'longitude',external_scenario_PFT_name,'region_id','basin_id'], axis=1)
+               pft_columns = lu_file_for_col.columns
+               t_temp['sum_non_ext']= t_temp[pft_columns].sum(axis=1)
+               t_temp[pft_columns] = t_temp[pft_columns].multiply(t_temp['adj'], axis="index")
+               t_temp[pft_columns] = t_temp[pft_columns].divide(t_temp['sum_non_ext'], axis="index")
+
+               t_temp[external_scenario_PFT_name] = t_temp['frac']
+               t_joined = t_temp.drop(['frac', 'adj','sum_non_ext'], axis=1)
+               t_joined = t_joined.dropna()
+               t_joined = t_joined.reset_index(drop=True)
+               #t_joined.to_csv("C:/Projects/sce.csv")
+
+
         x= nc.DemeterToNetcdf(scenario_name= str(sce),
                        project_name="",
                        start_year=2005,
@@ -86,7 +152,7 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
                        resolution= resolution,
                        csv_input=write_csv,
                        regrid_resolution=regrid_res,
-                       df=pd.DataFrame(data=arr, columns=columns))
+                       df=t_joined)
 
         x.process_output(input_file_directory=c.lu_csv_output_dir,
                          output_file_directory=c.lu_netcdf_output_dir,
@@ -386,3 +452,35 @@ def max_ascii_rast(arr, out_dir, step, alg='max', nodata=-9999, xll=-180, yll=-9
 
     # create output raster
     arr_to_ascii(final_arr, out_rast, xll=-xll, yll=-yll, cellsize=cellsize, nodata=nodata)
+
+def generate_scaled_coordinates_helper(coord_min: float,
+                                    coord_max: float,
+                                    res: float,
+                                    ascending: bool = True,
+                                    decimals: int = 3) -> np.array:
+        """Generate a list of evenly-spaced coordinate pairs for the output grid based on lat, lon values.
+
+        :param coord_min:                   Minimum coordinate in range.
+        :type coord_min:                    float
+
+        :param coord_max:                   Maximum coordinate in range.
+        :type coord_max:                    float
+
+        :param ascending:                   Ascend coordinate values if True; descend if False
+        :type ascending:                    bool
+
+        :param decimals:                    Number of desired decimals to round to.
+        :type decimals:                     int
+
+        :returns:                           Array of coordinate values.
+
+        """
+
+        # distance between centroid and edge of grid cell
+        center_spacing = res / 2
+
+        if ascending:
+            return np.arange(coord_min + center_spacing, coord_max, res).round(decimals)
+
+        else:
+            return np.arange(coord_max - center_spacing, coord_min, -res).round(decimals)

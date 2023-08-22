@@ -1,0 +1,12 @@
+Package: Rdemeter
+Type: Package
+Title: R version of demeter
+Version: 0.1.0
+Authors@R: c(person(given='Marcus', family='Perry', email='marcus.perry@pnnl.gov', role=c('aut','cre')),
+    person(given='Kanishka B.', family='Narayan', email='kanishka.narayan@pnnl.gov', role=c('aut')))
+Maintainer: Marcus Perry <marcus.perry@pnnl.gov>
+Description: Generates workflow to allow user to run demeter via R directly.
+License: BSD2
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1

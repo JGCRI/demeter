@@ -9,7 +9,7 @@ def readme():
 
 setup(
     name='demeter',
-    version='1.3.1',
+    version='2.0.0',
     python_requires=">=3.7.1",
     packages=find_packages(),
     url='https://github.com/JGCRI/demeter',
@@ -25,6 +25,7 @@ setup(
                       'scipy >=1.6.3',
                       'requests>=2.20.0',
                       'gcamreader>=1.2.5',
-                      'xarray >= 0.20.2'],
+                      'xarray >= 0.20.2',
+                      'netcdf4>= 1.6.4'],
     include_package_data=True
 )

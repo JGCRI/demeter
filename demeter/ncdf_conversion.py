@@ -6,8 +6,6 @@ import numpy as np
 from scipy import stats
 
 
-
-
 class DemeterToNetcdf:
     """Convert Demeter output files to a NetCDF file.
 
@@ -34,11 +32,11 @@ class DemeterToNetcdf:
                  ymin: float = -90,
                  ymax: float = 90,
                  resolution: float = 0.05,
-                 regrid_resolution: float= 0.05,
-                 project_name: str = "im3",
+                 regrid_resolution: float = 0.05,
+                 project_name: str = "demeter",
                  scenario_name: str = "",
-                 demeter_version: str = "1.31",
-                 csv_input= True,
+                 demeter_version: str = "2.0.0",
+                 csv_input=True,
                  df=pd.DataFrame(data=None, columns=['a'])):
 
         self.base_year_file = base_year_file
@@ -46,7 +44,7 @@ class DemeterToNetcdf:
         self.project_name = project_name
         self.scenario_name = scenario_name
         self.demeter_version = demeter_version
-        self.csv_input= csv_input
+        self.csv_input = csv_input
         self.df = df
         self.regrid_resolution = regrid_resolution
         self.regrid = False
@@ -153,7 +151,7 @@ class DemeterToNetcdf:
 
         # read in outputs to a data frame
         if self.csv_input:
-           lu_file = pd.read_csv(target_file_name, index_col=False)
+            lu_file = pd.read_csv(target_file_name, index_col=False)
         else:
             print("Reading ncdf data from array")
             lu_file = self.df
@@ -161,7 +159,7 @@ class DemeterToNetcdf:
         lu_file_for_col = lu_file.drop(['latitude', 'longitude'], axis=1)
 
         columns = lu_file_for_col.columns
-        PFT_index =-1
+        PFT_index = -1
         for index, i in enumerate(columns):
 
             print(f"Processing LT for ncdf : {i} in year {target_year} in scenario {self.scenario_name}")
@@ -187,25 +185,26 @@ class DemeterToNetcdf:
             temp_lu_file = temp_lu_file.set_index(['lat', 'lon'])
 
             ds = temp_lu_file.to_xarray()
-            ds = ds.sortby(['lat','lon'])
+            ds = ds.sortby(['lat', 'lon'])
 
             if self.resolution != self.regrid_resolution:
                 self.regrid = True
 
             if self.regrid:
-               print("Regridding option selected for NCDFs. Regridding to "+ str(self.regrid_resolution)+ " degrees.")
+                print(
+                    "Regridding option selected for NCDFs. Regridding to " + str(self.regrid_resolution) + " degrees.")
 
-               ds = ds.groupby_bins("lon",self.longitude_regrid_list).mean()
-               ds = ds.groupby_bins("lat", self.latitude_regrid_list).mean()
+                ds = ds.groupby_bins("lon", self.longitude_regrid_list).mean()
+                ds = ds.groupby_bins("lat", self.latitude_regrid_list).mean()
 
-               ds=ds.rename({'lat_bins':'lat',
-                             'lon_bins':'lon'})
-               ds = ds.reindex(lat=self.latitude_regrid_list,
-                               lon=self.longitude_regrid_list)
+                ds = ds.rename({'lat_bins': 'lat',
+                                'lon_bins': 'lon'})
+                ds = ds.reindex(lat=self.latitude_regrid_list,
+                                lon=self.longitude_regrid_list)
 
             else:
-               ds = ds.reindex(lat=self.latitude_list,
-                               lon=self.longitude_list)
+                ds = ds.reindex(lat=self.latitude_list,
+                                lon=self.longitude_list)
             # define encoding here
             encoding = {str(i): DemeterToNetcdf.COMPRESSION_PARAMETERS}
 
@@ -220,10 +219,10 @@ class DemeterToNetcdf:
 
                 ds[i].attrs["long_name"] = i
 
-                if i not in ["region_id", "basin_id"]:
-                   ds = ds.rename({i: f"PFT{PFT_index+1}"})
-                   encoding = {f"PFT{PFT_index+1}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
-                   PFT_index = PFT_index+1
+                if i not in ["region_id", "basin_id", "water"]:
+                    ds = ds.rename({i: f"PFT{PFT_index + 1}"})
+                    encoding = {f"PFT{PFT_index + 1}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
+                    PFT_index = PFT_index + 1
                 ds.to_netcdf(output_file_path,
                              mode="a",
                              encoding=encoding,
@@ -238,7 +237,8 @@ class DemeterToNetcdf:
                 ds.attrs['coordinate_reference_system'] = "EPSG : 4326"
                 ds.attrs['demeter_version'] = self.demeter_version
                 ds.attrs['creation_date'] = str(date.today())
-                ds.attrs['other_info'] = "Includes 32 land types from CLM, water fraction and GCAM region name and basin ID"
+                ds.attrs[
+                    'other_info'] = "Includes 32 land types from CLM, water fraction and GCAM region name and basin ID"
                 # TODO Citation of GCAM version
                 # TODO citaion of demeter
 
@@ -247,15 +247,13 @@ class DemeterToNetcdf:
                 ds = ds.rename({"lat": "latitude",
                                 "lon": "longitude"})
 
-                if i not in ["region_id", "basin_id"]:
-                    ds = ds.rename({i: f"PFT{PFT_index+1}"})
-                    encoding = {f"PFT{PFT_index+1}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
-                    PFT_index = PFT_index +1
+                if i not in ["region_id", "basin_id", "water"]:
+                    ds = ds.rename({i: f"PFT{PFT_index + 1}"})
+                    encoding = {f"PFT{PFT_index + 1}": DemeterToNetcdf.COMPRESSION_PARAMETERS}
+                    PFT_index = PFT_index + 1
                 ds.to_netcdf(output_file_path,
                              encoding=encoding,
                              engine='netcdf4',
                              format='NETCDF4')
 
         return ds
-
-

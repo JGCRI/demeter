@@ -11,6 +11,54 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import numpy as np
 import os
 from scipy import stats
+import threading
+from multiprocessing.dummy import Pool as ThreadPool
+from itertools import repeat
+
+def extense_parallel_helper(regix_metix,log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met, kernel_vector, cons_data,
+                    order_rules, final_landclasses, constraint_rules, transition_rules, land_mismatch,
+                    spat_ludataharm_orig_steps, target_change, yr,diag_file):
+
+    reg_idx, met_idx = regix_metix
+    #print("processing region " + str(reg_idx))
+
+        # set previous region index to current
+        #prev_reg = reg_idx
+
+    # update user per region change
+    regnumber = allregnumber[reg_idx]
+    metnumber = allregmet[reg_idx][met_idx]
+    metnum_idx = metnumber - 1
+        # update user per region change
+    reg_met_mask = (spat_region == regnumber) & (spat_met == metnumber)
+    spat_ludataharm_sub = spat_ludataharm[reg_met_mask]
+    kernel_vector_sub = kernel_vector[reg_met_mask]
+    cons_data_sub = cons_data[reg_met_mask]
+
+    # calculate expansion for each PFT
+    exp = _expansion(c.diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub, reg_idx,
+                     metnum_idx, order_rules, final_landclasses, c.errortol, constraint_rules, transition_rules,
+                     c.stochastic_expansion, c.selection_threshold, land_mismatch, target_change)
+
+    # apply expansion and update transitions
+    spat_ludataharm[reg_met_mask], target_change, trans_mat = exp
+    # transitions[reg_met_mask, :, :] += trans_mat
+
+    # calculate non-achieved change
+
+
+    non_chg = np.sum(abs(target_change[:, :, :])) / 2.
+
+    if non_chg > 0:
+       non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(abs(land_mismatch[:, :, :].flatten())) * 100
+
+    else:
+        non_chg_per = 0
+
+    #log.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
+
+# close file if diagnostic
+
 
 
 def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, pft, cons_data_subpft, reg,
@@ -233,41 +281,12 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
     # build region_idx, metric_idx iterator
     regix_metix = _reg_metric_iter(allregnumber, allregmet)
 
-    for reg_idx, met_idx in regix_metix:
+    pool = ThreadPool(len(np.unique(regix_metix)))
 
-        # get region and metric from index
-        regnumber = allregnumber[reg_idx]
-        metnumber = allregmet[reg_idx][met_idx]
-        metnum_idx = metnumber - 1
+    pool.starmap(extense_parallel_helper,zip(regix_metix,repeat(log), repeat(c), repeat(allregnumber), repeat(allregmet), repeat(spat_ludataharm), repeat(spat_region), repeat(spat_met), repeat(kernel_vector), repeat(cons_data),
+                    repeat(order_rules), repeat(final_landclasses), repeat(constraint_rules), repeat(transition_rules), repeat(land_mismatch),
+                    repeat(spat_ludataharm_orig_steps), repeat(target_change), repeat(yr),repeat(diag_file)))
 
-        # create data subset
-        reg_met_mask = (spat_region == regnumber) & (spat_met == metnumber)
-        spat_ludataharm_sub = spat_ludataharm[reg_met_mask]
-        kernel_vector_sub = kernel_vector[reg_met_mask]
-        cons_data_sub = cons_data[reg_met_mask]
-
-        # calculate expansion for each PFT
-        exp = _expansion(c.diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub, reg_idx,
-                         metnum_idx, order_rules, final_landclasses, c.errortol, constraint_rules, transition_rules,
-                         c.stochastic_expansion, c.selection_threshold, land_mismatch, target_change)
-
-        # apply expansion and update transitions
-        spat_ludataharm[reg_met_mask], target_change, trans_mat = exp
-        #transitions[reg_met_mask, :, :] += trans_mat
-
-    # calculate non-achieved change
-    non_chg = np.sum(abs(target_change[:, :, :])) / 2.
-
-    if non_chg > 0:
-        non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(abs(land_mismatch[:, :, :].flatten())) * 100
-
-    else:
-        non_chg_per = 0
-
-    # log.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
-
-    # close file if diagnostic
-    if c.diagnostic == 1:
-        diag_file.close()
+    pool.terminate()
 
     return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, target_change]
