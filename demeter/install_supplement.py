@@ -16,7 +16,8 @@ class InstallSupplement:
     """
 
     # URL for DOI minted example data hosted on Zenodo
-    DATA_VERSION_URLS = {'1.3.1': 'https://zenodo.org/record/7240315/files/config_gcam_reference.zip?download=1'}
+    DATA_VERSION_URLS = {'1.3.1': 'https://zenodo.org/record/7240315/files/config_gcam_reference.zip?download=1',
+                        '2.0.0': 'https://zenodo.org/record/7240315/files/config_gcam_reference.zip?download=1'}
 
     def __init__(self, example_data_directory):
 
