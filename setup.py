@@ -20,12 +20,12 @@ setup(
     long_description=readme(),
     long_description_content_type="text/markdown",
     install_requires=['configobj>=5.0.6',
-                      'numpy >=1.20.3',
-                      'pandas >=1.2.4',
-                      'scipy >=1.6.3',
+                      'numpy>=1.20.3',
+                      'pandas>=1.2.4',
+                      'scipy>=1.6.3',
                       'requests>=2.20.0',
                       'gcamreader>=1.2.5',
-                      'xarray >= 0.20.2',
+                      'xarray>= 0.20.2',
                       'netcdf4>= 1.6.4'],
     include_package_data=True
 )
