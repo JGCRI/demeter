@@ -13,5 +13,3 @@ from demeter.install_supplement import get_package_data
 from demeter.preprocess_data import format_gcam_data, FormatGcamDataFrame
 from demeter.post_process.demeter_plotter import LandCoverPlotter
 from demeter.post_process.post_process_results import DataProcessor
-
-__version__ = '2.2.0'

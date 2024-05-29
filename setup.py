@@ -1,3 +1,4 @@
+import re
 from setuptools import setup, find_packages
 
 
@@ -7,9 +8,14 @@ def readme():
         return f.read()
 
 
+version = re.search(
+    r"__version__ = ['\"]([^'\"]*)['\"]", open("demeter/_version.py").read(), re.M
+).group(1)
+
+
 setup(
     name='demeter',
-    version='2.0.0',
+    version=version,
     python_requires=">=3.7.1",
     packages=find_packages(),
     url='https://github.com/JGCRI/demeter',
