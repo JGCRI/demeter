@@ -16,7 +16,7 @@ version = re.search(
 setup(
     name='demeter',
     version=version,
-    python_requires=">=3.7.1",
+    python_requires=">=3.9",
     packages=find_packages(),
     url='https://github.com/JGCRI/demeter',
     license='BSD 2-Clause',
@@ -32,8 +32,8 @@ setup(
         'scipy>=1.6.3',
         'requests>=2.20.0',
         'gcamreader>=1.2.5',
-        'xarray>= 0.20.2',
-        'netcdf4>= 1.6.4',
+        'xarray>=0.20.2',
+        'netcdf4>=1.6.4',
         'matplotlib>=3.4.2',
     ],
     include_package_data=True
