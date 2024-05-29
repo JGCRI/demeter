@@ -11,8 +11,7 @@ from demeter.model import Model, run_model
 from demeter.install_supplement import get_package_data
 
 from demeter.preprocess_data import format_gcam_data, FormatGcamDataFrame
+from demeter.post_process.demeter_plotter import LandCoverPlotter
+from demeter.post_process.post_process_results import DataProcessor
 
-__author__ = "Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com)"
-__version__ = '1.2.0'
-
-__all__ = ['Model', 'format_gcam_data', 'run_model', 'get_package_data', 'FormatGcamDataFrame']
+__version__ = '2.2.0'
