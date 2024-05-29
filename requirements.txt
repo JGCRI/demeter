@@ -6,3 +6,4 @@ requests>=2.20.0
 gcamreader>=1.2.5
 xarray>=0.20.2
 netcdf4>=1.6.4
+matplotlib>=3.4.2
