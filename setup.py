@@ -15,7 +15,7 @@ version = re.search(
 setup(
     name='demeter',
     version=version,
-    python_requires=">=3.10",
+    python_requires=">=3.8",
     packages=find_packages(),
     url='https://github.com/JGCRI/demeter',
     license='BSD 2-Clause',
