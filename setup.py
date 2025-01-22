@@ -12,7 +12,6 @@ version = re.search(
     r"__version__ = ['\"]([^'\"]*)['\"]", open("demeter/_version.py").read(), re.M
 ).group(1)
 
-
 setup(
     name='demeter',
     version=version,

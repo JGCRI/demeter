@@ -36,8 +36,9 @@ def save_array(arr, out_file):
 
 
 def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam_regionnumber, spat_water, cellarea,
-                    spat_ludataharm, metric, units='fraction', write_outputs=False, write_ncdf=False,sce="default",resolution=0.05,write_csv=False,regrid_res=0.05,
-                    stitch_external=0,path_to_external="",external_scenario_PFT_name="",external_scenario=""):
+                    spat_ludataharm, metric, units='fraction', write_outputs=False, write_ncdf=False, sce="default",
+                    resolution=0.05, write_csv=False, regrid_res=0.05,
+                    stitch_external=0, path_to_external="", external_scenario_PFT_name="", external_scenario=""):
     """Save land cover data for each time step as a CSV file."""
 
     # create out path and file name
@@ -48,21 +49,21 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
 
     # format data
     arr = np.hstack((
-                        # latitude, longitude
-                        spat_coords,
+        # latitude, longitude
+        spat_coords,
 
-                        # metric id
-                        np.reshape(metric_id_array, (-1, 1)),
+        # metric id
+        np.reshape(metric_id_array, (-1, 1)),
 
-                        # region id
-                        np.reshape(gcam_regionnumber, (-1, 1)),
+        # region id
+        np.reshape(gcam_regionnumber, (-1, 1)),
 
-                        # water
-                        np.reshape(spat_water / (c.spatial_resolution**2) * cellarea, (-1, 1)),
+        # water
+        np.reshape(spat_water / (c.spatial_resolution ** 2) * cellarea, (-1, 1)),
 
-                        # final land cover classes
-                        spat_ludataharm
-                       ))
+        # final land cover classes
+        spat_ludataharm
+    ))
 
     # set output units
     if units == 'sqkm':
@@ -81,78 +82,97 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
         write_ncdf = False
 
     if write_ncdf:
-        t_joined= pd.DataFrame(data=arr, columns=columns)
-        if stitch_external==1:
+        t_joined = pd.DataFrame(data=arr, columns=columns)
+        if stitch_external == 1:
 
-           path_to_sce= path_to_external+external_scenario+str(yr)+".nc"
+            path_to_sce = path_to_external + external_scenario + str(yr) + ".nc"
 
-           if os.path.isfile(path_to_sce):
-               print("User has elected to stitch new scenario with current demeter scenarios. Please make sure all scenarios are stored in correct location")
-               src_raster = xr.open_dataset(path_to_sce)
-               target_resolution = (resolution, resolution)
-               resampled = src_raster
-               longitude_list = generate_scaled_coordinates_helper(-180, 180,resolution, ascending=True)
+            if os.path.isfile(path_to_sce):
+                print(
+                    "User has elected to stitch new scenario with current demeter scenarios. Please make sure all scenarios are stored in correct location")
+                print("reading scenario- ", path_to_sce)
+                src_raster = xr.open_dataset(path_to_sce)
+                target_resolution = (resolution, resolution)
+                resampled = src_raster
+                longitude_list = generate_scaled_coordinates_helper(-180, 180, resolution, ascending=True)
 
-               # positive to negative scaling required for latitude output
-               latitude_list = generate_scaled_coordinates_helper(-90, 90, resolution, ascending=False)
+                # positive to negative scaling required for latitude output
+                latitude_list = generate_scaled_coordinates_helper(-90, 90, resolution, ascending=False)
 
+                resampled = resampled.interp(lat=latitude_list,
+                                             lon=longitude_list)
 
-               resampled = resampled.interp(lat=latitude_list,
-                               lon=longitude_list)
+                sce_df = resampled.to_dataframe()
 
+                # Reset the index to convert the multi-index into columns
+                sce_df.reset_index(inplace=True)
+                # Resample the raster to the target resolution
+                sce_df.dropna(inplace=True)
+                sce_df = sce_df[['lat', 'lon', 'value']]
 
-               sce_df = resampled.to_dataframe()
+                sce_df = sce_df.rename(columns={'value': 'frac', 'lat': 'latitude',
+                                                'lon': 'longitude'})
 
-               # Reset the index to convert the multi-index into columns
-               sce_df.reset_index(inplace=True)
-               # Resample the raster to the target resolution
-               sce_df.dropna(inplace=True)
-               sce_df = sce_df[['lat', 'lon', 'value']]
+                sce_df.latitude = sce_df.latitude.round(3)
+                sce_df.longitude = sce_df.longitude.round(3)
 
+                # sce_df.to_csv('C:/Projects/sce.csv', index=False)
+                or_df = pd.DataFrame(data=arr, columns=columns)
 
+                or_df.latitude = or_df.latitude.round(3)
+                or_df.longitude = or_df.longitude.round(3)
 
-               sce_df = sce_df.rename(columns={'value': 'frac','lat':'latitude',
-                                               'lon':'longitude'})
+                # or_df.to_csv('C:/Projects/original.csv', index=False)
+                t_temp = pd.merge(or_df, sce_df, on=['latitude', 'longitude'], how='left')
 
-               sce_df.latitude = sce_df.latitude.round(3)
-               sce_df.longitude = sce_df.longitude.round(3)
+                t_temp['frac'] = np.where(t_temp['frac'].isna(), 0, t_temp['frac'])
+                t_temp['frac'] = np.where(t_temp['water'] >= 0.25, 0, t_temp['frac'])
+                t_temp['adj'] = t_temp['frac'] - t_temp[external_scenario_PFT_name]
+                # t_temp['adj'] = np.where(t_temp['adj'] < 0, 0, t_temp['adj'])
 
-               #sce_df.to_csv('C:/Projects/sce.csv', index=False)
-               or_df = pd.DataFrame(data=arr, columns=columns)
+                t_temp.dropna(inplace=True)
 
-               or_df.latitude = or_df.latitude.round(3)
-               or_df.longitude = or_df.longitude.round(3)
+                lu_file_for_col = or_df.drop(
+                    ['latitude', 'longitude', external_scenario_PFT_name, 'region_id', 'basin_id'], axis=1)
+                pft_columns = lu_file_for_col.columns
 
-               #or_df.to_csv('C:/Projects/original.csv', index=False)
-               t_temp = pd.merge(or_df, sce_df, on=['latitude', 'longitude'], how='left')
+                # First adjust with natural PFTs
+                t_temp[pft_columns[:17]] = t_temp[pft_columns[:17]].add(0.0000001)
+                t_temp['sum_unmgd'] = t_temp[pft_columns[:17]].sum(axis=1)
+                t_temp['sum_unmgd'] = np.where(t_temp['sum_unmgd'] == 0, 0.0000001, t_temp['sum_unmgd'])
+                t_temp['new_sum_unmgd'] = t_temp['sum_unmgd'] - t_temp['adj']
+                # print(pft_columns[:5])
+                t_temp['new_sum_unmgd'] = np.where(t_temp['new_sum_unmgd'] < 0, 0.0000001, t_temp['new_sum_unmgd'])
+                t_temp[pft_columns[:17]] = t_temp[pft_columns[:17]].multiply(t_temp['new_sum_unmgd'], axis="index")
+                t_temp[pft_columns[:17]] = t_temp[pft_columns[:17]].divide(t_temp['sum_unmgd'], axis="index")
+                t_temp["new_frac"] = t_temp["adj"] - t_temp["sum_unmgd"]
+                t_temp['new_frac'] = np.where(t_temp['new_frac'] < 0, 0, t_temp['new_frac'])
 
-               t_temp['frac'] = np.where(t_temp['frac'].isna(), 0, t_temp['frac'])
-               t_temp['frac'] = np.where(t_temp['water'] >=0.25, 0, t_temp['frac'])
-               t_temp['adj'] = 1 - t_temp['frac']
+                # Now adjust with crops
 
-               t_temp.dropna(inplace=True)
+                t_temp['sum_crop'] = t_temp[pft_columns[17:]].sum(axis=1)
+                t_temp['sum_crop'] = np.where(t_temp['sum_crop'] == 0, 0.0000001, t_temp['sum_crop'])
+                t_temp['new_crop'] = t_temp['sum_crop'] - t_temp['new_frac']
+                # print(pft_columns[5:])
+                t_temp['new_crop'] = np.where(t_temp['new_crop'] < 0, 0, t_temp['new_crop'])
+                t_temp[pft_columns[17:]] = t_temp[pft_columns[17:]].multiply(t_temp['new_crop'], axis="index")
+                t_temp[pft_columns[17:]] = t_temp[pft_columns[17:]].divide(t_temp['sum_crop'], axis="index")
 
-               lu_file_for_col = or_df.drop(['latitude', 'longitude',external_scenario_PFT_name,'region_id','basin_id'], axis=1)
-               pft_columns = lu_file_for_col.columns
-               t_temp['sum_non_ext']= t_temp[pft_columns].sum(axis=1)
-               t_temp[pft_columns] = t_temp[pft_columns].multiply(t_temp['adj'], axis="index")
-               t_temp[pft_columns] = t_temp[pft_columns].divide(t_temp['sum_non_ext'], axis="index")
+                t_temp[external_scenario_PFT_name] = t_temp['frac']
+                # t_temp.to_csv("C:/Projects/sce.csv")
+                t_joined = t_temp.drop(
+                    ['frac', 'adj', 'sum_unmgd', 'new_sum_unmgd', 'sum_crop', 'new_crop', 'new_frac'], axis=1)
+                t_joined = t_joined.dropna()
+                t_joined = t_joined.reset_index(drop=True)
 
-               t_temp[external_scenario_PFT_name] = t_temp['frac']
-               t_joined = t_temp.drop(['frac', 'adj','sum_non_ext'], axis=1)
-               t_joined = t_joined.dropna()
-               t_joined = t_joined.reset_index(drop=True)
-               #t_joined.to_csv("C:/Projects/sce.csv")
-
-
-        x= nc.DemeterToNetcdf(scenario_name= str(sce),
-                       project_name="",
-                       start_year=2005,
-                       end_year=2005,
-                       resolution= resolution,
-                       csv_input=write_csv,
-                       regrid_resolution=regrid_res,
-                       df=t_joined)
+        x = nc.DemeterToNetcdf(scenario_name=str(sce),
+                               project_name="",
+                               start_year=2005,
+                               end_year=2005,
+                               resolution=resolution,
+                               csv_input=write_csv,
+                               regrid_resolution=regrid_res,
+                               df=t_joined)
 
         x.process_output(input_file_directory=c.lu_csv_output_dir,
                          output_file_directory=c.lu_netcdf_output_dir,
@@ -161,7 +181,7 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
     return pd.DataFrame(data=arr, columns=columns)
 
 
-def write_transitions(s, c, step, transitions):
+def write_transitions(c, s, step, transitions, sce_name):
     """
     Save land cover transitions per time step to a CSV file.
 
@@ -173,26 +193,68 @@ def write_transitions(s, c, step, transitions):
 
         from_pft = np.where(s.order_rules == index)[0][0]
         from_fcs = s.final_landclasses[from_pft]
-
+        name = sce_name
         for idx in np.arange(1, len(s.transition_rules[from_pft]), 1):
-
             to_pft = np.where(s.transition_rules[from_pft, :] == idx)[0][0]
             to_fcs = s.final_landclasses[to_pft]
 
-            hdr = 'latitude,longitude,region_id,metric_id,sqkm_change'
-
+            hdr = 'latitude,longitude,region_id,metric_id,sqkm_change,sce,year, from,to'
+            path = str(c.transitions_tabular_output_dir + "/lc_transitons_{0}_to_{1}_{2}_{3}.csv")
             # create out file name
-            f = os.path.join(c.transition_tabular_dir, 'lc_transitons_{0}_to_{1}_{2}.csv'.format(from_fcs, to_fcs, step))
+            f = os.path.join(
+                path.format(from_fcs, to_fcs, step, name))
 
             # create data array
             arr = np.hstack((
-                s.spat_coords, # latitude, longitude
+                s.spat_coords,  # latitude, longitude
                 np.reshape(s.spat_region, (-1, 1)),
                 np.reshape(s.spat_aez, (-1, 1)),
                 np.reshape(transitions[:, to_pft, from_pft], (-1, 1))))
+            num_rows = arr.shape[0]
+            new_column = np.full((num_rows, 1), fill_value=name, dtype=object)
 
+            arr = np.hstack((arr, new_column))
+
+            arr = np.column_stack((arr, np.full_like(arr[:, :1], fill_value=step, dtype=int)))
+
+            new_column = np.full((num_rows, 1), fill_value=from_fcs, dtype=object)
+
+            arr = np.hstack((arr, new_column))
+
+            new_column = np.full((num_rows, 1), fill_value=to_fcs, dtype=object)
+
+            arr = np.hstack((arr, new_column))
+
+            # print(arr)
             # save array as text file
-            np.savetxt(f, arr, fmt='%g', delimiter=',', header=hdr, comments='')
+            # arr = arr.astype(float)
+            file_exists = os.path.isfile(f)
+            # print(file_exists)
+            # print(name)
+            fmt = ['%g'] * 5 + ['%d', '%s']
+            # arr_str = arr.astype('<U200')  # Assuming 32 characters is enough; adjust as needed
+            # print(f)
+            with open(f, 'a') as f2:
+                if not file_exists:
+                    # If the file is empty, write the header
+
+                    np.savetxt(f2, arr, delimiter=',', comments='', header=hdr, fmt='%s')
+
+                else:
+                    # If the file is not empty, skip writing the header
+                    np.savetxt(f2, arr, delimiter=',', comments='', fmt='%s')
+
+            temp_df = pd.read_csv(f)
+
+            temp_df = temp_df.drop(["latitude", "longitude"], axis=1)
+            colnames = ["region_id", "metric_id", "sqkm_change", "sce", "year", "from_v", "to_v"]
+            temp_df.columns = colnames
+            temp_df["sqkm_change"] = pd.to_numeric(temp_df["sqkm_change"])
+            # temp_df = temp_df.rename(columns={"from": "from_value", "to": "to_value"})
+            # print(temp_df.head())
+            temp_df = temp_df.groupby(["region_id", "metric_id", "sce", "year", "from_v", "to_v"])[
+                "sqkm_change"].sum().reset_index()
+            temp_df.to_csv(f, index=False)
 
 
 def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model, out_file):
@@ -214,7 +276,6 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
 
     # create NetCDF file
     with sio.netcdf_file(out_file, 'w') as f:
-
         # add scenario
         f.history = 'test file'
 
@@ -255,7 +316,6 @@ def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model
         lc_frac.missing_value = -1.
 
         for pft in range(0, len(final_landclasses), 1):
-
             # create land use matrix and populate with -1
             pft_mat = np.zeros(shape=(len(lat), len(lon))) - 1
 
@@ -312,12 +372,10 @@ def to_netcdf_lc(spat_lc, lat, lon, resin, final_landclasses, years, step, model
 
     # output NetCDF file for each land class over all years
     for lc_index, lc in enumerate(final_landclasses):
-
         out_fname = '{0}/{1}{2}.nc'.format(out_dir, out_file_prefix, lc)
 
         # create NetCDF file
         with sio.netcdf_file(out_fname, 'w') as f:
-
             # create dimensions
             f.createDimension('lat', len(lat))
             f.createDimension('lon', len(lon))
@@ -372,7 +430,6 @@ def arr_to_ascii(arr, r_ascii, xll=-180, yll=-90, cellsize=0.25, nodata=-9999):
 
     # create ASCII raster file
     with open(r_ascii, 'w') as rast:
-
         # write header
         rast.write('ncols {}\n'.format(ncols))
         rast.write('nrows {}\n'.format(nrows))
@@ -440,7 +497,7 @@ def max_ascii_rast(arr, out_dir, step, alg='max', nodata=-9999, xll=-180, yll=-9
 
     elif alg == 'min':
         arr_rev = ascii_grd[::-1]
-        arr_rev[np.where(np.isnan(arr_rev))] = np.inf # replace NaN with inf
+        arr_rev[np.where(np.isnan(arr_rev))] = np.inf  # replace NaN with inf
         arr_min = np.nanargmin(arr_rev, axis=0)
         final_arr = (ascii_grd.shape[0] - 1) - arr_min
 
@@ -453,34 +510,35 @@ def max_ascii_rast(arr, out_dir, step, alg='max', nodata=-9999, xll=-180, yll=-9
     # create output raster
     arr_to_ascii(final_arr, out_rast, xll=-xll, yll=-yll, cellsize=cellsize, nodata=nodata)
 
+
 def generate_scaled_coordinates_helper(coord_min: float,
-                                    coord_max: float,
-                                    res: float,
-                                    ascending: bool = True,
-                                    decimals: int = 3) -> np.array:
-        """Generate a list of evenly-spaced coordinate pairs for the output grid based on lat, lon values.
+                                       coord_max: float,
+                                       res: float,
+                                       ascending: bool = True,
+                                       decimals: int = 3) -> np.array:
+    """Generate a list of evenly-spaced coordinate pairs for the output grid based on lat, lon values.
 
-        :param coord_min:                   Minimum coordinate in range.
-        :type coord_min:                    float
+    :param coord_min:                   Minimum coordinate in range.
+    :type coord_min:                    float
 
-        :param coord_max:                   Maximum coordinate in range.
-        :type coord_max:                    float
+    :param coord_max:                   Maximum coordinate in range.
+    :type coord_max:                    float
 
-        :param ascending:                   Ascend coordinate values if True; descend if False
-        :type ascending:                    bool
+    :param ascending:                   Ascend coordinate values if True; descend if False
+    :type ascending:                    bool
 
-        :param decimals:                    Number of desired decimals to round to.
-        :type decimals:                     int
+    :param decimals:                    Number of desired decimals to round to.
+    :type decimals:                     int
 
-        :returns:                           Array of coordinate values.
+    :returns:                           Array of coordinate values.
 
-        """
+    """
 
-        # distance between centroid and edge of grid cell
-        center_spacing = res / 2
+    # distance between centroid and edge of grid cell
+    center_spacing = res / 2
 
-        if ascending:
-            return np.arange(coord_min + center_spacing, coord_max, res).round(decimals)
+    if ascending:
+        return np.arange(coord_min + center_spacing, coord_max, res).round(decimals)
 
-        else:
-            return np.arange(coord_max - center_spacing, coord_min, -res).round(decimals)
+    else:
+        return np.arange(coord_max - center_spacing, coord_min, -res).round(decimals)

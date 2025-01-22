@@ -12,6 +12,8 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import numpy as np
 import os
 
+import pandas as pd
+
 import demeter.change.intensification as itz
 import demeter.change.expansion as exp
 import demeter.demeter_io.writer as wdr
@@ -37,10 +39,10 @@ class ProcessStep:
         self.sce = self.config.scenario
         self.res = self.config.spatial_resolution
         self.regrid_res = self.config.regrid_resolution
-        self.stitch_external= self.config.stitch_external
-        self.path_to_external= self.config.path_to_external
+        self.stitch_external = self.config.stitch_external
+        self.path_to_external = self.config.path_to_external
         self.external_scenario_PFT_name = self.config.external_scenario_PFT_name
-        self.external_scenario= self.config.external_scenario
+        self.external_scenario = self.config.external_scenario
         # populate
         self.output_df = self.process()
 
@@ -52,7 +54,7 @@ class ProcessStep:
 
         # assign GCAM land use arrays to class
         gcam_cns = self.s.cst.apply_gcam_constraints(self.step_idx, self.s.gcam_landmatrix, self.spat_landmatrix,
-                                                    self.s.ixr_ixm_ixg)
+                                                     self.s.ixr_ixm_ixg)
 
         # unpack constraint attributes
         self.s.gcam_landmatrix, self.spat_landmatrix, self.land_mismatch, self.target_change = gcam_cns
@@ -62,7 +64,7 @@ class ProcessStep:
                                                            self.s.lat, self.s.lon, self.step, self.s.kernel_vector,
                                                            self.s.weights, self.s.spat_ludataharm)
 
-
+        self.transitions = np.zeros(shape=(self.l_spat_region, self.l_order_rules, self.l_order_rules))
 
     def intense_pass(self, pass_num):
         """Conduct the first pass of intensification."""
@@ -74,14 +76,17 @@ class ProcessStep:
         out_dir = eval(od)
 
         # apply intensification
-        itz_pass = itz.apply_intensification(self.config.logger, pass_num, self.config, self.s.spat_region, self.s.order_rules,
-                                                 self.s.allregnumber, self.s.allregaez, self.s.spat_ludata,
-                                                 self.spat_landmatrix, self.s.gcam_landmatrix, self.step_idx,
-                                                 self.s.d_regid_nm, self.target_change, self.s.spat_ludataharm,
-                                                 self.s.spat_aez, self.s.kernel_vector, self.s.cst.cons_data,
-                                                 self.s.final_landclasses, self.s.spat_ludataharm_orig_steps, self.step,
-                                                 self.land_mismatch, self.s.constraint_rules, self.s.transition_rules)
+        itz_pass = itz.apply_intensification(self.config.logger, pass_num, self.config, self.s.spat_region,
+                                             self.s.order_rules,
+                                             self.s.allregnumber, self.s.allregaez, self.s.spat_ludata,
+                                             self.spat_landmatrix, self.s.gcam_landmatrix, self.step_idx,
+                                             self.s.d_regid_nm, self.target_change, self.s.spat_ludataharm,
+                                             self.s.spat_aez, self.s.kernel_vector, self.s.cst.cons_data,
+                                             self.s.final_landclasses, self.s.spat_ludataharm_orig_steps, self.step,
+                                             self.land_mismatch, self.s.constraint_rules, self.s.transition_rules,
+                                             self.transitions)
 
+        # wdr.write_transitions(self.s, self.step, transitions=self.transitions)
         # unpack
         self.s.spat_ludataharm, self.s.spat_ludataharm_orig_steps, self.land_mismatch, self.s.cons_data, self.target_change = itz_pass
 
@@ -93,12 +98,15 @@ class ProcessStep:
         self.config.logger.info("Applying expansion for time step {0}...".format(self.step))
 
         # apply expansion
-        exp_pass = exp.apply_expansion(self.config.logger, self.config, self.s.allregnumber, self.s.allregaez, self.s.spat_ludataharm,
+        exp_pass = exp.apply_expansion(self.config.logger, self.config, self.s.allregnumber, self.s.allregaez,
+                                       self.s.spat_ludataharm,
                                        self.s.spat_region, self.s.spat_aez, self.s.kernel_vector, self.s.cons_data,
                                        self.s.order_rules, self.s.final_landclasses, self.s.constraint_rules,
                                        self.s.transition_rules, self.land_mismatch,
-                                       self.s.spat_ludataharm_orig_steps, self.target_change, self.step)
+                                       self.s.spat_ludataharm_orig_steps, self.target_change, self.step,
+                                       self.transitions)
 
+        # wdr.write_transitions(self.s, self.step, transitions=self.transitions)
         # unpack
         self.s.spat_ludataharm, self.s.spat_ludataharm_orig_steps, self.land_mismatch, self.s.cons_data, \
         self.target_change = exp_pass
@@ -130,27 +138,33 @@ class ProcessStep:
 
         # convert land cover from sqkm per grid cell per land class to fraction (n_grids, n_landclasses)
         fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T
+        if (self.config.save_transitions == 1):
+            wdr.write_transitions(self.config, self.s, self.step, transitions=self.transitions,
+                                  sce_name=self.config.scenario)
 
-
+        # df = pd.DataFrame(self.transitions)
+        # df.to_csv("test2.csv")
 
         # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
-
 
         # save land cover data for the time step
         if (self.config.save_netcdf_yr == 1) and (self.step in self.config.target_years_output):
             if self.config.save_tabular == 1:
-                write_csv= True
+                write_csv = True
             else:
                 write_csv = False
 
             self.config.logger.info("Generating projected land cover data for time step {0}...".format(self.step))
             write_ncdf = False
-            if self.config.save_netcdf_yr ==1:
-                write_ncdf =True
-            return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords, orig_spat_aez,
-                                self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
-                                self.config.metric, self.config.tabular_units, self.write_outputs, write_ncdf, self.sce, self.res, write_csv, self.regrid_res,
-                                       self.stitch_external,self.path_to_external,self.external_scenario_PFT_name,self.external_scenario)
+            if self.config.save_netcdf_yr == 1:
+                write_ncdf = True
+            return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords,
+                                       orig_spat_aez,
+                                       self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
+                                       self.config.metric, self.config.tabular_units, self.write_outputs, write_ncdf,
+                                       self.sce, self.res, write_csv, self.regrid_res,
+                                       self.stitch_external, self.path_to_external, self.external_scenario_PFT_name,
+                                       self.external_scenario)
 
     def process(self):
         """
