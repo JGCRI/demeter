@@ -18,7 +18,8 @@ class TestOutputs(unittest.TestCase):
     """Test configuration integrity."""
 
     RUN_DIR = pkg_resources.resource_filename('demeter', 'tests/data')
-    GCAMWRAPPER_DF = pd.read_pickle(pkg_resources.resource_filename('demeter', 'tests/data/inputs/projected/land_df.pickle'))
+    GCAMWRAPPER_DF = pd.read_pickle(
+        pkg_resources.resource_filename('demeter', 'tests/data/inputs/projected/land_df.pickle'))
     COMP_2010 = pd.read_pickle(pkg_resources.resource_filename('demeter', 'tests/data/comp_data/demeter_2010.pickle'))
     COMP_2015 = pd.read_pickle(pkg_resources.resource_filename('demeter', 'tests/data/comp_data/demeter_2015.pickle'))
 
@@ -37,8 +38,8 @@ class TestOutputs(unittest.TestCase):
         # process first year
         demeter_2010 = model.process_step()
         demeter_2015 = model.process_step()
-        print(demeter_2010.head())
-        print(self.COMP_2010.head())
+        # print(demeter_2010.head())
+
         # cleanup logger
         model.cleanup()
 
