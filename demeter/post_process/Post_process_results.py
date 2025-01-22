@@ -33,15 +33,23 @@ class DataProcessor:
                 main_nc.dropna(inplace=True)
                 year = nc_file[-7:-3]
                 main_nc['pixel_area'] = self.calculate_pixel_area(main_nc['latitude'])
-                lu_file_for_col = main_nc.drop(['latitude', 'longitude', 'region_id', 'basin_id'], axis=1)
+
+                # min_lat, max_lat, min_lon, max_lon = 27.98036759814649, 50.37966027007533, -75.78187893993685, -27.98036759814649
+                # main_nc = main_nc[
+                #    (main_nc['latitude'] >= min_lat) & (main_nc['latitude'] <= max_lat) & (
+                #            main_nc['longitude'] >= min_lon) & (main_nc['longitude'] <= max_lon)]
+                main_nc = main_nc.rename(columns={'basin_id': 'metric_id'})
+
+                lu_file_for_col = main_nc.drop(['latitude', 'longitude', 'region_id', 'metric_id'], axis=1)
+
                 columns = lu_file_for_col.columns
                 main_nc[columns] = main_nc[columns].multiply(main_nc['pixel_area'], axis="index")
-                grouped_df = main_nc.groupby(["region_id", "basin_id"])[columns].sum().reset_index()
+                grouped_df = main_nc.groupby(["region_id", "metric_id"])[columns].sum().reset_index()
                 grouped_df["year"] = year
                 grouped_df["scenario_name"] = sce_attribute
                 grouped_df.reset_index(inplace=True)
                 grouped_df = grouped_df.drop(['index'], axis=1)
-                melted_df = grouped_df.melt(id_vars=["region_id", "scenario_name", "year", "basin_id"],
+                melted_df = grouped_df.melt(id_vars=["region_id", "scenario_name", "year", "metric_id"],
                                             var_name="land_type", value_name="land_in_km2")
                 print("Completed " + sce_attribute + " in year " + year)
                 self.dfs.append(melted_df)

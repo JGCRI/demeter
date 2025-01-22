@@ -15,21 +15,22 @@ import threading
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 
-def extense_parallel_helper(regix_metix,log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met, kernel_vector, cons_data,
-                    order_rules, final_landclasses, constraint_rules, transition_rules, land_mismatch,
-                    spat_ludataharm_orig_steps, target_change, yr,diag_file):
 
+def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met,
+                            kernel_vector, cons_data,
+                            order_rules, final_landclasses, constraint_rules, transition_rules, land_mismatch,
+                            spat_ludataharm_orig_steps, target_change, yr, diag_file, transitions):
     reg_idx, met_idx = regix_metix
-    #print("processing region " + str(reg_idx))
+    # print("processing region " + str(reg_idx))
 
-        # set previous region index to current
-        #prev_reg = reg_idx
+    # set previous region index to current
+    # prev_reg = reg_idx
 
     # update user per region change
     regnumber = allregnumber[reg_idx]
     metnumber = allregmet[reg_idx][met_idx]
     metnum_idx = metnumber - 1
-        # update user per region change
+    # update user per region change
     reg_met_mask = (spat_region == regnumber) & (spat_met == metnumber)
     spat_ludataharm_sub = spat_ludataharm[reg_met_mask]
     kernel_vector_sub = kernel_vector[reg_met_mask]
@@ -45,32 +46,33 @@ def extense_parallel_helper(regix_metix,log, c, allregnumber, allregmet, spat_lu
     # transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
-
+    transitions[reg_met_mask, :, :] += trans_mat
 
     non_chg = np.sum(abs(target_change[:, :, :])) / 2.
 
     if non_chg > 0:
-       non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(abs(land_mismatch[:, :, :].flatten())) * 100
+        non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(
+            abs(land_mismatch[:, :, :].flatten())) * 100
 
     else:
         non_chg_per = 0
 
-    #log.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
+    # log.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
+
 
 # close file if diagnostic
 
 
-
 def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, pft, cons_data_subpft, reg,
-                trans_mat, non_exist_cells, stochastic_expansion, selection_threshold, target_change, errortol,
-                diag_file, diagnostic):
+                 trans_mat, non_exist_cells, stochastic_expansion, selection_threshold, target_change, errortol,
+                 diag_file, diagnostic):
     """
     Apply conversion to every qualifying PFT.
 
     :return:            Array of PFTs
     """
     if diagnostic == 1:
-        diag_file.write('{},{},{},{},{}\n'.format(reg + 1, met_idx+1, pft, pft_toconv, exp_target))
+        diag_file.write('{},{},{},{},{}\n'.format(reg + 1, met_idx + 1, pft, pft_toconv, exp_target))
 
     while notdone:
         # grid cells with both the expanding and to-convert PFT
@@ -140,15 +142,15 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
                   & (np.sum(mean_cons_cells) != len(mean_cons_cells))
 
         if diagnostic == 1:
-            diag_file.write('{},{},{},{},{}\n'.format(reg + 1, met_idx+1, pft, pft_toconv, exp_target))
+            diag_file.write('{},{},{},{},{}\n'.format(reg + 1, met_idx + 1, pft, pft_toconv, exp_target))
 
     return exp_target, target_change, trans_mat
 
 
-def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub_o, reg_idx, met_idx, order_rules, final_landclasses,
+def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub_o, reg_idx, met_idx,
+               order_rules, final_landclasses,
                errortol, constraint_rules, transition_rules, stochastic_expansion, selection_threshold, land_mismatch,
                target_change):
-
     # get lengths for array creation
     l_shs = len(spat_ludataharm_sub[:, 0])
     l_ord = len(order_rules)
@@ -186,7 +188,7 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
             cons_data_sub[:, -1] = kdc
 
             # create index order for constraints array where kernel density will be position 0
-            cons_idx_order = [0 if i == cons_data_sub.shape[1]-1 else i+1 for i in range(cons_data_sub.shape[1])]
+            cons_idx_order = [0 if i == cons_data_sub.shape[1] - 1 else i + 1 for i in range(cons_data_sub.shape[1])]
 
             # reorder constraint weights array
             c_arg = np.argsort(cons_idx_order)
@@ -229,10 +231,11 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
 
                 # apply conversion to every qualifying PFT
                 if len(exist_cells) > 0:
-
                     exp_target, target_change, trans_mat = _convert_pft(notdone, exp_target, met_idx, pft_toconv,
-                                                                        spat_ludataharm_sub, pft, cons_data_subpft, reg_idx,
-                                                                        trans_mat, non_exist_cells, stochastic_expansion,
+                                                                        spat_ludataharm_sub, pft, cons_data_subpft,
+                                                                        reg_idx,
+                                                                        trans_mat, non_exist_cells,
+                                                                        stochastic_expansion,
                                                                         selection_threshold, target_change, errortol,
                                                                         diag_file, diagnostic)
 
@@ -266,8 +269,7 @@ def _reg_metric_iter(allregnumber, allregmet):
 
 def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met, kernel_vector, cons_data,
                     order_rules, final_landclasses, constraint_rules, transition_rules, land_mismatch,
-                    spat_ludataharm_orig_steps, target_change, yr):
-
+                    spat_ludataharm_orig_steps, target_change, yr, transitions):
     # open diagnostic file if user-selected
     if c.diagnostic == 1:
         diag_fn, diag_ext = os.path.splitext(c.expansion_diag)
@@ -283,9 +285,14 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
 
     pool = ThreadPool(len(np.unique(regix_metix)))
 
-    pool.starmap(extense_parallel_helper,zip(regix_metix,repeat(log), repeat(c), repeat(allregnumber), repeat(allregmet), repeat(spat_ludataharm), repeat(spat_region), repeat(spat_met), repeat(kernel_vector), repeat(cons_data),
-                    repeat(order_rules), repeat(final_landclasses), repeat(constraint_rules), repeat(transition_rules), repeat(land_mismatch),
-                    repeat(spat_ludataharm_orig_steps), repeat(target_change), repeat(yr),repeat(diag_file)))
+    pool.starmap(extense_parallel_helper,
+                 zip(regix_metix, repeat(log), repeat(c), repeat(allregnumber), repeat(allregmet),
+                     repeat(spat_ludataharm), repeat(spat_region), repeat(spat_met), repeat(kernel_vector),
+                     repeat(cons_data),
+                     repeat(order_rules), repeat(final_landclasses), repeat(constraint_rules), repeat(transition_rules),
+                     repeat(land_mismatch),
+                     repeat(spat_ludataharm_orig_steps), repeat(target_change), repeat(yr), repeat(diag_file),
+                     repeat(transitions)))
 
     pool.terminate()
 

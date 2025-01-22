@@ -13,26 +13,30 @@ import numpy as np
 import threading
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
+
+import pandas as pd
+
 import demeter.demeter_io.writer as wdr
 
-def intense_parallel_helper(regix_metix,spat_region, order_rules, allregnumber, allregmet, spat_ludata,
-                          spat_landmatrix, gcam_landmatrix, yr_idx, d_regid_nm, target_change, spat_ludataharm,
-                          spat_met, kernel_vector, cons_data, final_landclasses,spat_ludataharm_orig_steps, yr,
-                          land_mismatch, constraint_rules, transition_rules,log, pass_number, c,diag_file):
 
+def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
+                            spat_landmatrix, gcam_landmatrix, yr_idx, d_regid_nm, target_change, spat_ludataharm,
+                            spat_met, kernel_vector, cons_data, final_landclasses, spat_ludataharm_orig_steps, yr,
+                            land_mismatch, constraint_rules, transition_rules, log, pass_number, c, diag_file,
+                            transitions):
     reg_idx, met_idx = regix_metix
-   # print("processing region " + str(reg_idx))
+    # print("processing region " + str(reg_idx))
 
-        # set previous region index to current
-        #prev_reg = reg_idx
+    # set previous region index to current
+    # prev_reg = reg_idx
 
     # update user per region change
 
-        # update user per region change
+    # update user per region change
     regnumber, reg_idx, target_intensification = _create_summary(reg_idx, allregnumber, spat_ludata,
-                                                                      spat_landmatrix, gcam_landmatrix, d_regid_nm,
-                                                                      log, spat_region, yr_idx, target_change,
-                                                                      pass_number, c)
+                                                                 spat_landmatrix, gcam_landmatrix, d_regid_nm,
+                                                                 log, spat_region, yr_idx, target_change,
+                                                                 pass_number, c)
 
     # calculate and write area diagnostic
     # diff_diagnostic(c.diag_dir, d_regid_nm, gcam_landmatrix, spat_landmatrix, reg_idx, yr, yr_idx)
@@ -53,25 +57,25 @@ def intense_parallel_helper(regix_metix,spat_region, order_rules, allregnumber, 
 
     # apply intensification
     spat_ludataharm[reg_met_mask], trans_mat, target_change, target_intensification = citz
-
+    # print("Number of dimensions:", trans_mat.ndim)
+    # print("Shape:", trans_mat.shape)
+    # wdr.write_transitions(s,c.step, transitions=trans_mat)
+    # arr_reshaped = trans_mat.reshape(trans_mat.shape[0], -1)
+    # np.savetxt("test.csv", arr_reshaped, delimiter=",")
     # log transition
-    # transitions[reg_met_mask, :, :] += trans_mat
+    transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
-
 
     non_chg = np.sum(abs(target_change[:, :, :])) / 2.0
 
     if non_chg > 0:
-       non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(abs(land_mismatch[:, :, :].flatten())) * 100
+        non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(
+            abs(land_mismatch[:, :, :].flatten())) * 100
     else:
-       non_chg_per = 0
+        non_chg_per = 0
 
-    #log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
-
-
-
-
+    # log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
 
 
 def diff_diagnostic(diag_outdir, d_regid_nm, gcam_landmatrix, spat_landmatrix, reg, yr, yr_idx):
@@ -82,15 +86,12 @@ def diff_diagnostic(diag_outdir, d_regid_nm, gcam_landmatrix, spat_landmatrix, r
     :return:
     """
     # set outfile names
-    gcam_out = os.path.join(diag_outdir, "{0}_{1}_gcam_landmatrix.csv".format(d_regid_nm[str(reg+1)], yr))
-    base_out = os.path.join(diag_outdir, "{0}_{1}_spat_landmatrix.csv".format(d_regid_nm[str(reg+1)], yr))
+    gcam_out = os.path.join(diag_outdir, "{0}_{1}_gcam_landmatrix.csv".format(d_regid_nm[str(reg + 1)], yr))
+    base_out = os.path.join(diag_outdir, "{0}_{1}_spat_landmatrix.csv".format(d_regid_nm[str(reg + 1)], yr))
 
     # write files
     wdr.array_to_csv(gcam_landmatrix[yr_idx, reg, :, :], gcam_out)
     wdr.array_to_csv(spat_landmatrix[reg, :, :], base_out)
-
-
-
 
 
 def reg_metric_iter(allregnumber, allregmet):
@@ -108,14 +109,14 @@ def reg_metric_iter(allregnumber, allregmet):
 
 
 def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub, pft, cons_data_subpft, reg,
-                target_intensification, trans_mat, target_change, errortol, diag_file, diagnostic):
+                 target_intensification, trans_mat, target_change, errortol, diag_file, diagnostic):
     """
     Apply conversion to every qualifying PFT.
 
     :return:            Array of PFTs
     """
     if diagnostic == 1:
-        diag_file.write('{},{},{},{},{}\n'.format(reg+1, metnumber, pft, pft_toconv, int_target))
+        diag_file.write('{},{},{},{},{}\n'.format(reg + 1, metnumber, pft, pft_toconv, int_target))
 
     while notdone:
         # grid cells with both the expanding and to-convert PFT
@@ -223,7 +224,7 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
             cons_data_sub[:, -1] = kdc
 
             # create index order for constraints array where kernel density will be position 0
-            cons_idx_order = [0 if i == cons_data_sub.shape[1]-1 else i+1 for i in range(cons_data_sub.shape[1])]
+            cons_idx_order = [0 if i == cons_data_sub.shape[1] - 1 else i + 1 for i in range(cons_data_sub.shape[1])]
 
             # reorder constraint weights array
             c_arg = np.argsort(cons_idx_order)
@@ -233,7 +234,8 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
             cons_data_subpft = cons_data_sub
 
             # invert negative constraints
-            arr = np.ones(shape=np.shape(cons_data_sub[:, cons_rules_pft < 0])) + cons_data_subpft[:, cons_rules_pft < 0]
+            arr = np.ones(shape=np.shape(cons_data_sub[:, cons_rules_pft < 0])) + cons_data_subpft[:,
+                                                                                  cons_rules_pft < 0]
             cons_data_subpft[:, cons_rules_pft < 0] = arr
 
             # multiply negative constraints weight by -1 to turn it positive
@@ -316,15 +318,13 @@ def _create_summary(reg_idx, allregnumber, spat_ludata, spat_landmatrix, gcam_la
     if pass_number == 1:
         target_intensification[target_intensification > 0] *= c.intensification_ratio
 
-
-
     return regnumber, prev_reg, target_intensification
 
 
 def apply_intensification(log, pass_number, c, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
                           spat_landmatrix, gcam_landmatrix, yr_idx, d_regid_nm, target_change, spat_ludataharm,
-                          spat_met, kernel_vector, cons_data, final_landclasses,spat_ludataharm_orig_steps, yr,
-                          land_mismatch, constraint_rules, transition_rules):
+                          spat_met, kernel_vector, cons_data, final_landclasses, spat_ludataharm_orig_steps, yr,
+                          land_mismatch, constraint_rules, transition_rules, transitions):
     """
     There are two ways to expand land covers:
     1) on grid-cells where they do exist (intensification, at the expense of contracting land covers)
@@ -354,14 +354,19 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
 
     pool = ThreadPool(len(np.unique(regix_metix)))
 
-    pool.starmap(intense_parallel_helper,zip(regix_metix,repeat(spat_region), repeat(order_rules), repeat(allregnumber), repeat(allregmet), repeat(spat_ludata),
-                          repeat(spat_landmatrix), repeat(gcam_landmatrix), repeat(yr_idx), repeat(d_regid_nm), repeat(target_change), repeat(spat_ludataharm),
-                          repeat(spat_met), repeat(kernel_vector), repeat(cons_data), repeat(final_landclasses),repeat(spat_ludataharm_orig_steps), repeat(yr),
-                          repeat(land_mismatch), repeat(constraint_rules), repeat(transition_rules),repeat(log), repeat(pass_number), repeat(c),repeat(diag_file)))
+    pool.starmap(intense_parallel_helper,
+                 zip(regix_metix, repeat(spat_region), repeat(order_rules), repeat(allregnumber), repeat(allregmet),
+                     repeat(spat_ludata),
+                     repeat(spat_landmatrix), repeat(gcam_landmatrix), repeat(yr_idx), repeat(d_regid_nm),
+                     repeat(target_change), repeat(spat_ludataharm),
+                     repeat(spat_met), repeat(kernel_vector), repeat(cons_data), repeat(final_landclasses),
+                     repeat(spat_ludataharm_orig_steps), repeat(yr),
+                     repeat(land_mismatch), repeat(constraint_rules), repeat(transition_rules), repeat(log),
+                     repeat(pass_number), repeat(c), repeat(diag_file), repeat(transitions)))
     # for each region
-    #for index, pkg in enumerate(regix_metix):
+    # for index, pkg in enumerate(regix_metix):
 
-        # unpack index vars
-
+    # unpack index vars
+    # wdr.write_transitions(self, c.step, transitions=transitions)
     pool.terminate()
     return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, target_change]
