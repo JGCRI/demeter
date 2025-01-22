@@ -12,11 +12,10 @@ version = re.search(
     r"__version__ = ['\"]([^'\"]*)['\"]", open("demeter/_version.py").read(), re.M
 ).group(1)
 
-
 setup(
     name='demeter',
     version=version,
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     packages=find_packages(),
     url='https://github.com/JGCRI/demeter',
     license='BSD 2-Clause',
