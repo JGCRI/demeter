@@ -36,9 +36,9 @@ class TestOutputs(unittest.TestCase):
         model.initialize()
 
         # process first year
-        demeter_2010 = model.process_step()
+        demeter_2010 = pd.DataFrame(model.process_step())
         demeter_2015 = model.process_step()
-        print(pd.DataFrame(demeter_2010))
+        print(demeter_2010.head())
 
         # cleanup logger
         model.cleanup()
