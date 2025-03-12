@@ -64,7 +64,10 @@ class ProcessStep:
                                                            self.s.lat, self.s.lon, self.step, self.s.kernel_vector,
                                                            self.s.weights, self.s.spat_ludataharm)
 
-        self.transitions = np.zeros(shape=(self.l_spat_region, self.l_order_rules, self.l_order_rules))
+        if self.config.save_transitions == 1:
+            self.transitions = np.zeros(shape=(self.l_spat_region, self.l_order_rules, self.l_order_rules))
+        else:
+            self.transitions = np.zeros(shape=1)
 
     def intense_pass(self, pass_num):
         """Conduct the first pass of intensification."""

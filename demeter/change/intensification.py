@@ -63,7 +63,8 @@ def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber,
     # arr_reshaped = trans_mat.reshape(trans_mat.shape[0], -1)
     # np.savetxt("test.csv", arr_reshaped, delimiter=",")
     # log transition
-    transitions[reg_met_mask, :, :] += trans_mat
+    if transitions.size != 1:
+        transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
 

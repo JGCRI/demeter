@@ -46,7 +46,8 @@ def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_l
     # transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
-    transitions[reg_met_mask, :, :] += trans_mat
+    if transitions.size != 1:
+        transitions[reg_met_mask, :, :] += trans_mat
 
     non_chg = np.sum(abs(target_change[:, :, :])) / 2.
 
