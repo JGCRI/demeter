@@ -48,6 +48,7 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
     hdr = "latitude,longitude,{0}_id,region_id,water,{1}".format(metric.lower(), ','.join(final_landclasses))
 
     # format data
+    #print(spat_coords)
     arr = np.hstack((
         # latitude, longitude
         spat_coords,
@@ -166,7 +167,7 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
                 t_joined = t_joined.reset_index(drop=True)
 
         x = nc.DemeterToNetcdf(scenario_name=str(sce),
-                               project_name="",
+                               project_name="TexasBasin",
                                start_year=2005,
                                end_year=2005,
                                resolution=resolution,
