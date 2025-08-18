@@ -129,7 +129,7 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
         target_change[reg, met_idx, pft] -= np.sum(actexpansion)
         exp_target -= np.sum(actexpansion)
         target_change[reg, met_idx, pft_toconv] += np.sum(actexpansion)
-        trans_mat[exist_cells[candidatecells], pft, pft_toconv] += actexpansion
+        #trans_mat[exist_cells[candidatecells], pft, pft_toconv] += actexpansion
 
         # account for target change minuscule values when evaluating notdone
         tc = round(target_change[reg, met_idx, pft_toconv], 4)
@@ -157,7 +157,7 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
     l_ord = len(order_rules)
 
     # initialize transition arrays
-    trans_mat = np.zeros((l_shs, l_ord, l_ord))
+    trans_mat = np.zeros(shape=1)
 
     # process PFTs in order
     for pft_ord in np.unique(order_rules):

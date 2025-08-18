@@ -460,8 +460,11 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
         spat_region[spat_region == 30] = 11
 
     # cell area from lat: lat_correction_factor * (lat_km at equator * lon_km at equator) * (resolution squared) = sqkm
-    cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 * 110.57) * (config.spatial_resolution**2)
-
+    cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 * 110.57) * (config.spatial_resolution**2)*1000000
+    #import pandas as pd
+    cel= pd.DataFrame(cellarea)
+    cel.to_csv("cell_area.csv")
+    #cellarea= 2.30653376599818E-06
 
     # create an array with the actual percentage of the grid cell included in the data; some are cut by AEZ or Basin
     #   polygons others have no-data in land cover
@@ -469,7 +472,7 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
 
     # adjust land cover area based on the percentage of the grid cell represented
     spat_ludata = spat_ludata / (config.spatial_resolution ** 2) * np.transpose([cellarea, ] * len(observed_landclasses))
-
+    
     return [spat_ludata, spat_water, spat_coords, spat_metric_region, spat_grid_id, spat_metric, spat_region, ngrids,
             cellarea, celltrunk, sequence_metric_dict]
 

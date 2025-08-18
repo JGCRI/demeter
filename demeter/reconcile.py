@@ -11,6 +11,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 """
 
 import numpy as np
+import pandas as pd
 
 
 def reg_metric_zip(allregnumber, allregmetric):
@@ -82,12 +83,16 @@ def _harmonize(gcam_ludata, gcam_aez, allregaez, gcam_regionnumber, allregnumber
         # calculate the harmonization coefficient for land types (ratio of base land use data over the GCAM area
         #   for the target region, metric
         harm_coef = spat_regaezarea[reg, allregaez[reg][aez] - 1] / gcam_regaezarea[reg, allregaez[reg][aez] - 1, yr]
+        #harm_coef=1
+        print(harm_coef)
         areacoef[reg, allregaez[reg][aez] - 1, yr] = harm_coef
 
         # apply harmonization coefficient to the GCAM land use area array to correct the existing data
         corrected_area = gcam_ludata[(gcam_aez == allregaez[reg][aez]) & (gcam_regionnumber == allregnumber[reg]), yr] \
                          * areacoef[reg, allregaez[reg][aez] - 1, yr]
         gcam_ludata[(gcam_aez == allregaez[reg][aez]) & (gcam_regionnumber == allregnumber[reg]), yr] = corrected_area
+        c_area= pd.DataFrame(corrected_area)
+        c_area.to_csv("c_area.csv")
 
         # apply the corrected summed GCAM land use area per region, metric, and yr to the output array
         s = np.sum(gcam_ludata[(gcam_aez == allregaez[reg][aez]) & (gcam_regionnumber == allregnumber[reg]), yr])
