@@ -15,6 +15,7 @@ import logging
 import numpy as np
 import pandas as pd
 import gcamreader
+import xarray as xr
 
 
 class ValidationException(Exception):
@@ -390,8 +391,29 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
     :param region_seq:                  An ordered list of expected region ids
 
     """
+    
+    xr_data = xr.open_dataset(config.observed_lu_file)
+    xr_df = xr_data.to_dataframe().reset_index().dropna()
+     #print(xr_df.head())
+     #print(max(xr_df["region_id"]))
 
-    df = pd.read_csv(config.observed_lu_file, compression='infer')
+    name_map = {
+           var: xr_data[var].attrs.get("long_name", var)  # fall back to var name if no long_name
+           for var in xr_data.data_vars}
+ 
+    xr_df = xr_df.rename(columns=name_map)
+
+
+    colnames_for_rename=(xr_df.drop(["region_id","basin_id","latitude","longitude"],axis=1).columns)
+
+    area= 0.00151872768*0.00151872768
+
+    xr_df[colnames_for_rename] = xr_df[colnames_for_rename].multiply(area, axis="index")   
+    xr_df= xr_df.dropna()
+
+    xr_df["fid"] = range(1, len(xr_df) + 1)
+    df= xr_df
+    #df = pd.read_csv(config.observed_lu_file, compression='infer')
 
     # rename columns as lower case
     df.columns = [i.lower() for i in df.columns]
