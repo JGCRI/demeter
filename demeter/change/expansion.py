@@ -101,7 +101,8 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
         # select the grid cells to expand; user defines whether to use stochastic draw or select the grid cells
         #   with the highest likelihood
         if stochastic_expansion == 1:
-            drawcells = stats.binom.rvs(1, expansion_likelihood / np.nanmax(expansion_likelihood))
+            drawcells = stats.binom.rvs(1, expansion_likelihood / np.nanmax(expansion_likelihood),
+                                        size=expansion_likelihood.shape)
         else:
             drawcells = expansion_likelihood >= selection_threshold * np.nanmax(expansion_likelihood)
 
