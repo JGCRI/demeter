@@ -63,7 +63,8 @@ def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber,
     # arr_reshaped = trans_mat.reshape(trans_mat.shape[0], -1)
     # np.savetxt("test.csv", arr_reshaped, delimiter=",")
     # log transition
-    transitions[reg_met_mask, :, :] += trans_mat
+    if transitions.size != 1:
+        transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
 
@@ -75,7 +76,7 @@ def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber,
     else:
         non_chg_per = 0
 
-    # log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
+    log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
 
 
 def diff_diagnostic(diag_outdir, d_regid_nm, gcam_landmatrix, spat_landmatrix, reg, yr, yr_idx):
@@ -162,7 +163,7 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
         target_intensification[metnumber - 1, pft] -= actual_expansion_sum
         target_change[reg, metnumber - 1, pft_toconv] += actual_expansion_sum
         target_intensification[metnumber - 1, pft_toconv] += actual_expansion_sum
-        trans_mat[exist_cells, pft, pft_toconv] += actexpansion
+        #trans_mat[exist_cells, pft, pft_toconv] += actexpansion
 
         # account for target change minuscule values when evaluating notdone
         tc = round(target_change[reg, metnumber - 1, pft_toconv], 4)
@@ -193,7 +194,7 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
     l_ord = len(order_rules)
 
     # initialize transition arrays
-    trans_mat = np.zeros((l_shs, l_ord, l_ord))
+    trans_mat = np.zeros(shape=1)
 
     # process PFTs in order
     for pft_ord in np.unique(order_rules):

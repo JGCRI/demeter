@@ -76,10 +76,20 @@ class KernelDensity:
         :param resolution:              User-defined resolution setting
         :return:                        latitude and longitude arrays
         """
+        min_lat = self.spat_coords[:, 0].min()
+        max_lat = self.spat_coords[:, 0].max()
+        min_lon = self.spat_coords[:, 1].min()
+        max_lon = self.spat_coords[:, 1].max()
 
         # get latitude and longitude for grid system
-        lat = np.arange(90 - self.resolution / 2., -90, -self.resolution)
-        lon = np.arange(-180 + self.resolution / 2., 180, self.resolution)
+        #lat = np.arange(90 - self.resolution / 2., -90, -self.resolution)
+        #lon = np.arange(-180 + self.resolution / 2., 180, self.resolution)
+
+        lat = np.arange(self.spat_coords[:, 0].max() - self.resolution / 2., self.spat_coords[:, 0].min(), -self.resolution)
+        lon = np.arange(self.spat_coords[:, 1].min() + self.resolution / 2., self.spat_coords[:, 1].max(),  self.resolution)
+
+        #lat = np.arange(34.667 - self.resolution / 2., 25.999, -self.resolution).round(3)
+        #lon = np.arange(-103.833 + self.resolution / 2., -93.082, self.resolution).round(3)
 
         return lat, lon
 

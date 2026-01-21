@@ -15,6 +15,7 @@ import logging
 import numpy as np
 import pandas as pd
 import gcamreader
+import xarray as xr
 
 
 class ValidationException(Exception):
@@ -390,8 +391,29 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
     :param region_seq:                  An ordered list of expected region ids
 
     """
+    
+    xr_data = xr.open_dataset(config.observed_lu_file)
+    xr_df = xr_data.to_dataframe().reset_index().dropna()
+     #print(xr_df.head())
+     #print(max(xr_df["region_id"]))
 
-    df = pd.read_csv(config.observed_lu_file, compression='infer')
+    name_map = {
+           var: xr_data[var].attrs.get("long_name", var)  # fall back to var name if no long_name
+           for var in xr_data.data_vars}
+ 
+    xr_df = xr_df.rename(columns=name_map)
+
+
+    colnames_for_rename=(xr_df.drop(["region_id","basin_id","latitude","longitude"],axis=1).columns)
+
+    area= 0.00151872768*0.00151872768
+
+    xr_df[colnames_for_rename] = xr_df[colnames_for_rename].multiply(area, axis="index")   
+    xr_df= xr_df.dropna()
+
+    xr_df["fid"] = range(1, len(xr_df) + 1)
+    df= xr_df
+    #df = pd.read_csv(config.observed_lu_file, compression='infer')
 
     # rename columns as lower case
     df.columns = [i.lower() for i in df.columns]
@@ -460,8 +482,11 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
         spat_region[spat_region == 30] = 11
 
     # cell area from lat: lat_correction_factor * (lat_km at equator * lon_km at equator) * (resolution squared) = sqkm
-    cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 * 110.57) * (config.spatial_resolution**2)
-
+    cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 * 110.57) * (config.spatial_resolution**2)*1000000
+    #import pandas as pd
+    cel= pd.DataFrame(cellarea)
+    cel.to_csv("cell_area.csv")
+    #cellarea= 2.30653376599818E-06
 
     # create an array with the actual percentage of the grid cell included in the data; some are cut by AEZ or Basin
     #   polygons others have no-data in land cover
@@ -469,7 +494,7 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
 
     # adjust land cover area based on the percentage of the grid cell represented
     spat_ludata = spat_ludata / (config.spatial_resolution ** 2) * np.transpose([cellarea, ] * len(observed_landclasses))
-
+    
     return [spat_ludata, spat_water, spat_coords, spat_metric_region, spat_grid_id, spat_metric, spat_region, ngrids,
             cellarea, celltrunk, sequence_metric_dict]
 
