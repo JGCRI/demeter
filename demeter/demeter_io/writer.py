@@ -136,30 +136,31 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
                 t_temp.dropna(inplace=True)
 
                 lu_file_for_col = or_df.drop(
-                    ['latitude', 'longitude', external_scenario_PFT_name, 'region_id', 'basin_id'], axis=1)
+                    ['latitude', 'longitude', external_scenario_PFT_name, 'region_id', f'{metric.lower()}_id'], axis=1)
                 pft_columns = lu_file_for_col.columns
+                n_natural = c.stitch_natural_pft_count
 
                 # First adjust with natural PFTs
-                t_temp[pft_columns[:17]] = t_temp[pft_columns[:17]].add(0.0000001)
-                t_temp['sum_unmgd'] = t_temp[pft_columns[:17]].sum(axis=1)
+                t_temp[pft_columns[:n_natural]] = t_temp[pft_columns[:n_natural]].add(0.0000001)
+                t_temp['sum_unmgd'] = t_temp[pft_columns[:n_natural]].sum(axis=1)
                 t_temp['sum_unmgd'] = np.where(t_temp['sum_unmgd'] == 0, 0.0000001, t_temp['sum_unmgd'])
                 t_temp['new_sum_unmgd'] = t_temp['sum_unmgd'] - t_temp['adj']
                 # print(pft_columns[:5])
                 t_temp['new_sum_unmgd'] = np.where(t_temp['new_sum_unmgd'] < 0, 0.0000001, t_temp['new_sum_unmgd'])
-                t_temp[pft_columns[:17]] = t_temp[pft_columns[:17]].multiply(t_temp['new_sum_unmgd'], axis="index")
-                t_temp[pft_columns[:17]] = t_temp[pft_columns[:17]].divide(t_temp['sum_unmgd'], axis="index")
+                t_temp[pft_columns[:n_natural]] = t_temp[pft_columns[:n_natural]].multiply(t_temp['new_sum_unmgd'], axis="index")
+                t_temp[pft_columns[:n_natural]] = t_temp[pft_columns[:n_natural]].divide(t_temp['sum_unmgd'], axis="index")
                 t_temp["new_frac"] = t_temp["adj"] - t_temp["sum_unmgd"]
                 t_temp['new_frac'] = np.where(t_temp['new_frac'] < 0, 0, t_temp['new_frac'])
 
                 # Now adjust with crops
 
-                t_temp['sum_crop'] = t_temp[pft_columns[17:]].sum(axis=1)
+                t_temp['sum_crop'] = t_temp[pft_columns[n_natural:]].sum(axis=1)
                 t_temp['sum_crop'] = np.where(t_temp['sum_crop'] == 0, 0.0000001, t_temp['sum_crop'])
                 t_temp['new_crop'] = t_temp['sum_crop'] - t_temp['new_frac']
                 # print(pft_columns[5:])
                 t_temp['new_crop'] = np.where(t_temp['new_crop'] < 0, 0, t_temp['new_crop'])
-                t_temp[pft_columns[17:]] = t_temp[pft_columns[17:]].multiply(t_temp['new_crop'], axis="index")
-                t_temp[pft_columns[17:]] = t_temp[pft_columns[17:]].divide(t_temp['sum_crop'], axis="index")
+                t_temp[pft_columns[n_natural:]] = t_temp[pft_columns[n_natural:]].multiply(t_temp['new_crop'], axis="index")
+                t_temp[pft_columns[n_natural:]] = t_temp[pft_columns[n_natural:]].divide(t_temp['sum_crop'], axis="index")
 
                 t_temp[external_scenario_PFT_name] = t_temp['frac']
                 # t_temp.to_csv("C:/Projects/sce.csv")
@@ -169,9 +170,13 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
                 t_joined = t_joined.reset_index(drop=True)
 
         x = nc.DemeterToNetcdf(scenario_name=str(sce),
-                               project_name="TexasBasin",
-                               start_year=2005,
-                               end_year=2005,
+                               project_name=c.project_name,
+                               start_year=yr,
+                               end_year=yr,
+                               xmin=float(spat_coords[:, 1].min() - resolution / 2),
+                               xmax=float(spat_coords[:, 1].max() + resolution / 2),
+                               ymin=float(spat_coords[:, 0].min() - resolution / 2),
+                               ymax=float(spat_coords[:, 0].max() + resolution / 2),
                                resolution=resolution,
                                csv_input=write_csv,
                                regrid_resolution=regrid_res,
