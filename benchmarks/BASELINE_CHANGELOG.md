@@ -41,3 +41,25 @@ Code: branch `v3/out-1.1-constraint-copy`. Timing: 16.9 s (b0: 34.0 s; speedups 
 
 Open question raised by this fix (plan 1.19): negative constraints are "inverted" as `1 + x` (since the first
 commit, 513dd79) rather than `1 - x`, which shifts rather than inverts their effect.
+
+## v3.0.0-b2 — 2026-10-22 — plan 1.14: Taiwan placeholder inserted at the wrong region
+
+**Status: pending sign-off.**
+
+With `agg_level=2` the GCAM reader adds a placeholder region (Taiwan, id 30) with no basins. The placeholder was
+inserted at `alphabetical index of "Taiwan" - 1` into a list ordered by region **number**. That only matches the
+numeric position for the full 32-region set; for any regional subset the basins shift to the wrong region. In a
+USA-only domain, USA received the empty list, so **no land change was downscaled at all** (target change 0, output =
+base map, no warning). The placeholder is now inserted at the numeric position of region 30.
+
+New case `texas_0p5deg` (bundled USA cells inside a Texas bounding box; regions, basins, projected data, and
+constraints subset to match) exercises the regional code path. Its "before" is the pre-fix zero-change run.
+
+| Case | vs previous | Notes |
+|---|---|---|
+| `global_0p5deg` | IDENTICAL to b1 | alphabetical and numeric positions coincide (29) for 32 regions |
+| `global_0p5deg_negcons` | IDENTICAL to b1 | |
+| `texas_0p5deg` (new) | DRIFT vs pre-fix: all 412 cells change (max 1,597 km²); target 516,878 km² (2010) / 209,212 km² (2015) now applied; non-achieved 0 → 37.98 % / 81.98 % | report: `benchmarks/reports/out-1.14_texas_0p5deg.md` |
+
+⚠️ High resolution regional runs made with `version/v3.0.0` at `da6ce72` and a reduced region mapping file are
+likely affected (output equal to the base map). Not verified: the 150 m inputs are unavailable.
