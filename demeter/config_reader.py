@@ -15,6 +15,7 @@ import pkg_resources
 
 from configobj import ConfigObj
 from demeter.logger import Logger
+import demeter.tolerance as tol
 
 
 class ValidationException(Exception):
@@ -208,7 +209,16 @@ class ReadConfig:
         self.stitch_external = self.valid_integer(run_params.get('stitch_external', 0), 'stitch_external', [1, 0])
         self.path_to_external = (run_params.get('path_to_external', self.input_dir))
 
-        self.errortol = self.valid_limit(run_params.get('errortol', 0.001), 'errortol', [0.0, 1000000.0], 'float')
+        # area tolerances scale with grid cell area relative to the resolution they were calibrated for
+        self.area_tolerance_scale = tol.area_tolerance_scale(self.spatial_resolution)
+
+        errortol = run_params.get('errortol', None)
+        if errortol is None:
+            self.errortol = tol.default_errortol(self.spatial_resolution)
+        else:
+            self.errortol = self.valid_limit(errortol, 'errortol', [0.0, 1000000.0], 'float')
+
+        self.logger.info(f'Using `errortol`:  {self.errortol} km2 (area tolerance scale {self.area_tolerance_scale})')
         self.timestep = self.valid_limit(run_params.get('timestep', 5), 'timestep', [1, 1000000], 'int')
         self.proj_factor = self.valid_limit(run_params.get('proj_factor', 1000), 'proj_factor', [1, 10000000000], 'int')
         self.diagnostic = self.valid_integer(run_params.get('diagnostic', 0), 'diagnostic', [0, 1])

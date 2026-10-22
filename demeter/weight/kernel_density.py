@@ -15,10 +15,11 @@ import threading
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 import demeter.demeter_io.writer as wdr
+import demeter.tolerance as tol
 
 
 def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, cellindexresin,
-                      spat_ludataharm, kernel_maps, kernel_vector, weights):
+                      spat_ludataharm, kernel_maps, kernel_vector, weights, area_tolerance_scale=1.0):
 
     """Helper function to handle pft convultion filters. This is passed to apply_convultiion This is used to parallelize the convultion filter operation to speed up processing.
 
@@ -49,7 +50,7 @@ def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, celli
     # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
     # while we might need them.
 
-    min_seed = 0.0000000001
+    min_seed = tol.KERNEL_MIN_SEED * area_tolerance_scale
     kernel_maps[:, :, pft][
     kernel_maps[:, :, pft] == 0] = min_seed  # np.nanmin(kernel_maps[:, :, pft], [kernel_maps[:, :, pft] > 0])
 
@@ -59,7 +60,8 @@ def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, celli
 
 class KernelDensity:
 
-    def __init__(self, resolution, spat_coords, final_landclasses, kernel_distance, ngrids, order_rules):
+    def __init__(self, resolution, spat_coords, final_landclasses, kernel_distance, ngrids, order_rules,
+                 area_tolerance_scale=1.0):
 
         self.resolution = resolution
         self.spat_coords = spat_coords
@@ -68,28 +70,33 @@ class KernelDensity:
         self.kernel_distance = kernel_distance
         self.ngrids = ngrids
         self.order_rules = order_rules
+        self.area_tolerance_scale = area_tolerance_scale
+
+    # minimum longitudinal extent in degrees of the observed data for the domain to be treated as global
+    GLOBAL_LONGITUDE_EXTENT = 350.0
+
+    def is_global(self):
+        """Return True if the observed data spans the globe longitudinally."""
+        return (self.spat_coords[:, 1].max() - self.spat_coords[:, 1].min()) >= self.GLOBAL_LONGITUDE_EXTENT
 
     def global_system(self):
         """
         Create geographic latitude and longitude coordinates for map grid system from user-defined resolution.
 
-        :param resolution:              User-defined resolution setting
+        A global domain uses the full global grid; a regional domain uses a grid inferred from the bounds of the
+        observed data.
+
         :return:                        latitude and longitude arrays
         """
-        min_lat = self.spat_coords[:, 0].min()
-        max_lat = self.spat_coords[:, 0].max()
-        min_lon = self.spat_coords[:, 1].min()
-        max_lon = self.spat_coords[:, 1].max()
+        if self.is_global():
+            lat = np.arange(90 - self.resolution / 2., -90, -self.resolution)
+            lon = np.arange(-180 + self.resolution / 2., 180, self.resolution)
 
-        # get latitude and longitude for grid system
-        #lat = np.arange(90 - self.resolution / 2., -90, -self.resolution)
-        #lon = np.arange(-180 + self.resolution / 2., 180, self.resolution)
-
-        lat = np.arange(self.spat_coords[:, 0].max() - self.resolution / 2., self.spat_coords[:, 0].min(), -self.resolution)
-        lon = np.arange(self.spat_coords[:, 1].min() + self.resolution / 2., self.spat_coords[:, 1].max(),  self.resolution)
-
-        #lat = np.arange(34.667 - self.resolution / 2., 25.999, -self.resolution).round(3)
-        #lon = np.arange(-103.833 + self.resolution / 2., -93.082, self.resolution).round(3)
+        else:
+            lat = np.arange(self.spat_coords[:, 0].max() - self.resolution / 2., self.spat_coords[:, 0].min(),
+                            -self.resolution)
+            lon = np.arange(self.spat_coords[:, 1].min() + self.resolution / 2., self.spat_coords[:, 1].max(),
+                            self.resolution)
 
         return lat, lon
 
@@ -208,7 +215,8 @@ class KernelDensity:
         pool.starmap(handle_single_pft, zip(aux_val,repeat(order_rules), repeat(final_landclasses),
                                                                   repeat(pft_maps),repeat(cellindexresin),
                                                                   repeat(spat_ludataharm),
-                                                                  repeat(kernel_maps), repeat(kernel_vector),repeat(weights)))
+                                                                  repeat(kernel_maps), repeat(kernel_vector),repeat(weights),
+                                                                  repeat(self.area_tolerance_scale)))
         pool.terminate()
 
         return kernel_vector
