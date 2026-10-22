@@ -227,7 +227,8 @@ class Stage:
                                     self.gcam_landclasses, self.gcam_regionnumber, self.gcam_aez, self.gcam_landname,
                                     self.gcam_array, self.gcam_ludata, self.ngrids, self.constraint_names,
                                     self.observed_landclasses, self.observed_array, self.spat_ludata,
-                                    self.config.constraint_files, self.config.logger)
+                                    self.config.constraint_files, self.config.logger,
+                                    area_tolerance_scale=self.config.area_tolerance_scale)
 
         # apply spatial constraints
         self.spat_ludataharm, self.spat_ludataharm_orig_steps, self.spat_ludataharm_orig = self.cst.apply_spat_constraints()
@@ -245,7 +246,8 @@ class Stage:
 
         # instantiate kernel density class
         self.kd = KernelDensity(self.config.spatial_resolution, self.spat_coords, self.final_landclasses,
-                                self.config.kernel_distance, self.ngrids, self.order_rules)
+                                self.config.kernel_distance, self.ngrids, self.order_rules,
+                                area_tolerance_scale=self.config.area_tolerance_scale)
 
         # preprocess year-independent kernel density data
         self.lat, self.lon, self.cellindexresin, self.pft_maps, self.kernel_maps, self.kernel_vector, self.weights = self.kd.preprocess_kernel_density()

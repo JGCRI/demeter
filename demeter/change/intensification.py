@@ -17,6 +17,7 @@ from itertools import repeat
 import pandas as pd
 
 import demeter.demeter_io.writer as wdr
+import demeter.tolerance as tol
 
 
 def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
@@ -53,7 +54,8 @@ def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber,
     # calculate intensification
     citz = _intensification(c.diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
                             cons_data_sub, reg_idx, metnumber, order_rules, final_landclasses, c.errortol,
-                            constraint_rules, target_change, transition_rules, land_mismatch)
+                            constraint_rules, target_change, transition_rules, land_mismatch,
+                            tol_scale=c.area_tolerance_scale)
 
     # apply intensification
     spat_ludataharm[reg_met_mask], trans_mat, target_change, target_intensification = citz
@@ -110,7 +112,7 @@ def reg_metric_iter(allregnumber, allregmet):
 
 
 def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub, pft, cons_data_subpft, reg,
-                 target_intensification, trans_mat, target_change, errortol, diag_file, diagnostic):
+                 target_intensification, trans_mat, target_change, errortol, diag_file, diagnostic, tol_scale=1.0):
     """
     Apply conversion to every qualifying PFT.
 
@@ -166,7 +168,7 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
         #trans_mat[exist_cells, pft, pft_toconv] += actexpansion
 
         # account for target change minuscule values when evaluating notdone
-        tc = round(target_change[reg, metnumber - 1, pft_toconv], 4)
+        tc = tol.round_area(target_change[reg, metnumber - 1, pft_toconv], tol_scale)
 
         # updating notdone: if the intensification target has been reached, or if there are no more
         #   of the PFTs to convert in the considered grid cells, the break the loop
@@ -184,7 +186,7 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
 
 def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
                      cons_data_sub_o, reg, metnumber, order_rules, final_landclasses, errortol, constraint_rules,
-                     target_change, transition_rules, land_mismatch):
+                     target_change, transition_rules, land_mismatch, tol_scale=1.0):
     """
     Calculate intensification.  Follow user-defined order of treatment.
     :return:
@@ -221,7 +223,8 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
             cons_rules_pft = constraint_rules[:, pft]
 
             # add kernel density to the constraints and normalize their value
-            kdc = kernel_vector_sub[:, pft] / np.nanmax([0.00000001, np.nanmax(kernel_vector_sub[:, pft])])
+            kdc = kernel_vector_sub[:, pft] / np.nanmax([tol.KERNEL_NORMALIZATION_FLOOR * tol_scale,
+                                                         np.nanmax(kernel_vector_sub[:, pft])])
             cons_data_sub[:, -1] = kdc
 
             # create index order for constraints array where kernel density will be position 0
@@ -256,7 +259,7 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
                 pft_toconv = np.where(transition_rules[pft, :] == pft_tcvo)[0][0]
 
                 # round target change value to ensure minuscule values near zero are not counted as negative
-                if round(target_change[reg, metnumber - 1, pft_toconv], 4) < 0:
+                if tol.round_area(target_change[reg, metnumber - 1, pft_toconv], tol_scale) < 0:
                     tce = 1
                 else:
                     tce = 0
@@ -271,7 +274,7 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
                 if len(exist_cells) > 0:
                     cpft = _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub, pft,
                                         cons_data_subpft, reg, target_intensification, trans_mat, target_change,
-                                        errortol, diag_file, diagnostic)
+                                        errortol, diag_file, diagnostic, tol_scale=tol_scale)
 
                     int_target, target_change, trans_mat, target_intensification = cpft
 

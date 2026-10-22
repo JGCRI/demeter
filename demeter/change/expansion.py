@@ -15,6 +15,8 @@ import threading
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 
+import demeter.tolerance as tol
+
 
 def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met,
                             kernel_vector, cons_data,
@@ -39,7 +41,8 @@ def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_l
     # calculate expansion for each PFT
     exp = _expansion(c.diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub, reg_idx,
                      metnum_idx, order_rules, final_landclasses, c.errortol, constraint_rules, transition_rules,
-                     c.stochastic_expansion, c.selection_threshold, land_mismatch, target_change)
+                     c.stochastic_expansion, c.selection_threshold, land_mismatch, target_change,
+                     tol_scale=c.area_tolerance_scale)
 
     # apply expansion and update transitions
     spat_ludataharm[reg_met_mask], target_change, trans_mat = exp
@@ -66,7 +69,7 @@ def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_l
 
 def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, pft, cons_data_subpft, reg,
                  trans_mat, non_exist_cells, stochastic_expansion, selection_threshold, target_change, errortol,
-                 diag_file, diagnostic):
+                 diag_file, diagnostic, tol_scale=1.0):
     """
     Apply conversion to every qualifying PFT.
 
@@ -133,7 +136,7 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
         #trans_mat[exist_cells[candidatecells], pft, pft_toconv] += actexpansion
 
         # account for target change minuscule values when evaluating notdone
-        tc = round(target_change[reg, met_idx, pft_toconv], 4)
+        tc = tol.round_area(target_change[reg, met_idx, pft_toconv], tol_scale)
 
         # updating notdone: if the intensification target has been reached, or if there are no more
         #   of the PFTs to convert in the considered grid cells, the break the loop
@@ -152,7 +155,7 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
 def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub_o, reg_idx, met_idx,
                order_rules, final_landclasses,
                errortol, constraint_rules, transition_rules, stochastic_expansion, selection_threshold, land_mismatch,
-               target_change):
+               target_change, tol_scale=1.0):
     # get lengths for array creation
     l_shs = len(spat_ludataharm_sub[:, 0])
     l_ord = len(order_rules)
@@ -186,7 +189,8 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
             cons_rules_pft = constraint_rules[:, pft]
 
             # add kernel density to the constraints and normalize their value (all constraints are [0 1])
-            kdc = kernel_vector_sub[:, pft] / np.nanmax([0.00000001, np.nanmax(kernel_vector_sub[:, pft])])
+            kdc = kernel_vector_sub[:, pft] / np.nanmax([tol.KERNEL_NORMALIZATION_FLOOR * tol_scale,
+                                                         np.nanmax(kernel_vector_sub[:, pft])])
             cons_data_sub[:, -1] = kdc
 
             # create index order for constraints array where kernel density will be position 0
@@ -219,7 +223,7 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
                 pft_toconv = np.where(transition_rules[pft, :] == pft_tcvo)[0][0]
 
                 # round target change value to ensure minuscule values near zero are not counted as negative
-                if round(target_change[reg_idx, met_idx, pft_toconv], 4) < 0:
+                if tol.round_area(target_change[reg_idx, met_idx, pft_toconv], tol_scale) < 0:
                     tce = 1
                 else:
                     tce = 0
@@ -239,7 +243,7 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
                                                                         trans_mat, non_exist_cells,
                                                                         stochastic_expansion,
                                                                         selection_threshold, target_change, errortol,
-                                                                        diag_file, diagnostic)
+                                                                        diag_file, diagnostic, tol_scale=tol_scale)
 
         # report how much expansion that has been achieved
         achieved = exp_target_const - target_change[reg_idx, met_idx, pft]

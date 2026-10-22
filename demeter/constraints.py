@@ -11,6 +11,7 @@ import os
 import numpy as np
 
 import demeter.demeter_io.reader as rdr
+import demeter.tolerance as tol
 
 
 class ValidationException(Exception):
@@ -22,7 +23,8 @@ class ApplyConstraints:
 
     def __init__(self, allreg, allaez, final_landclasses, user_years, ixr_ixm, allregaez, spat_region, allregnumber,
                  spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_array, gcam_ludata, ngrids,
-                 constraint_names, observed_landclasses, observed_array, spat_ludata, constraint_files, logger):
+                 constraint_names, observed_landclasses, observed_array, spat_ludata, constraint_files, logger,
+                 area_tolerance_scale=1.0):
 
         self.allreg = allreg
         self.allaez = allaez
@@ -49,6 +51,7 @@ class ApplyConstraints:
         self.spat_ludata = spat_ludata
         self.constraint_files = constraint_files
         self.logger = logger
+        self.area_tolerance_scale = area_tolerance_scale
 
         # assign array holding constraints
         self.cons_data = self.compile_constraints()
@@ -236,6 +239,6 @@ class ApplyConstraints:
         target_change = gcam_landmatrix[yr_idx, :, :, :] - spat_landmatrix
 
         # round target change array to remove handle values very close to 0
-        target_change = np.around(target_change, decimals=4)
+        target_change = tol.round_area_array(target_change, self.area_tolerance_scale)
 
         return [gcam_landmatrix, spat_landmatrix, land_mismatch, target_change]
