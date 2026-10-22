@@ -13,7 +13,7 @@ import logging
 import numpy as np
 
 from scipy import ndimage
-import threading
+import os
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 import demeter.demeter_io.writer as wdr
@@ -263,8 +263,8 @@ class KernelDensity:
 
         :return:
         """
-        pool = ThreadPool(len(np.unique(self.order_rules)))
-        #pool=ThreadPool(10)
+        # the convolution releases the GIL, so threads run the land classes in parallel
+        pool = ThreadPool(min(len(np.unique(self.order_rules)), os.cpu_count() or 1))
         aux_val=np.unique(self.order_rules)
         order_rules= self.order_rules
         final_landclasses= self.final_landclasses
