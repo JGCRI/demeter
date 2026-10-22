@@ -29,8 +29,8 @@ class DataProcessor:
                 main_nc = xr.open_dataset(nc_file)
                 sce_attribute = main_nc.attrs['scenario_name']
                 main_nc = main_nc.to_dataframe()
-                main_nc.reset_index(inplace=True)
-                main_nc.dropna(inplace=True)
+                main_nc = main_nc.reset_index()
+                main_nc = main_nc.dropna()
                 year = nc_file[-7:-3]
                 main_nc['pixel_area'] = self.calculate_pixel_area(main_nc['latitude'])
 
@@ -47,7 +47,7 @@ class DataProcessor:
                 grouped_df = main_nc.groupby(["region_id", "metric_id"])[columns].sum().reset_index()
                 grouped_df["year"] = year
                 grouped_df["scenario_name"] = sce_attribute
-                grouped_df.reset_index(inplace=True)
+                grouped_df = grouped_df.reset_index()
                 grouped_df = grouped_df.drop(['index'], axis=1)
                 melted_df = grouped_df.melt(id_vars=["region_id", "scenario_name", "year", "metric_id"],
                                             var_name="land_type", value_name="land_in_km2")

@@ -180,8 +180,7 @@ class FormatGcamDataFrame:
                              fill_value=0,
                              aggfunc='sum')
 
-        piv.reset_index(inplace=True)
-
+        piv = piv.reset_index()
         if self.output_to_csv:
 
             if self.f_out is None:

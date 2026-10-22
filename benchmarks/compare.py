@@ -85,6 +85,36 @@ def _top_region_diffs(b, n, landclasses, top):
     return rows[:top], len(rows)
 
 
+def _compare_summary(base_dir, year, bm, nm, n, atol, rtol):
+    """Compare against a baseline that has no full arrays: state hash first, then region level totals."""
+    metrics = {k: dict(base=bm[k], new=nm[k])
+               for k in ("total_area_km2", "non_achieved_pct", "residual_change_abs_km2",
+                         "conservation_max_abs_cell_change_km2", "n_negative", "n_nonfinite")}
+
+    if bm["sha256_spat_ludataharm"] == nm["sha256_spat_ludataharm"]:
+        state = dict(identical=True, within_tolerance=True, max_abs=0.0, rmse=0.0, n_cells_exceeding=0,
+                     level="state hash")
+        return dict(state=state, metrics=metrics, verdict="IDENTICAL", level="state hash")
+
+    summary = np.load(base_dir / f"summary_{year}.npz")
+    bk = {tuple(k): i for i, k in enumerate(summary["region_metric"].tolist())}
+    nk = {tuple(k): i for i, k in enumerate(n["region_metric"].tolist())}
+
+    if bk.keys() != nk.keys() or summary["region_metric_totals"].shape[1] != n["region_metric_totals"].shape[1]:
+        return dict(metrics=metrics, verdict="INCOMPATIBLE", reason="region/metric groups or land classes differ",
+                    level="summary")
+
+    order = [nk[k] for k in bk]
+    totals = _array_diff(summary["region_metric_totals"], n["region_metric_totals"][order], atol, rtol)
+    residual = _array_diff(summary["target_change"], n["target_change"], atol, rtol)
+
+    state = dict(identical=False, within_tolerance=totals["within_tolerance"] and residual["within_tolerance"],
+                 max_abs=max(totals["max_abs"], residual["max_abs"]), rmse=totals["rmse"],
+                 n_cells_exceeding=totals["n_cells_exceeding"], level="region x metric totals")
+    verdict = "WITHIN_TOLERANCE" if state["within_tolerance"] else "DRIFT"
+    return dict(state=state, metrics=metrics, verdict=verdict, level="region x metric totals")
+
+
 def compare_accuracy(base, new, atol, rtol, top):
     """Compare per-step land cover state, model output, and aggregate metrics."""
     floor = max(base["manifest"]["noise_floor"]["max_abs_diff_km2"], new["manifest"]["noise_floor"]["max_abs_diff_km2"])
@@ -103,10 +133,17 @@ def compare_accuracy(base, new, atol, rtol, top):
     for year in years:
         bm = next(s for s in base["metrics"]["steps"] if s["year"] == year)
         nm = next(s for s in new["metrics"]["steps"] if s["year"] == year)
-        b = np.load(base["dir"] / "run_0" / f"step_{year}.npz")
         n = np.load(new["dir"] / "run_0" / f"step_{year}.npz")
 
         entry = dict(year=year)
+
+        # committed baselines carry only summaries; fall back to state hashes and region level totals
+        if not (base["dir"] / "run_0" / f"step_{year}.npz").exists():
+            entry.update(_compare_summary(base["dir"], year, bm, nm, n, atol_eff, rtol))
+            steps.append(entry)
+            continue
+
+        b = np.load(base["dir"] / "run_0" / f"step_{year}.npz")
 
         if b["spat_ludataharm"].shape != n["spat_ludataharm"].shape:
             entry["verdict"] = "INCOMPATIBLE"
@@ -200,6 +237,11 @@ def render_markdown(base, new, inputs, acc, perf):
             if v:
                 lines.append(f"- {k}: {', '.join(v)}")
         lines.append("")
+
+    levels = sorted({st["level"] for st in acc["steps"] if "level" in st})
+    if levels:
+        lines += [f"> Baseline has no full arrays; compared by: {', '.join(levels)}. In that mode the "
+                  f"'cells beyond tol' column counts region x metric groups.", ""]
 
     lines += ["## Accuracy by time step", "",
               "| year | verdict | max abs Δ (km²) | RMSE (km²) | cells beyond tol | non-achieved % (base → new) |",

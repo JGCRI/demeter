@@ -1,7 +1,6 @@
 import glob
 import numpy as np
 import xarray as xr
-import matplotlib.pyplot as plt
 
 
 class LandCoverPlotter:
@@ -20,6 +19,11 @@ class LandCoverPlotter:
             self.process_files(sel_folder)
 
     def process_files(self, sel_folder):
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError as e:
+            raise ImportError("Plotting requires `matplotlib`; install it with `pip install demeter[plot]`.") from e
+
         file_path = sel_folder + "/spatial_landcover_netcdf/"
         nc_files = glob.glob(file_path + "*.nc")
         for nc_file_sel in nc_files:
@@ -32,7 +36,7 @@ class LandCoverPlotter:
                 region_var = main_nc['region_id']
                 data_variable = data_variable.where(region_var == self.region_id)
                 mask_data = region_var.to_dataframe()
-                mask_data.reset_index(inplace=True)
+                mask_data = mask_data.reset_index()
                 mask_data = mask_data[mask_data['region_id'] == self.region_id]
                 min_lat = mask_data["latitude"].min()
                 max_lat = mask_data["latitude"].max()
