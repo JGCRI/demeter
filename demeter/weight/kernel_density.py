@@ -23,7 +23,7 @@ logger = logging.getLogger('demeter_runtime')
 
 
 def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, cellindexresin,
-                      spat_ludataharm, kernel_maps, kernel_vector, weights, area_tolerance_scale=1.0):
+                      spat_ludataharm, kernel_maps, kernel_vector, weights, area_tolerance_scale=1.0, mode='wrap'):
 
     """Helper function to handle pft convultion filters. This is passed to apply_convultiion This is used to parallelize the convultion filter operation to speed up processing.
 
@@ -49,7 +49,7 @@ def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, celli
 
     # apply image filter
 
-    kernel_maps[:, :, pft] = ndimage.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
+    kernel_maps[:, :, pft] = ndimage.convolve(pft_maps[:, :, pft], weights, output=None, mode=mode)
 
     # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
     # while we might need them.
@@ -117,6 +117,15 @@ class KernelDensity:
     def is_global(self):
         """Return True if the observed data spans the globe longitudinally."""
         return (self.spat_coords[:, 1].max() - self.spat_coords[:, 1].min()) >= self.GLOBAL_LONGITUDE_EXTENT
+
+    def convolution_mode(self):
+        """Boundary handling for the convolution filter.
+
+        A global domain wraps around its edges; a regional domain treats everything outside its bounds as having no
+        land cover so that opposite edges do not influence each other.
+
+        """
+        return 'wrap' if self.is_global() else 'constant'
 
     def global_system(self):
         """
@@ -264,7 +273,8 @@ class KernelDensity:
                                                                   repeat(pft_maps),repeat(cellindexresin),
                                                                   repeat(spat_ludataharm),
                                                                   repeat(kernel_maps), repeat(kernel_vector),repeat(weights),
-                                                                  repeat(self.area_tolerance_scale)))
+                                                                  repeat(self.area_tolerance_scale),
+                                                                  repeat(self.convolution_mode())))
         pool.terminate()
 
         return kernel_vector
