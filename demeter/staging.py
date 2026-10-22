@@ -233,7 +233,8 @@ class Stage:
                                     self.gcam_array, self.gcam_ludata, self.ngrids, self.constraint_names,
                                     self.observed_landclasses, self.observed_array, self.spat_ludata,
                                     self.config.constraint_files, self.config.logger,
-                                    area_tolerance_scale=self.config.area_tolerance_scale)
+                                    area_tolerance_scale=self.config.area_tolerance_scale,
+                                    spat_grid_id=self.spat_grid_id)
 
         # apply spatial constraints
         self.spat_ludataharm, self.spat_ludataharm_orig_steps, self.spat_ludataharm_orig = self.cst.apply_spat_constraints()
