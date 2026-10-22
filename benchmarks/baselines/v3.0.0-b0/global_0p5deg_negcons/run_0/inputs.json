@@ -1,0 +1,14 @@
+{
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/allocation/csdms_constraint_allocation.csv": "c2d80f331f13b0e70ef354b607fb7a9fa0da90b19a77cfaeb06dc3e97d3b6540",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/allocation/csdms_kernel_weighting_allocation.csv": "8d7c2fe9d00efd93741a317f96b595772f29a9ebad5de5f38f5efa4190ae746d",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/allocation/csdms_observed_allocation.csv": "3a66f7978cac804627aeb6cc6ef0d410a1ae881605c4686af017e95233f59505",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/allocation/csdms_order_allocation.csv": "187cad607431adea925f93845445754e20359805891b3313d07f025012f143dc",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/allocation/csdms_projected_allocation.csv": "3e6a366840b13b2cd523ca284a740d3003a75cab2fa705abc3cb0e6a90db6a59",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/allocation/csdms_transition_allocation.csv": "1bd793ef0e848a4edc6d9f7fa2edc2b5e7f17809cf80b76d723361b860e28f8f",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/constraints/000_nutrientavail_hswd_0p5deg.csv": "1230c00ca3a64e76c040aac34410662455f63c9adede94eaafe349dc85668804",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/constraints/001_soilquality_hswd_0p5deg.csv": "0f8be6bca66e879a84ba244ee48b117a970cac7af22730582eea43c1a5bf3b22",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/mapping/gcam_basin_lookup.csv": "299f6afc7b29145add4ad2f3fbe2b21b434b0229b1bf25b251be25c7e86b1141",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/mapping/gcam_regions_32.csv": "8193997331aa2250c037ac77ae68a5ab54cffe73cdaf2a8c0a633a1c7821e50c",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/observed/gcam_reg32_basin235_modis_v6_2010_mirca_2000_0p5deg_sqdeg_wgs84_07may2021.zip": "20c004d8bc6fb325d61ccd8a18a9fbb8bf97f3b76f8dee7b92f3042f7bcab64d",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_negcons_mvggb6xo/inputs/projected/land_df.pickle": "47bc4da535ad746adfd0944a47797669f24ab4a585779442065fe3c1b98da987"
+}

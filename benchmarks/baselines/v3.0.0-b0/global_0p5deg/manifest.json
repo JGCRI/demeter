@@ -1,0 +1,69 @@
+{
+  "case": "global_0p5deg",
+  "label": "v2.0.2-global",
+  "created_utc": "2026-10-22T15:08:15+00:00",
+  "code": {
+    "path": "/private/tmp/demeter_v2.0.2",
+    "demeter_file": "/private/tmp/demeter_v2.0.2/demeter/__init__.py",
+    "sha": "8bcd4b35a88e27059f79988fa2edfe111ac7b31c",
+    "describe": "v2.0.2",
+    "branch": "HEAD",
+    "dirty": false
+  },
+  "harness": {
+    "sha": "da6ce725d3b90d740cf5ece4598b3260f1e3f726",
+    "describe": "v2.0.1-21-gda6ce72-dirty",
+    "branch": "version/v3.0.0",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.11.7",
+    "implementation": "CPython",
+    "platform": "macOS-26.7.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "cpu_count": 16,
+    "packages": {
+      "numpy": "1.26.4",
+      "pandas": "2.2.1",
+      "scipy": "1.12.0",
+      "xarray": "2024.2.0",
+      "netCDF4": "1.6.5",
+      "configobj": "5.0.9",
+      "gcamreader": "1.5.0"
+    },
+    "determinism_env": {
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "PYTHONHASHSEED": "0"
+    }
+  },
+  "repeats": 3,
+  "write_outputs": false,
+  "noise_floor": {
+    "identical_across_runs": true,
+    "max_abs_diff_km2": 0.0
+  },
+  "timing_summary": {
+    "config_s": 0.0003276670031482354,
+    "initialize_s": 0.5936717500007944,
+    "total_s": 34.02553766600613,
+    "peak_rss_bytes": 5147836416,
+    "step_2010_s": 17.55691758400644,
+    "step_2015_s": 14.771672834001947,
+    "model: Allocation files processed": 0.006586790084838867,
+    "model: Projected landuse data prepared": 0.06322312355041504,
+    "model: Base spatial landuse data prepared": 0.11941289901733398,
+    "model: Harmonization": 0.09348702430725098,
+    "model: Constraints applied to projected and spatial data": 0.03155207633972168,
+    "model: Kernel density filter prepared": 0.2734851837158203
+  },
+  "years": [
+    2010,
+    2015
+  ],
+  "baseline_id": "v3.0.0-b0",
+  "promoted_from": "/Users/d3y010/repos/github/demeter/benchmarks/results/v2.0.2_global_0p5deg"
+}

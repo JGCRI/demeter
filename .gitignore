@@ -1,3 +1,12 @@
+# local environment files
+.claude
+.envrc
+.python-version
+.venv
+
+# local planning documents
+plans/
+
 # example script
 demeter/example.py
 
@@ -145,3 +154,8 @@ dmypy.json
 # exclude dirs
 demeter.egg-info/
 .Rproj.user
+
+# benchmark outputs: results are local; baseline arrays are distributed separately (see benchmarks/README.md)
+benchmarks/results/
+benchmarks/baselines/**/run_*/*.npz
+benchmarks/baselines/**/run_*/stdout.log
