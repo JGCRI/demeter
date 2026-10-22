@@ -11,7 +11,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import datetime
 import logging
 import os
-import pkg_resources
+from importlib import resources
 
 from configobj import ConfigObj
 from demeter.logger import Logger
@@ -57,17 +57,17 @@ class ReadConfig:
             # instantiate config object
             self.config = ConfigObj(self.check_exist(self.config_file, 'file'))
 
-            # instantiate config file sections
-            structure_params = self.config.get('STRUCTURE', None)
-            input_params = self.config.get('INPUTS', None)
-            allocation_params = input_params.get('ALLOCATION', None)
-            observed_params = input_params.get('OBSERVED', None)
-            projected_params = input_params.get('PROJECTED', None)
-            output_params = self.config.get('OUTPUTS', {})
-            diagnostic_params = self.config.get('OUTPUTS', {}).get('DIAGNOSTICS')
-            mapping_params = input_params.get('MAPPING', None)
-            ncdf_params = input_params.get('NCDF_PARAM', None)
-            run_params = self.config.get('PARAMS', None)
+            # instantiate config file sections; keyword arguments take precedence over configuration file values
+            structure_params = self.overlay(self.config.get('STRUCTURE', None), params)
+            input_params = self.overlay(self.config.get('INPUTS', None), params)
+            allocation_params = self.overlay(input_params.get('ALLOCATION', None), params)
+            observed_params = self.overlay(input_params.get('OBSERVED', None), params)
+            projected_params = self.overlay(input_params.get('PROJECTED', None), params)
+            output_params = self.overlay(self.config.get('OUTPUTS', {}), params)
+            diagnostic_params = self.overlay(self.config.get('OUTPUTS', {}).get('DIAGNOSTICS', {}), params)
+            mapping_params = self.overlay(input_params.get('MAPPING', None), params)
+            ncdf_params = self.overlay(input_params.get('NCDF_PARAM', None), params)
+            run_params = self.overlay(self.config.get('PARAMS', None), params)
 
         # choice to write log to file
         self.write_logfile = params.get('write_logfile', None)
@@ -86,9 +86,9 @@ class ReadConfig:
 
         # use the run directory provided by the user if present
         if structure_params.get('run_dir') is None:
-            self.run_dir = pkg_resources.resource_filename('demeter', 'tests/data')
+            self.run_dir = str(resources.files('demeter') / 'tests' / 'data')
         else:
-            self.run_dir = params.get('run_dir', structure_params.get('run_dir', '/code/example/data'))
+            self.run_dir = structure_params.get('run_dir')
 
         self.input_dir = os.path.join(self.run_dir, structure_params.get('input_dir', 'inputs'))
         self.output_dir = self.get_outdir(os.path.join(self.run_dir, structure_params.get('output_dir', 'outputs')))
@@ -130,12 +130,17 @@ class ReadConfig:
         # look for this first in code; this only comes in from the main function - not the config file
         self.gcamwrapper_df = params.get('gcamwrapper_df', None)
 
+        self.projected_lu_file = None
+        self.gcam_database = None
+
         if (projected_params is not None) and (self.gcamwrapper_df is None):
-            self.projected_lu_file = os.path.join(self.projected_dir, projected_params.get('projected_lu_file', None))
+            projected_lu_file = projected_params.get('projected_lu_file', None)
+            if projected_lu_file is not None:
+                self.projected_lu_file = os.path.join(self.projected_dir, projected_lu_file)
             self.gcam_database = projected_params.get('gcam_database', None)
             self.crop_type = self.valid_string(projected_params.get('crop_type', 'BOTH').upper(), 'crop_type',
                                                ['IRR', 'RFD', 'BOTH'])
-            self.gcam_query = pkg_resources.resource_filename('demeter', 'data/query_land_reg32_basin235_gcam5p0.xml')
+            self.gcam_query = str(resources.files('demeter') / 'data' / 'query_land_reg32_basin235_gcam5p0.xml')
 
             if self.gcam_database is not None:
                 self.gcam_database_dir = os.path.dirname(self.gcam_database)
@@ -170,19 +175,21 @@ class ReadConfig:
                                                                                        'spatial_landcover_shapefile'))
 
         # diagnostics
-        if diagnostic_params is not None:
-            self.harmonization_coefficent_array = os.path.join(self.diagnostics_output_dir,
-                                                               diagnostic_params.get('harmonization_coefficent_array',
-                                                                                     'harmonization_coeff.npy'))
-            self.intensification_pass1_file = os.path.join(self.diagnostics_output_dir,
-                                                           diagnostic_params.get('intensification_pass1_file',
-                                                                                 'intensification_pass_one_diag.csv'))
-            self.intensification_pass2_file = os.path.join(self.diagnostics_output_dir,
-                                                           diagnostic_params.get('intensification_pass2_file',
-                                                                                 'intensification_pass_two_diag.csv'))
-            self.extensification_file = os.path.join(self.diagnostics_output_dir,
-                                                     diagnostic_params.get('extensification_file',
-                                                                           'expansion_diag.csv'))
+        if diagnostic_params is None:
+            diagnostic_params = {}
+
+        self.harmonization_coefficent_array = os.path.join(self.diagnostics_output_dir,
+                                                           diagnostic_params.get('harmonization_coefficent_array',
+                                                                                 'harmonization_coeff.npy'))
+        self.intensification_pass1_file = os.path.join(self.diagnostics_output_dir,
+                                                       diagnostic_params.get('intensification_pass1_file',
+                                                                             'intensification_pass_one_diag.csv'))
+        self.intensification_pass2_file = os.path.join(self.diagnostics_output_dir,
+                                                       diagnostic_params.get('intensification_pass2_file',
+                                                                             'intensification_pass_two_diag.csv'))
+        self.extensification_file = os.path.join(self.diagnostics_output_dir,
+                                                 diagnostic_params.get('extensification_file',
+                                                                       'expansion_diag.csv'))
 
         # initialize file logger
         self.run_desc = run_params.get('run_desc', 'demeter_example')
@@ -219,7 +226,8 @@ class ReadConfig:
             self.errortol = self.valid_limit(errortol, 'errortol', [0.0, 1000000.0], 'float')
 
         self.logger.info(f'Using `errortol`:  {self.errortol} km2 (area tolerance scale {self.area_tolerance_scale})')
-        self.timestep = self.valid_limit(run_params.get('timestep', 5), 'timestep', [1, 1000000], 'int')
+        self.timestep = self.ck_ts(self.valid_limit(run_params.get('timestep', 5), 'timestep', [1, 1000000], 'int'),
+                                   self.start_year, self.end_year)
         self.proj_factor = self.valid_limit(run_params.get('proj_factor', 1000), 'proj_factor', [1, 10000000000], 'int')
         self.diagnostic = self.valid_integer(run_params.get('diagnostic', 0), 'diagnostic', [0, 1])
         self.intensification_ratio = self.valid_limit(run_params.get('intensification_ratio', 0.8),
@@ -227,7 +235,7 @@ class ReadConfig:
         self.stochastic_expansion = self.valid_integer(run_params.get('stochastic_expansion', 0),
                                                        'stochastic_expansion', [0, 1])
         self.selection_threshold = self.valid_limit(run_params.get('selection_threshold', 0.75),
-                                                    'intensification_ratio', [0.0, 1.0], 'float')
+                                                    'selection_threshold', [0.0, 1.0], 'float')
         self.kernel_distance = self.valid_limit(run_params.get('kernel_distance', 10), 'kernel_distance',
                                                 [0, 10000000000], 'int')
         self.target_years_output = self.set_target(run_params.get('target_years_output', 'all'))
@@ -259,6 +267,21 @@ class ReadConfig:
 
         if self.save_shapefile:
             self.create_dir(self.lu_shapefile_output_dir)
+
+    @staticmethod
+    def overlay(section, params):
+        """Return a configuration file section with keyword argument values taking precedence.
+
+        :param section:             Configuration file section (dict-like) or None if the section is absent
+        :param params:              Keyword arguments passed to the model
+
+        :return:                    dict or None if the section is absent
+
+        """
+        if section is None:
+            return None
+
+        return {**section, **params}
 
     @staticmethod
     def ck_type(v, p, tp):
@@ -299,9 +322,7 @@ class ReadConfig:
         elif (rng == 0) and (ts == 1):
             return ts
 
-        ck = rng / ts
-
-        if ck == 0:
+        if ts > rng:
             raise ValidationException(
                 'Parameter "timestep" value "{0}" is too large for start year of "{1}" and end year of "{2}".  Max time step available based on year range is "{3}".  Exiting...'.format(
                     t, st_y, ed_y, ed_y - st_y))
@@ -325,7 +346,7 @@ class ReadConfig:
                 raise ValidationException("'{}' must be >= {}".format(p, lower_year))
 
             if y > upper_year:
-                raise ValidationException("'{}' must be <= {}".format(p, lower_year))
+                raise ValidationException("'{}' must be <= {}".format(p, upper_year))
         else:
             try:
                 y = int(y)
@@ -334,7 +355,7 @@ class ReadConfig:
                     raise ValidationException("'{}' must be >= {}".format(p, lower_year))
 
                 if y > upper_year:
-                    raise ValidationException("'{}' must be <= {}".format(p, lower_year))
+                    raise ValidationException("'{}' must be <= {}".format(p, upper_year))
 
             except ValueError:
                 raise ValidationException(
@@ -491,15 +512,22 @@ class ReadConfig:
     def get_outdir(self, out):
         """Create output directory unique name."""
 
-        # create output directory root path
-        pth = os.path.join(self.run_dir, out)
-
         # create unique output dir name
         v = '{0}_{1}'.format(self.scenario, self.dt)
 
-        # create run specific directory matching the format used to create the log file
-        out_dir = os.path.join(pth, v)
-        self.create_dir(out_dir)
+        # create run specific directory matching the format used to create the log file; add a numeric suffix if a
+        #   run started within the same second already created it
+        out_dir = os.path.join(out, v)
+
+        if self.write_outputs:
+            suffix = 0
+            while True:
+                try:
+                    os.makedirs(out_dir)
+                    break
+                except FileExistsError:
+                    suffix += 1
+                    out_dir = os.path.join(out, f'{v}_{suffix}')
 
         return out_dir
 

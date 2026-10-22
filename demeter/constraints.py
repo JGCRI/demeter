@@ -195,7 +195,7 @@ class ApplyConstraints:
 
             # check for missing aggregation setting in GCAM allocation file
             if np.sum(t) == 0:
-                self.logger.error("\nERROR: No aggregation class defined for PFT {0} in the GCAM allocation file".format(self.gcam_landclasses(gix)))
+                self.logger.error("\nERROR: No aggregation class defined for PFT {0} in the GCAM allocation file".format(self.gcam_landclasses[gix]))
                 self.logger.error("Please correct and try again.")
                 self.logger.error("Exiting...\n")
                 raise ValidationException

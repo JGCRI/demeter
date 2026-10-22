@@ -143,9 +143,13 @@ class Stage:
                                                            self.config.metric, self.config.crop_type)
 
 
-        else:
+        elif self.config.projected_lu_file is not None:
             self.config.logger.info(f"Using projected GCAM data from:  {self.config.projected_lu_file}")
             projected_land_cover_file = self.config.projected_lu_file
+
+        else:
+            raise ValueError("No projected land allocation data provided.  Set one of `gcamwrapper_df`, "
+                             "`gcam_database`, or `projected_lu_file`.")
 
         # extract and process data contained from the land allocation GCAM output file
         gcam_data = rdr.read_gcam_file(projected_land_cover_file,
@@ -178,7 +182,8 @@ class Stage:
 
         # extract and process base layer land cover data
         base_data = rdr.read_base(self.config, self.observed_landclasses, self.sequence_metric_dict,
-                                  metric_seq=self.metric_sequence_list, region_seq=self.region_sequence_list)
+                                  metric_seq=self.metric_sequence_list, region_seq=self.region_sequence_list,
+                                  logger=self.config.logger)
 
         # unpack variables
         self.spat_ludata, self.spat_water, self.spat_coords, self.spat_aez_region, self.spat_grid_id, self.spat_aez, \
@@ -206,8 +211,8 @@ class Stage:
         self.ixy_ixr_ixm, self.gcam_ludata = recon_data
 
         # write harmonization coefficient array as a diagnostics file
-        if self.config.diagnostic == 1:
-            wdr.save_array(self.areacoef, self.config.harm_coeff_file)
+        if self.config.diagnostic == 1 and self.config.write_outputs:
+            wdr.save_array(self.areacoef, self.config.harmonization_coefficent_array)
 
         self.config.logger.info('PERFORMANCE:  Harmonization completed in {0} seconds'.format(time.time() - t0))
 

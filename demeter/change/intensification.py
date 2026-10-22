@@ -18,6 +18,7 @@ import pandas as pd
 
 import demeter.demeter_io.writer as wdr
 import demeter.tolerance as tol
+from demeter.change.common import open_diagnostic
 
 
 def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
@@ -343,34 +344,31 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
     """
 
     # open diagnostic file if user-selected
-    if c.diagnostic == 1:
-        diag_str = 'c.intense_pass{0}_diag'.format(pass_number)
-        diag_fn, diag_ext = os.path.splitext(eval(diag_str))
-        diag_fp = '{0}_{1}{2}'.format(diag_fn, yr, diag_ext)
-        diag_file = open(diag_fp, 'w')
-        diag_file.write('region_id,metric_id,from_pft,to_pft,target_value\n')
-
-    else:
-        diag_file = None
+    diag_file = open_diagnostic(c, getattr(c, 'intensification_pass{0}_file'.format(pass_number)), yr)
 
     # build region_idx, metric_idx iterator
     regix_metix = reg_metric_iter(allregnumber, allregmet)
 
-    pool = ThreadPool(len(np.unique(regix_metix)))
+    try:
+        pool = ThreadPool(len(np.unique(regix_metix)))
 
-    pool.starmap(intense_parallel_helper,
-                 zip(regix_metix, repeat(spat_region), repeat(order_rules), repeat(allregnumber), repeat(allregmet),
-                     repeat(spat_ludata),
-                     repeat(spat_landmatrix), repeat(gcam_landmatrix), repeat(yr_idx), repeat(d_regid_nm),
-                     repeat(target_change), repeat(spat_ludataharm),
-                     repeat(spat_met), repeat(kernel_vector), repeat(cons_data), repeat(final_landclasses),
-                     repeat(spat_ludataharm_orig_steps), repeat(yr),
-                     repeat(land_mismatch), repeat(constraint_rules), repeat(transition_rules), repeat(log),
-                     repeat(pass_number), repeat(c), repeat(diag_file), repeat(transitions)))
-    # for each region
-    # for index, pkg in enumerate(regix_metix):
+        pool.starmap(intense_parallel_helper,
+                     zip(regix_metix, repeat(spat_region), repeat(order_rules), repeat(allregnumber), repeat(allregmet),
+                         repeat(spat_ludata),
+                         repeat(spat_landmatrix), repeat(gcam_landmatrix), repeat(yr_idx), repeat(d_regid_nm),
+                         repeat(target_change), repeat(spat_ludataharm),
+                         repeat(spat_met), repeat(kernel_vector), repeat(cons_data), repeat(final_landclasses),
+                         repeat(spat_ludataharm_orig_steps), repeat(yr),
+                         repeat(land_mismatch), repeat(constraint_rules), repeat(transition_rules), repeat(log),
+                         repeat(pass_number), repeat(c), repeat(diag_file), repeat(transitions)))
+        # for each region
+        # for index, pkg in enumerate(regix_metix):
 
-    # unpack index vars
-    # wdr.write_transitions(self, c.step, transitions=transitions)
-    pool.terminate()
+        # unpack index vars
+        # wdr.write_transitions(self, c.step, transitions=transitions)
+        pool.terminate()
+    finally:
+        if diag_file is not None:
+            diag_file.close()
+
     return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, target_change]

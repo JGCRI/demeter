@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queries>
+
+    <!-- query-land-alloc -->
+    <aQuery>
+      <all-regions/>
+      <query title="Crop Land Allocation">
+         <axis1 name="land-allocation">LandLeaf</axis1>
+         <axis2 name="Year">land-allocation[@year]</axis2>
+         <xPath buildList="true" dataName="land-allocation" group="false" sumAll="false">/LandNode[@name='root' or @type='LandNode' (: collapse :)]//land-allocation/text()</xPath>
+         <comments/>
+      </query>
+    </aQuery>
+</queries>

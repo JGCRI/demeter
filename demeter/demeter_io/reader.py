@@ -130,7 +130,16 @@ def read_allocation_data(f, lc_col, output_level=3, delim=','):
             return land_cover_array
 
     else:
-        return list(), np.empty(shape=0, dtype=np.float)
+        empty = np.empty(shape=0, dtype=float)
+
+        if output_level == 3:
+            return list(), list(), empty
+
+        elif output_level == 2:
+            return list(), empty
+
+        elif output_level == 1:
+            return empty
 
 
 def _check_constraints(allocate, actual):
@@ -216,16 +225,16 @@ def read_gcam_land(db_path, db_file, f_queries, d_basin_name, subreg, crop_water
     land_alloc = conn.runQuery(q[0])
 
     # split 'land-allocation' column into components
-    if subreg == 'AEZ':
+    if subreg.upper() == 'AEZ':
         raise ValueError("Using AEZs are no longer supported with `gcamreader`")
 
-    elif subreg == 'BASIN':
+    elif subreg.upper() == 'BASIN':
         # expected format: landclass_basin-glu-name_USE_management
         cnames = ['landclass', 'metric_id', 'use', 'mgmt']
 
         # clean data: simplify biomass_type to just 'biomass'; temporarily
         # change Root_Tuber to RootTuber so we can split on underscores
-        land_alloc['land-allocation'].replace(r'^biomass_[^_]*_', r'biomass_', regex=True, inplace=True)
+        land_alloc['land-allocation'] = land_alloc['land-allocation'].replace(r'^biomass_[^_]*_', r'biomass_', regex=True)
         land_alloc['land-allocation'] = land_alloc['land-allocation'].str.replace('Root_Tuber', 'RootTuber')
         land_alloc[cnames] = land_alloc['land-allocation'].str.split('_', expand=True)
         land_alloc['landclass'] = land_alloc['landclass'].str.replace('RootTuber', 'Root_Tuber')
@@ -444,12 +453,17 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
     # rename columns as lower case
     df.columns = [i.lower() for i in df.columns]
 
+    if logger is None:
+        logger = logging.getLogger('demeter_runtime')
+
     # create array with only spatial land cover values
-    try:
-        spat_ludata = df[observed_landclasses].values
-    except KeyError as e:
-        logger.error('Fields are listed in the spatial allocation file that do not exist in the base layer.')
-        logger.error(e)
+    missing = [i for i in observed_landclasses if i not in df.columns]
+    if len(missing) > 0:
+        msg = f'Fields are listed in the spatial allocation file that do not exist in the base layer:  {missing}'
+        logger.error(msg)
+        raise ValidationException(msg)
+
+    spat_ludata = df[observed_landclasses].values
 
     # create array of latitude, longitude coordinates
     try:
@@ -481,16 +495,18 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
     valid_region_test = set(region_seq) - set(unique_spat_region)
 
     if len(valid_region_test) > 0:
-        logger.error('Observed spatial data must have all regions represented.')
-        raise ValidationException
+        msg = f'Observed spatial data must have all regions represented.  Missing region ids:  {sorted(valid_region_test)}'
+        logger.error(msg)
+        raise ValidationException(msg)
 
     # ensure that the observed data represents all expected metric ids
     unique_spat_metric = np.unique(spat_metric)
     valid_metric_test = set(metric_seq) - set(unique_spat_metric)
 
     if len(valid_metric_test) > 0:
-        logger.error('Observed spatial data must have all {}_id represented.'.format(config.metric))
-        raise ValidationException
+        msg = f'Observed spatial data must have all {config.metric}_id represented.  Missing:  {sorted(valid_metric_test)}'
+        logger.error(msg)
+        raise ValidationException(msg)
 
     # account for 0 designation in observed data for unclassified
     if 0 in np.unique(spat_metric):

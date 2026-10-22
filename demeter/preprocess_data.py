@@ -1,7 +1,7 @@
+from importlib import resources
+
 import numpy as np
 import pandas as pd
-
-import pkg_resources
 
 
 class FormatGcamDataFrame:
@@ -76,8 +76,9 @@ class FormatGcamDataFrame:
                  output_to_csv=False, gcam_landalloc_field='land-allocation', gcam_nodes_field='child-nodes'):
 
         self.df = df
-        self.f_basin_ref = pkg_resources.resource_filename('demeter', 'tests/data/inputs/mapping/gcam_basin_lookup.csv')
-        self.f_region_ref = pkg_resources.resource_filename('demeter', 'tests/data/inputs/mapping/gcam_regions_32.csv')
+        mapping_dir = resources.files('demeter') / 'tests' / 'data' / 'inputs' / 'mapping'
+        self.f_basin_ref = str(mapping_dir / 'gcam_basin_lookup.csv')
+        self.f_region_ref = str(mapping_dir / 'gcam_regions_32.csv')
         self.start_year = start_year
         self.through_year = through_year
         self.f_out = f_out
@@ -177,7 +178,7 @@ class FormatGcamDataFrame:
                                     FormatGcamDataFrame.DEMETER_LANDCLASS_FIELD],
                              columns=FormatGcamDataFrame.GCAM_YEAR_FIELD,
                              fill_value=0,
-                             aggfunc=np.sum)
+                             aggfunc='sum')
 
         piv.reset_index(inplace=True)
 

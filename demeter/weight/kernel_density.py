@@ -45,7 +45,7 @@ def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, celli
 
     # apply image filter
 
-    kernel_maps[:, :, pft] = ndimage.filters.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
+    kernel_maps[:, :, pft] = ndimage.convolve(pft_maps[:, :, pft], weights, output=None, mode='wrap')
 
     # attributing min value to grid-cells with zeros, otherwise they have no chance of getting selected,
     # while we might need them.
