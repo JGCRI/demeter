@@ -58,6 +58,41 @@ def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, celli
     kernel_vector[:, pft] = kernel_maps[np.int_(cellindexresin[0, :]), np.int_(cellindexresin[1, :]), pft]
 
 
+def nearest_index(grid, values):
+    """Index of the grid coordinate nearest to each value.
+
+    Vectorized equivalent of ``np.argmin(abs(grid - value))`` for every value, including returning the first
+    (lowest) index when two grid coordinates are equally near.
+
+    :param grid:                    Strictly monotonic (ascending or descending) 1D array of coordinates
+    :param values:                  1D array of coordinates to locate
+
+    :return:                        Integer array of grid indices
+
+    """
+    grid = np.asarray(grid, dtype=float)
+    values = np.asarray(values, dtype=float)
+    n = len(grid)
+
+    descending = n > 1 and grid[0] > grid[-1]
+    ascending_grid = grid[::-1] if descending else grid
+
+    # the nearest coordinate of a monotonic grid is one of the two that bracket the value
+    upper = np.clip(np.searchsorted(ascending_grid, values), 0, n - 1)
+    lower = np.clip(upper - 1, 0, n - 1)
+
+    if descending:
+        upper, lower = n - 1 - upper, n - 1 - lower
+
+    first = np.minimum(upper, lower)
+    second = np.maximum(upper, lower)
+
+    d_first = np.abs(grid[first] - values)
+    d_second = np.abs(grid[second] - values)
+
+    return np.where(d_second < d_first, second, first)
+
+
 class KernelDensity:
 
     def __init__(self, resolution, spat_coords, final_landclasses, kernel_distance, ngrids, order_rules,
@@ -107,16 +142,12 @@ class KernelDensity:
 
         :return:
         """
-        # get the number of grid cells in the base land use layer data
-        n = len(self.spat_coords[:, 0])
-
-        # create zeros array to hold indices
-        cellindexresin = np.zeros((2, n))
+        # create array to hold indices
+        cellindexresin = np.zeros((2, len(self.spat_coords[:, 0])))
 
         # populate grid indicies array with index location of base layer coord in global system (lat, lon)
-        for i in range(n):
-            cellindexresin[0, i] = np.argmin(abs(lat - self.spat_coords[i, 0]))
-            cellindexresin[1, i] = np.argmin(abs(lon - self.spat_coords[i, 1]))
+        cellindexresin[0, :] = nearest_index(lat, self.spat_coords[:, 0])
+        cellindexresin[1, :] = nearest_index(lon, self.spat_coords[:, 1])
 
         return cellindexresin
 

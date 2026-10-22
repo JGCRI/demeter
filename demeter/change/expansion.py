@@ -16,13 +16,13 @@ from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 
 import demeter.tolerance as tol
-from demeter.change.common import open_diagnostic
+from demeter.change.common import RuleOrder, open_diagnostic
 
 
 def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met,
                             kernel_vector, cons_data,
                             order_rules, final_landclasses, constraint_rules, transition_rules, land_mismatch,
-                            spat_ludataharm_orig_steps, target_change, yr, diag_file, transitions):
+                            spat_ludataharm_orig_steps, target_change, yr, diag_file, transitions, rule_order=None):
     reg_idx, met_idx = regix_metix
     # print("processing region " + str(reg_idx))
 
@@ -43,7 +43,7 @@ def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_l
     exp = _expansion(c.diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub, reg_idx,
                      metnum_idx, order_rules, final_landclasses, c.errortol, constraint_rules, transition_rules,
                      c.stochastic_expansion, c.selection_threshold, land_mismatch, target_change,
-                     tol_scale=c.area_tolerance_scale)
+                     tol_scale=c.area_tolerance_scale, rule_order=rule_order)
 
     # apply expansion and update transitions
     spat_ludataharm[reg_met_mask], target_change, trans_mat = exp
@@ -156,7 +156,7 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
 def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub_o, reg_idx, met_idx,
                order_rules, final_landclasses,
                errortol, constraint_rules, transition_rules, stochastic_expansion, selection_threshold, land_mismatch,
-               target_change, tol_scale=1.0):
+               target_change, tol_scale=1.0, rule_order=None):
     # get lengths for array creation
     l_shs = len(spat_ludataharm_sub[:, 0])
     l_ord = len(order_rules)
@@ -164,14 +164,16 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
     # initialize transition arrays
     trans_mat = np.zeros(shape=1)
 
+    if rule_order is None:
+        rule_order = RuleOrder(order_rules, transition_rules)
+
     # process PFTs in order
-    for pft_ord in np.unique(order_rules):
+    for pft in rule_order.pfts:
 
         # create a copy of the cons_data_sub array
         cons_data_sub = cons_data_sub_o.copy()
 
-        # lookup PFT and final land class
-        pft = np.where(order_rules == pft_ord)[0][0]
+        # lookup final land class
         fcs = final_landclasses[pft]
 
         # define intensification targets
@@ -218,19 +220,20 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
 
             # iterate through the conversion priority rules to find other PFTs that are contracting (where expansion
             #   can occur)
-            for pft_tcvo in np.arange(1, len(transition_rules[pft]), 1):
-
-                # get the PFT to convert and its final land class name
-                pft_toconv = np.where(transition_rules[pft, :] == pft_tcvo)[0][0]
+            for pft_toconv in rule_order.targets[pft]:
 
                 # round target change value to ensure minuscule values near zero are not counted as negative
-                if tol.round_area(target_change[reg_idx, met_idx, pft_toconv], tol_scale) < 0:
+                if tol.is_negative_area(target_change[reg_idx, met_idx, pft_toconv], tol_scale):
                     tce = 1
                 else:
                     tce = 0
 
                 # see if PFT to convert has to be converted in the target region, metric
                 notdone = (exp_target > errortol) & (tce == 1)
+
+                # nothing to convert; only the diagnostic record of the pair requires the cell search below
+                if not notdone and diagnostic != 1:
+                    continue
 
                 # identify grid cells without expanding but to-convert PFT
                 non_exist_cells = spat_ludataharm_sub[:, pft] == 0
@@ -293,7 +296,7 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
                          repeat(order_rules), repeat(final_landclasses), repeat(constraint_rules), repeat(transition_rules),
                          repeat(land_mismatch),
                          repeat(spat_ludataharm_orig_steps), repeat(target_change), repeat(yr), repeat(diag_file),
-                         repeat(transitions)))
+                         repeat(transitions), repeat(RuleOrder(order_rules, transition_rules))))
 
         pool.terminate()
     finally:
