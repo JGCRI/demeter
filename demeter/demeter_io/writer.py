@@ -189,80 +189,22 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
     return pd.DataFrame(data=arr, columns=columns)
 
 
-def write_transitions(c, s, step, transitions, sce_name):
+def write_transitions(c, transitions_df, step, sce_name):
     """
-    Save land cover transitions per time step to a CSV file.
+    Save land converted between land classes during a time step to a CSV file.
 
-    :param order_rules:
-    :param final_landclasses:
+    :param c:                       Configuration object
+    :param transitions_df:          Data frame of [region_id, metric_id, from_landclass, to_landclass, sqkm_change]
+    :param step:                    Time step
+    :param sce_name:                Scenario name
+
     """
+    df = transitions_df.copy()
+    df.insert(2, 'scenario', sce_name)
+    df.insert(3, 'year', step)
 
-    for index in np.unique(s.order_rules):
-
-        from_pft = np.where(s.order_rules == index)[0][0]
-        from_fcs = s.final_landclasses[from_pft]
-        name = sce_name
-        for idx in np.arange(1, len(s.transition_rules[from_pft]), 1):
-            to_pft = np.where(s.transition_rules[from_pft, :] == idx)[0][0]
-            to_fcs = s.final_landclasses[to_pft]
-
-            hdr = 'latitude,longitude,region_id,metric_id,sqkm_change,sce,year, from,to'
-            path = str(c.transitions_tabular_output_dir + "/lc_transitons_{0}_to_{1}_{2}_{3}.csv")
-            # create out file name
-            f = os.path.join(
-                path.format(from_fcs, to_fcs, step, name))
-
-            # create data array
-            arr = np.hstack((
-                s.spat_coords,  # latitude, longitude
-                np.reshape(s.spat_region, (-1, 1)),
-                np.reshape(s.spat_aez, (-1, 1)),
-                np.reshape(transitions[:, to_pft, from_pft], (-1, 1))))
-            num_rows = arr.shape[0]
-            new_column = np.full((num_rows, 1), fill_value=name, dtype=object)
-
-            arr = np.hstack((arr, new_column))
-
-            arr = np.column_stack((arr, np.full_like(arr[:, :1], fill_value=step, dtype=int)))
-
-            new_column = np.full((num_rows, 1), fill_value=from_fcs, dtype=object)
-
-            arr = np.hstack((arr, new_column))
-
-            new_column = np.full((num_rows, 1), fill_value=to_fcs, dtype=object)
-
-            arr = np.hstack((arr, new_column))
-
-            # print(arr)
-            # save array as text file
-            # arr = arr.astype(float)
-            file_exists = os.path.isfile(f)
-            # print(file_exists)
-            # print(name)
-            fmt = ['%g'] * 5 + ['%d', '%s']
-            # arr_str = arr.astype('<U200')  # Assuming 32 characters is enough; adjust as needed
-            # print(f)
-            with open(f, 'a') as f2:
-                if not file_exists:
-                    # If the file is empty, write the header
-
-                    np.savetxt(f2, arr, delimiter=',', comments='', header=hdr, fmt='%s')
-
-                else:
-                    # If the file is not empty, skip writing the header
-                    np.savetxt(f2, arr, delimiter=',', comments='', fmt='%s')
-
-            temp_df = pd.read_csv(f)
-
-            temp_df = temp_df.drop(["latitude", "longitude"], axis=1)
-            colnames = ["region_id", "metric_id", "sqkm_change", "sce", "year", "from_v", "to_v"]
-            temp_df.columns = colnames
-            temp_df["sqkm_change"] = pd.to_numeric(temp_df["sqkm_change"])
-            # temp_df = temp_df.rename(columns={"from": "from_value", "to": "to_value"})
-            # print(temp_df.head())
-            temp_df = temp_df.groupby(["region_id", "metric_id", "sce", "year", "from_v", "to_v"])[
-                "sqkm_change"].sum().reset_index()
-            temp_df.to_csv(f, index=False)
+    out_file = os.path.join(c.transitions_tabular_output_dir, f'landcover_transitions_{sce_name}_{step}.csv')
+    df.to_csv(out_file, index=False)
 
 
 def to_netcdf_yr(spat_lc, map_idx, lat, lon, resin, final_landclasses, yr, model, out_file):

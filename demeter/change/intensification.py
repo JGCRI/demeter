@@ -56,18 +56,17 @@ def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber,
     citz = _intensification(c.diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
                             cons_data_sub, reg_idx, metnumber, order_rules, final_landclasses, c.errortol,
                             constraint_rules, target_change, transition_rules, land_mismatch,
-                            tol_scale=c.area_tolerance_scale, rule_order=rule_order)
+                            tol_scale=c.area_tolerance_scale, rule_order=rule_order,
+                            track_transitions=transitions is not None)
 
     # apply intensification
     spat_ludataharm[reg_met_mask], trans_mat, target_change, target_intensification = citz
-    # print("Number of dimensions:", trans_mat.ndim)
-    # print("Shape:", trans_mat.shape)
-    # wdr.write_transitions(s,c.step, transitions=trans_mat)
-    # arr_reshaped = trans_mat.reshape(trans_mat.shape[0], -1)
     # np.savetxt("test.csv", arr_reshaped, delimiter=",")
     # log transition
-    if transitions.size != 1:
-        transitions[reg_met_mask, :, :] += trans_mat
+    if transitions is not None:
+        cell_index = np.flatnonzero(reg_met_mask)
+        for local_cells, from_pft, to_pft, area in trans_mat:
+            transitions.record(cell_index[local_cells], from_pft, to_pft, area)
 
 
 
@@ -158,7 +157,8 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
         target_intensification[metnumber - 1, pft] -= actual_expansion_sum
         target_change[reg, metnumber - 1, pft_toconv] += actual_expansion_sum
         target_intensification[metnumber - 1, pft_toconv] += actual_expansion_sum
-        #trans_mat[exist_cells, pft, pft_toconv] += actexpansion
+        if trans_mat is not None:
+            trans_mat.append((exist_cells, pft_toconv, pft, actexpansion))
 
         # account for target change minuscule values when evaluating notdone
         tc = tol.round_area(target_change[reg, metnumber - 1, pft_toconv], tol_scale)
@@ -182,19 +182,21 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
 
 def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
                      cons_data_sub_o, reg, metnumber, order_rules, final_landclasses, errortol, constraint_rules,
-                     target_change, transition_rules, land_mismatch, tol_scale=1.0, rule_order=None):
+                     target_change, transition_rules, land_mismatch, tol_scale=1.0, rule_order=None,
+                     track_transitions=False):
     """
     Calculate intensification.  Follow user-defined order of treatment.
 
     :param rule_order:          Precomputed RuleOrder; computed from order_rules and transition_rules if None
+    :param track_transitions:   If True, return a list of (cells, from_pft, to_pft, area) conversions
     :return:
     """
     # get lengths for array creation
     l_shs = len(spat_ludataharm_sub[:, 0])
     l_ord = len(order_rules)
 
-    # initialize transition arrays
-    trans_mat = np.zeros(shape=1)
+    # conversions made in this region and metric, if tracked
+    trans_mat = [] if track_transitions else None
 
     if rule_order is None:
         rule_order = RuleOrder(order_rules, transition_rules)

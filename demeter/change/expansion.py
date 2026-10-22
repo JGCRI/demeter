@@ -43,15 +43,17 @@ def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_l
     exp = _expansion(c.diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub, reg_idx,
                      metnum_idx, order_rules, final_landclasses, c.errortol, constraint_rules, transition_rules,
                      c.stochastic_expansion, c.selection_threshold, land_mismatch, target_change,
-                     tol_scale=c.area_tolerance_scale, rule_order=rule_order)
+                     tol_scale=c.area_tolerance_scale, rule_order=rule_order,
+                     track_transitions=transitions is not None)
 
     # apply expansion and update transitions
     spat_ludataharm[reg_met_mask], target_change, trans_mat = exp
-    # transitions[reg_met_mask, :, :] += trans_mat
 
     # calculate non-achieved change
-    if transitions.size != 1:
-        transitions[reg_met_mask, :, :] += trans_mat
+    if transitions is not None:
+        cell_index = np.flatnonzero(reg_met_mask)
+        for local_cells, from_pft, to_pft, area in trans_mat:
+            transitions.record(cell_index[local_cells], from_pft, to_pft, area)
 
 
 
@@ -127,7 +129,8 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
         target_change[reg, met_idx, pft] -= np.sum(actexpansion)
         exp_target -= np.sum(actexpansion)
         target_change[reg, met_idx, pft_toconv] += np.sum(actexpansion)
-        #trans_mat[exist_cells[candidatecells], pft, pft_toconv] += actexpansion
+        if trans_mat is not None:
+            trans_mat.append((exist_cells[candidatecells], pft_toconv, pft, actexpansion))
 
         # account for target change minuscule values when evaluating notdone
         tc = tol.round_area(target_change[reg, met_idx, pft_toconv], tol_scale)
@@ -152,13 +155,13 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
 def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, cons_data_sub_o, reg_idx, met_idx,
                order_rules, final_landclasses,
                errortol, constraint_rules, transition_rules, stochastic_expansion, selection_threshold, land_mismatch,
-               target_change, tol_scale=1.0, rule_order=None):
+               target_change, tol_scale=1.0, rule_order=None, track_transitions=False):
     # get lengths for array creation
     l_shs = len(spat_ludataharm_sub[:, 0])
     l_ord = len(order_rules)
 
-    # initialize transition arrays
-    trans_mat = np.zeros(shape=1)
+    # conversions made in this region and metric, if tracked
+    trans_mat = [] if track_transitions else None
 
     if rule_order is None:
         rule_order = RuleOrder(order_rules, transition_rules)

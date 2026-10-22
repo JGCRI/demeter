@@ -91,3 +91,62 @@ class RuleOrder:
         self.targets = {pft: [int(np.where(transition_rules[pft, :] == rank)[0][0])
                               for rank in np.arange(1, len(transition_rules[pft]), 1)]
                         for pft in self.pfts}
+
+
+class TransitionRecorder:
+    """Sparse, thread-safe record of land converted between land classes during a time step.
+
+    Replaces a dense (cells x land classes x land classes) array, which does not fit in memory at high resolution.
+
+    """
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._cells = []
+        self._from = []
+        self._to = []
+        self._area = []
+
+    def record(self, cells, from_pft, to_pft, area):
+        """Record area (km2) converted from one land class to another in each of the given grid cells."""
+        if len(cells) == 0:
+            return
+
+        with self._lock:
+            self._cells.append(np.asarray(cells, dtype=np.int64))
+            self._from.append(np.full(len(cells), from_pft, dtype=np.int64))
+            self._to.append(np.full(len(cells), to_pft, dtype=np.int64))
+            self._area.append(np.asarray(area, dtype=float))
+
+    def arrays(self):
+        """Return (cells, from_pft, to_pft, area) arrays of every recorded conversion."""
+        if not self._cells:
+            empty = np.empty(0, dtype=np.int64)
+            return empty, empty, empty, np.empty(0, dtype=float)
+
+        return (np.concatenate(self._cells), np.concatenate(self._from), np.concatenate(self._to),
+                np.concatenate(self._area))
+
+    def summarize(self, spat_region, spat_metric, final_landclasses):
+        """Total converted area per region, metric, and land class pair.
+
+        :param spat_region:             Region id of each grid cell
+        :param spat_metric:             Original metric (e.g., basin) id of each grid cell
+        :param final_landclasses:       Land class names indexed by land class position
+
+        :return:                        Data frame [region_id, metric_id, from_landclass, to_landclass, sqkm_change]
+
+        """
+        import pandas as pd
+
+        cells, from_pft, to_pft, area = self.arrays()
+        landclasses = np.asarray(final_landclasses)
+
+        df = pd.DataFrame(dict(region_id=np.asarray(spat_region)[cells],
+                               metric_id=np.asarray(spat_metric)[cells].astype(np.int64),
+                               from_landclass=landclasses[from_pft],
+                               to_landclass=landclasses[to_pft],
+                               sqkm_change=area))
+
+        keys = ['region_id', 'metric_id', 'from_landclass', 'to_landclass']
+        return df.groupby(keys, as_index=False)['sqkm_change'].sum()
