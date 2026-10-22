@@ -90,9 +90,59 @@ def texas_150m(code_path, write_outputs=False):
     return dict(kwargs=kwargs, inputs=inputs, data_dir=str(Path(config_file).parent), cleanup=None)
 
 
+# Texas bounding box used to derive a regional case from the bundled global data
+TEXAS_BOUNDS = dict(lat_min=25.5, lat_max=36.5, lon_min=-106.75, lon_max=-93.5)
+
+
+def texas_0p5deg(code_path, write_outputs=False):
+    """Regional case: the USA cells of the bundled global data inside a Texas bounding box (0.5 degree, 2010-2015).
+
+    Exercises the regional code path (kernel density grid from data bounds) that high resolution regional runs use.
+    Mapping, projected, and constraint inputs are subset to the same region and basins.
+
+    """
+    src_dir = Path(os.environ.get("DEMETER_BENCH_GLOBAL_DIR", Path(code_path) / "demeter" / "tests" / "data"))
+    tmp_dir = Path(tempfile.mkdtemp(prefix="demeter_bench_texas_"))
+    shutil.copytree(src_dir / "inputs", tmp_dir / "inputs", ignore=shutil.ignore_patterns("*.pkl", "*.zip", "*.pickle"))
+
+    b = TEXAS_BOUNDS
+    observed_name = "gcam_reg32_basin235_modis_v6_2010_mirca_2000_0p5deg_sqdeg_wgs84_07may2021.zip"
+    obs = pd.read_csv(src_dir / "inputs" / "observed" / observed_name)
+    obs = obs[obs.latitude.between(b["lat_min"], b["lat_max"]) & obs.longitude.between(b["lon_min"], b["lon_max"])
+              & (obs.region_id == 1)]
+    obs.to_csv(tmp_dir / "inputs" / "observed" / "texas_0p5deg.csv", index=False)
+
+    # constraint files are aligned to the observed rows by order; keep the rows of the retained cells
+    for f in sorted((tmp_dir / "inputs" / "constraints").glob("*.csv")):
+        cons = pd.read_csv(f, header=None)
+        cons = cons.set_index(0).loc[obs.target_fid.values].reset_index()
+        cons.to_csv(f, header=False, index=False)
+
+    regions = pd.read_csv(src_dir / "inputs" / "mapping" / "gcam_regions_32.csv")
+    regions[regions.gcam_region_id == 1].to_csv(tmp_dir / "inputs" / "mapping" / "gcam_regions_32.csv", index=False)
+
+    basins = pd.read_csv(src_dir / "inputs" / "mapping" / "gcam_basin_lookup.csv")
+    basins = basins[basins.basin_id.isin(obs.basin_id.unique())]
+    basins.to_csv(tmp_dir / "inputs" / "mapping" / "gcam_basin_lookup.csv", index=False)
+
+    gcam_df = pd.read_pickle(src_dir / "inputs" / "projected" / "land_df.pickle")
+    glu = gcam_df["child-nodes"].str.split("_").str[1]
+    gcam_df = gcam_df[(gcam_df.region == "USA") & glu.isin(basins.glu_name)].reset_index(drop=True)
+
+    kwargs = dict(run_dir=str(tmp_dir),
+                  gcamwrapper_df=gcam_df,
+                  observed_lu_file="texas_0p5deg.csv",
+                  write_outputs=write_outputs,
+                  write_logfile=False)
+
+    return dict(kwargs=kwargs, inputs=_files_under(tmp_dir / "inputs"), data_dir=str(tmp_dir),
+                cleanup=lambda: shutil.rmtree(tmp_dir, ignore_errors=True))
+
+
 CASES = {
     "global_0p5deg": global_0p5deg,
     "global_0p5deg_negcons": global_0p5deg_negcons,
+    "texas_0p5deg": texas_0p5deg,
     "texas_150m": texas_150m,
 }
 

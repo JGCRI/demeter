@@ -1,0 +1,13 @@
+{
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/allocation/csdms_constraint_allocation.csv": "4c6ecec9009c5917c894759a866c74b8c5838cab9a6d389249a15ef04f2a8623",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/allocation/csdms_kernel_weighting_allocation.csv": "8d7c2fe9d00efd93741a317f96b595772f29a9ebad5de5f38f5efa4190ae746d",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/allocation/csdms_observed_allocation.csv": "3a66f7978cac804627aeb6cc6ef0d410a1ae881605c4686af017e95233f59505",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/allocation/csdms_order_allocation.csv": "187cad607431adea925f93845445754e20359805891b3313d07f025012f143dc",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/allocation/csdms_projected_allocation.csv": "3e6a366840b13b2cd523ca284a740d3003a75cab2fa705abc3cb0e6a90db6a59",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/allocation/csdms_transition_allocation.csv": "1bd793ef0e848a4edc6d9f7fa2edc2b5e7f17809cf80b76d723361b860e28f8f",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/constraints/000_nutrientavail_hswd_0p5deg.csv": "60f4843ae432918fb678c4276f0ef568a28bff1847827fe8cd8069839c30d4cc",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/constraints/001_soilquality_hswd_0p5deg.csv": "fdbc20b140f401bf978e5b65169fd97e24151c4fc5283e3aeec43a9f81d8e246",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/mapping/gcam_basin_lookup.csv": "d4d5f96c63574e29fde8ac52a64b56fc9242152f85ce77dcd16012b32e4e1e95",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/mapping/gcam_regions_32.csv": "0866f2d25960ba49a33a129816e7e64e8ac1a8aa1854f00ebaf806800a68d1f7",
+  "/var/folders/8c/787g_pzs7wq7hljnnx3prdzr0000gn/T/demeter_bench_texas_9q1f9me7/inputs/observed/texas_0p5deg.csv": "ea5367cc1260343ad1bf58d0fe21a8ce7fbc8a4840e410614145a84947d4eb96"
+}

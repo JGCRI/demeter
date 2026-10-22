@@ -380,9 +380,10 @@ def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, timestep, scen
     logger.info('Number of regions from projected file:  {0}'.format(len(allregnumber)))
     logger.info('Number of basins from projected file:  {0}'.format(len(allmetric)))
 
-    # add Taiwan region space holder if aggregated by GCAM region
+    # add Taiwan region space holder if aggregated by GCAM region; allregaez is ordered by region number, so insert at
+    #   the position of region number 30 (the alphabetical position of the name only coincides for all 32 regions)
     if agg_level == 2:
-        taiwan_idx = np.where(allreg == 'Taiwan')[0][0]-1
+        taiwan_idx = int(np.where(allregnumber == 30)[0][0])
         allregaez.insert(taiwan_idx, [])
 
     return [model_year_list_int, gcam_data_array_km, gcam_metric, gcam_landname, gcam_regionnumber, allreg, allregnumber, allregaez,
