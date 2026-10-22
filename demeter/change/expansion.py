@@ -16,6 +16,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 
 import demeter.tolerance as tol
+from demeter.change.common import open_diagnostic
 
 
 def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met,
@@ -277,29 +278,27 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
                     order_rules, final_landclasses, constraint_rules, transition_rules, land_mismatch,
                     spat_ludataharm_orig_steps, target_change, yr, transitions):
     # open diagnostic file if user-selected
-    if c.diagnostic == 1:
-        diag_fn, diag_ext = os.path.splitext(c.expansion_diag)
-        diag_fp = '{0}_{1}{2}'.format(diag_fn, yr, diag_ext)
-        diag_file = open(diag_fp, 'w')
-        diag_file.write('region_id,metric_id,from_pft,to_pft,target_value\n')
-
-    else:
-        diag_file = None
+    diag_file = open_diagnostic(c, c.extensification_file, yr)
 
     # build region_idx, metric_idx iterator
     regix_metix = _reg_metric_iter(allregnumber, allregmet)
 
-    pool = ThreadPool(len(np.unique(regix_metix)))
+    try:
+        pool = ThreadPool(len(np.unique(regix_metix)))
 
-    pool.starmap(extense_parallel_helper,
-                 zip(regix_metix, repeat(log), repeat(c), repeat(allregnumber), repeat(allregmet),
-                     repeat(spat_ludataharm), repeat(spat_region), repeat(spat_met), repeat(kernel_vector),
-                     repeat(cons_data),
-                     repeat(order_rules), repeat(final_landclasses), repeat(constraint_rules), repeat(transition_rules),
-                     repeat(land_mismatch),
-                     repeat(spat_ludataharm_orig_steps), repeat(target_change), repeat(yr), repeat(diag_file),
-                     repeat(transitions)))
+        pool.starmap(extense_parallel_helper,
+                     zip(regix_metix, repeat(log), repeat(c), repeat(allregnumber), repeat(allregmet),
+                         repeat(spat_ludataharm), repeat(spat_region), repeat(spat_met), repeat(kernel_vector),
+                         repeat(cons_data),
+                         repeat(order_rules), repeat(final_landclasses), repeat(constraint_rules), repeat(transition_rules),
+                         repeat(land_mismatch),
+                         repeat(spat_ludataharm_orig_steps), repeat(target_change), repeat(yr), repeat(diag_file),
+                         repeat(transitions)))
 
-    pool.terminate()
+        pool.terminate()
+    finally:
+        if diag_file is not None:
+            diag_file.close()
+
 
     return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, target_change]

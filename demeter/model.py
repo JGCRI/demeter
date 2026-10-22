@@ -56,10 +56,17 @@ class Model:
 
         try:
             step = next(self.step_generator)
-            return step.output_df
 
-        except:
+        except StopIteration:
+            # all time steps have been processed
             self.cleanup()
+            return None
+
+        except Exception:
+            self.cleanup()
+            raise
+
+        return step.output_df
 
     def cleanup(self):
         """Clean up logger and model instance."""
@@ -108,26 +115,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run Demeter.')
 
     parser.add_argument('--config_file', dest='config_file', action='store', type=str, default=None, help='Full path with file name and extension to the input configuration INI file')
-    parser.add_argument('--run_dir', dest='run_dir', action='store', type=str, default='/data/demeter_data', help='Full path to the directory containing the input and output directories')
-    parser.add_argument('--start_year', dest='start_year', action='store', type=str, default=2005, help='Year to start the downscaling')
-    parser.add_argument('--end_year', dest='end_year', action='store', type=str, default=2010, help='Year to process through for the downscaling')
-    parser.add_argument('--target_years_output', dest='target_years_output', action='store', type=str, default='all', help="years to save data for, default is 'all'; otherwise a semicolon delimited string e.g, 2005;2050")
-    parser.add_argument('--gcam_database', dest='gcam_database', action='store', type=str, default='/data/gcam_output_data/database_basexdb', help="full path to a GCAM output database")
+    parser.add_argument('--run_dir', dest='run_dir', action='store', type=str, default=None, help='Full path to the directory containing the input and output directories')
+    parser.add_argument('--start_year', dest='start_year', action='store', type=str, default=None, help='Year to start the downscaling')
+    parser.add_argument('--end_year', dest='end_year', action='store', type=str, default=None, help='Year to process through for the downscaling')
+    parser.add_argument('--target_years_output', dest='target_years_output', action='store', type=str, default=None, help="years to save data for, default is 'all'; otherwise a semicolon delimited string e.g, 2005;2050")
+    parser.add_argument('--gcam_database', dest='gcam_database', action='store', type=str, default=None, help="full path to a GCAM output database")
 
     args = parser.parse_args()
 
-    if os.path.isfile is False:
-        print('ERROR:  Config file not found.')
-        print('You entered:  {0}'.format(args.config_file))
-        print('Please enter a full path file name with extension to config file and retry.')
-        raise ValidationException
+    if args.config_file is not None and not os.path.isfile(args.config_file):
+        raise ValidationException(f"Config file not found:  {args.config_file}.  Please enter a full path file name "
+                                  f"with extension to config file and retry.")
+
+    # only pass arguments the user provided so they take precedence over, but do not mask, the config file
+    model_args = {k: v for k, v in vars(args).items() if v is not None}
 
     # instantiate and run demeter
-    dm = Model(config_file=args.config_file,
-                 run_dir=args.run_dir,
-                 start_year=args.start_year,
-                 end_year=args.end_year,
-                 target_years_output=args.target_years_output,
-                 gcam_database=args.gcam_database)
+    dm = Model(**model_args)
 
     dm.execute()

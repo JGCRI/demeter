@@ -1,10 +1,12 @@
+import logging
 import os
 import zipfile
+from importlib.metadata import version
+from io import BytesIO
 
 import requests
 
-from pkg_resources import get_distribution
-from io import BytesIO as BytesIO
+logger = logging.getLogger('demeter_runtime')
 
 
 class InstallSupplement:
@@ -22,6 +24,9 @@ class InstallSupplement:
         '2.0.1': 'https://zenodo.org/record/7240315/files/config_gcam_reference.zip?download=1',
     }
 
+    # seconds to wait for the data server to respond
+    REQUEST_TIMEOUT_SECONDS = 300
+
     def __init__(self, example_data_directory):
 
         # full path to the root directory where the example dir will be stored
@@ -32,24 +37,28 @@ class InstallSupplement:
         current distribution."""
 
         # get the current version of that is installed
-        current_version = get_distribution('demeter').version
+        current_version = version('demeter')
 
         try:
             data_link = InstallSupplement.DATA_VERSION_URLS[current_version]
 
         except KeyError:
-            msg = "Link to data missing for current version:  {}.  Please contact admin."
-            raise(msg.format(current_version))
+            # fall back to the most recent data supplement when none is registered for this version
+            latest = list(InstallSupplement.DATA_VERSION_URLS)[-1]
+            logger.warning(f"No example data registered for Demeter version {current_version}; using the data "
+                           f"supplement for version {latest}.")
+            data_link = InstallSupplement.DATA_VERSION_URLS[latest]
 
         # retrieve content from URL
-        print("Downloading example data for Demeter version {}...".format(current_version))
-        r = requests.get(data_link)
+        logger.info("Downloading example data for Demeter version {}...".format(current_version))
+        r = requests.get(data_link, timeout=InstallSupplement.REQUEST_TIMEOUT_SECONDS)
+        r.raise_for_status()
 
         with zipfile.ZipFile(BytesIO(r.content)) as zipped:
 
             # extract each file in the zipped dir to the project
             for f in zipped.namelist():
-                print("Unzipped: {}".format(os.path.join(self.example_data_directory, f)))
+                logger.info("Unzipped: {}".format(os.path.join(self.example_data_directory, f)))
                 zipped.extract(f, self.example_data_directory)
 
 
