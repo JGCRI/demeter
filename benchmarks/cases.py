@@ -132,6 +132,7 @@ def texas_0p5deg(code_path, write_outputs=False):
     kwargs = dict(run_dir=str(tmp_dir),
                   gcamwrapper_df=gcam_df,
                   observed_lu_file="texas_0p5deg.csv",
+                  spatial_resolution=0.5,
                   write_outputs=write_outputs,
                   write_logfile=False)
 

@@ -8,6 +8,8 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com)
 """
 
+import logging
+
 import numpy as np
 
 from scipy import ndimage
@@ -16,6 +18,8 @@ from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 import demeter.demeter_io.writer as wdr
 import demeter.tolerance as tol
+
+logger = logging.getLogger('demeter_runtime')
 
 
 def handle_single_pft(pft_order, order_rules, final_landclasses, pft_maps, cellindexresin,
@@ -128,10 +132,16 @@ class KernelDensity:
             lon = np.arange(-180 + self.resolution / 2., 180, self.resolution)
 
         else:
-            lat = np.arange(self.spat_coords[:, 0].max() - self.resolution / 2., self.spat_coords[:, 0].min(),
-                            -self.resolution)
-            lon = np.arange(self.spat_coords[:, 1].min() + self.resolution / 2., self.spat_coords[:, 1].max(),
-                            self.resolution)
+            # grid coordinates coincide with the cell centers of the observed data, from the northernmost row and the
+            #   westernmost column, so every cell maps to its own grid position
+            max_lat = self.spat_coords[:, 0].max()
+            min_lon = self.spat_coords[:, 1].min()
+
+            n_lat = int(np.rint((max_lat - self.spat_coords[:, 0].min()) / self.resolution)) + 1
+            n_lon = int(np.rint((self.spat_coords[:, 1].max() - min_lon) / self.resolution)) + 1
+
+            lat = max_lat - self.resolution * np.arange(n_lat)
+            lon = min_lon + self.resolution * np.arange(n_lon)
 
         return lat, lon
 
@@ -219,6 +229,13 @@ class KernelDensity:
         # compute grid-cell indices to convert from native resolution to user-defined resolution.
         #   Do this only for start year.
         cellindexresin = self.compute_cell_index(lat, lon)
+
+        # cells sharing a grid position would overwrite each other's land cover in the kernel density maps
+        n_positions = len(np.unique(cellindexresin.astype(np.int64), axis=1).T)
+        if n_positions != cellindexresin.shape[1]:
+            logger.warning(f'{cellindexresin.shape[1] - n_positions} grid cells share a kernel density grid position '
+                           f'with another cell; `spatial_resolution` ({self.resolution}) may be coarser than the '
+                           f'observed data.')
 
         # prepare empty arrays used in kernel density calculation.
         kd_arrays = self.prep_arrays(lat, lon)
