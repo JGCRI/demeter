@@ -16,4 +16,5 @@ COPY . /code
 
 RUN pip install --no-cache-dir ".[gcam]"
 
-ENTRYPOINT ["python", "-m", "demeter.model"]
+ENTRYPOINT ["demeter"]
+CMD ["--help"]

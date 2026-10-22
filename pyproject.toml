@@ -36,6 +36,9 @@ test = ["pytest>=8"]
 docs = ["sphinx>=7", "sphinx-rtd-theme>=2", "m2r2>=0.3"]
 dev = ["demeter[gcam,plot,test,docs]", "ruff>=0.6", "pre-commit>=3"]
 
+[project.scripts]
+demeter = "demeter.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/JGCRI/demeter"
 Documentation = "https://jgcri.github.io/demeter/"
