@@ -150,17 +150,19 @@ def compare_accuracy(base, new, atol, rtol, top):
     return dict(verdict=verdict, atol=atol, atol_effective=atol_eff, rtol=rtol, noise_floor_km2=floor, steps=steps)
 
 
-def compare_performance(base, new, threshold_pct):
-    """Compare median timings and peak memory."""
+def compare_performance(base, new, threshold_pct, min_seconds):
+    """Compare median timings and peak memory.  Timings shorter than ``min_seconds`` are never flagged."""
     b = base["manifest"]["timing_summary"]
     n = new["manifest"]["timing_summary"]
     rows = []
     for key in [k for k in b if k in n]:
         bv, nv = b[key], n[key]
         pct = ((nv - bv) / bv * 100.0) if bv else None
+        too_short = key != "peak_rss_bytes" and max(bv, nv) < min_seconds
         rows.append(dict(metric=key, base=bv, new=nv, pct_change=pct,
-                         regression=bool(pct is not None and pct > threshold_pct)))
-    return dict(threshold_pct=threshold_pct, rows=rows, any_regression=any(r["regression"] for r in rows))
+                         regression=bool(pct is not None and pct > threshold_pct and not too_short)))
+    return dict(threshold_pct=threshold_pct, min_seconds=min_seconds, rows=rows,
+                any_regression=any(r["regression"] for r in rows))
 
 
 def _fmt(v):
@@ -222,7 +224,8 @@ def render_markdown(base, new, inputs, acc, perf):
             lines.append("")
 
     lines += ["## Performance (median across repeats)", "",
-              f"Regression threshold: +{perf['threshold_pct']:g}%", "",
+              f"Regression threshold: +{perf['threshold_pct']:g}% (timings under {perf['min_seconds']:g} s are not "
+              f"flagged)", "",
               "| metric | base | new | change |", "|---|---|---|---|"]
     for r in perf["rows"]:
         unit = " MB" if r["metric"] == "peak_rss_bytes" else " s"
@@ -241,6 +244,8 @@ def main():
     parser.add_argument("--atol", type=float, default=1e-6, help="Absolute tolerance in km² (default 1e-6)")
     parser.add_argument("--rtol", type=float, default=1e-9, help="Relative tolerance (default 1e-9)")
     parser.add_argument("--perf-threshold", type=float, default=10.0, help="Percent slowdown flagged (default 10)")
+    parser.add_argument("--perf-min-seconds", type=float, default=1.0,
+                        help="Do not flag timings shorter than this many seconds (default 1.0)")
     parser.add_argument("--top", type=int, default=15, help="Number of region-level changes to list")
     parser.add_argument("--json", help="Write the full comparison as JSON to this file")
     parser.add_argument("--markdown", help="Write the markdown report to this file")
@@ -250,7 +255,7 @@ def main():
     base, new = _load(args.base), _load(args.new)
     inputs = compare_inputs(base, new)
     acc = compare_accuracy(base, new, args.atol, args.rtol, args.top)
-    perf = compare_performance(base, new, args.perf_threshold)
+    perf = compare_performance(base, new, args.perf_threshold, args.perf_min_seconds)
 
     report = render_markdown(base, new, inputs, acc, perf)
     print(report)

@@ -7,12 +7,15 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 
 @author:  Chris R. Vernon (chris.vernon@pnnl.gov); Yannick le Page (niquya@gmail.com); Caleb J. Braun (caleb.braun@pnnl.gov)
 """
+import logging
 import os
 import numpy as np
 from scipy import io as sio
 import pandas as pd
 from demeter import ncdf_conversion as nc
 import xarray as xr
+
+logger = logging.getLogger("demeter_runtime")
 
 
 def array_to_csv(arr, out_file):
@@ -48,7 +51,6 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
     hdr = "latitude,longitude,{0}_id,region_id,water,{1}".format(metric.lower(), ','.join(final_landclasses))
 
     # format data
-    #print(spat_coords)
     arr = np.hstack((
         # latitude, longitude
         spat_coords,
@@ -89,9 +91,9 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
             path_to_sce = path_to_external + external_scenario + str(yr) + ".nc"
 
             if os.path.isfile(path_to_sce):
-                print(
-                    "User has elected to stitch new scenario with current demeter scenarios. Please make sure all scenarios are stored in correct location")
-                print("reading scenario- ", path_to_sce)
+                logger.info("Stitching external scenario into the Demeter outputs; ensure all scenarios are stored in the "
+                            "correct location")
+                logger.info(f"Reading external scenario:  {path_to_sce}")
                 src_raster = xr.open_dataset(path_to_sce)
                 target_resolution = (resolution, resolution)
                 resampled = src_raster

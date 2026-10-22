@@ -184,7 +184,6 @@ def _get_steps(df, start_step, end_step):
     for i in df.columns:
         try:
             y = int(i)
-            print(y)
             if start_step <= y <= end_step:
                 l.append(y)
         except ValueError:
@@ -381,6 +380,55 @@ def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, timestep, scen
             allmetric, metric_id_array, sequence_metric_dict]
 
 
+NETCDF_EXTENSIONS = ('.nc', '.nc4', '.netcdf')
+
+# NetCDF basemap cell size in geographic degrees; values are stored as fractions and converted to square degrees
+NETCDF_CELL_SIZE_DEGREES = 0.00151872768
+
+
+def _read_observed_netcdf(f):
+    """Read a NetCDF observed land cover basemap into a data frame of square degrees per land class.
+
+    Data variables are renamed by their `long_name` attribute when present.  Cells with missing data are dropped.
+
+    :param f:                           Full path to the NetCDF file
+
+    :return:                            Data frame with latitude, longitude, region_id, basin_id, fid, and land classes
+
+    """
+    xr_data = xr.open_dataset(f)
+    xr_df = xr_data.to_dataframe().reset_index().dropna()
+
+    # fall back to the variable name if there is no long_name
+    name_map = {var: xr_data[var].attrs.get("long_name", var) for var in xr_data.data_vars}
+    xr_df = xr_df.rename(columns=name_map)
+
+    landclass_columns = xr_df.drop(["region_id", "basin_id", "latitude", "longitude"], axis=1).columns
+
+    area = NETCDF_CELL_SIZE_DEGREES * NETCDF_CELL_SIZE_DEGREES
+
+    xr_df[landclass_columns] = xr_df[landclass_columns].multiply(area, axis="index")
+    xr_df = xr_df.dropna()
+
+    xr_df["fid"] = range(1, len(xr_df) + 1)
+
+    return xr_df
+
+
+def read_observed_table(f):
+    """Read the observed land cover basemap as a data frame from either NetCDF or a (compressed) CSV file.
+
+    :param f:                           Full path to the observed land cover file (.nc or .csv / .zip / .gz)
+
+    :return:                            Data frame of the observed land cover
+
+    """
+    if os.path.splitext(f)[1].lower() in NETCDF_EXTENSIONS:
+        return _read_observed_netcdf(f)
+
+    return pd.read_csv(f, compression='infer')
+
+
 def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, region_seq, logger=None):
     """Read and process base layer land cover file.
 
@@ -391,29 +439,7 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
     :param region_seq:                  An ordered list of expected region ids
 
     """
-    
-    xr_data = xr.open_dataset(config.observed_lu_file)
-    xr_df = xr_data.to_dataframe().reset_index().dropna()
-     #print(xr_df.head())
-     #print(max(xr_df["region_id"]))
-
-    name_map = {
-           var: xr_data[var].attrs.get("long_name", var)  # fall back to var name if no long_name
-           for var in xr_data.data_vars}
- 
-    xr_df = xr_df.rename(columns=name_map)
-
-
-    colnames_for_rename=(xr_df.drop(["region_id","basin_id","latitude","longitude"],axis=1).columns)
-
-    area= 0.00151872768*0.00151872768
-
-    xr_df[colnames_for_rename] = xr_df[colnames_for_rename].multiply(area, axis="index")   
-    xr_df= xr_df.dropna()
-
-    xr_df["fid"] = range(1, len(xr_df) + 1)
-    df= xr_df
-    #df = pd.read_csv(config.observed_lu_file, compression='infer')
+    df = read_observed_table(config.observed_lu_file)
 
     # rename columns as lower case
     df.columns = [i.lower() for i in df.columns]
@@ -483,10 +509,6 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
 
     # cell area from lat: lat_correction_factor * (lat_km at equator * lon_km at equator) * (resolution squared) = sqkm
     cellarea = np.cos(np.radians(spat_coords[:, 0])) * (111.32 * 110.57) * (config.spatial_resolution**2)*1000000
-    #import pandas as pd
-    cel= pd.DataFrame(cellarea)
-    cel.to_csv("cell_area.csv")
-    #cellarea= 2.30653376599818E-06
 
     # create an array with the actual percentage of the grid cell included in the data; some are cut by AEZ or Basin
     #   polygons others have no-data in land cover
