@@ -82,3 +82,17 @@ a warning is logged if cells still share positions (e.g., `spatial_resolution` c
 | `global_0p5deg` | IDENTICAL | global domains use the global grid |
 | `global_0p5deg_negcons` | IDENTICAL | |
 | `texas_0p5deg` | DRIFT: max 377 km²/cell; 396 (2010) / 406 (2015) of 412 cells; non-achieved 38.19 → 38.13 % / 81.57 → 81.68 % | report: `benchmarks/reports/out-1.4_texas_0p5deg.md` |
+
+## v3.0.0-b4 — 2026-10-22 — plan 1.5: no wrap-around convolution for regional domains
+
+**Status: pending sign-off.**
+
+The kernel density convolution used `mode='wrap'` everywhere, so in a regional domain land cover on the eastern edge
+raised the kernel density on the western edge (and north/south). Regional domains now use `mode='constant'` (no land
+cover outside the domain); global domains keep `wrap`.
+
+| Case | vs b3 | Notes |
+|---|---|---|
+| `global_0p5deg` | IDENTICAL | |
+| `global_0p5deg_negcons` | IDENTICAL | |
+| `texas_0p5deg` | DRIFT: max 516 km²/cell; 397 (2010) / 408 (2015) of 412 cells; non-achieved 38.13 → 38.29 % / 81.68 → 81.36 % | the 22 × 27 cell domain is mostly within reach of the 10 × 10 kernel of an edge; at 150 m only an edge band is affected. Report: `benchmarks/reports/out-1.5_texas_0p5deg.md` |
