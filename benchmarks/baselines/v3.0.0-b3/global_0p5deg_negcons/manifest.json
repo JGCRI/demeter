@@ -1,0 +1,69 @@
+{
+  "case": "global_0p5deg_negcons",
+  "label": "out-1.4-negcons",
+  "created_utc": "2026-10-22T16:20:51+00:00",
+  "code": {
+    "path": "/Users/d3y010/repos/github/demeter",
+    "demeter_file": "/Users/d3y010/repos/github/demeter/demeter/__init__.py",
+    "sha": "0369b845daa069678908c1358092d9661c2b51f4",
+    "describe": "v2.0.1-31-g0369b84-dirty",
+    "branch": "v3/out-1.4-kernel-grid",
+    "dirty": true
+  },
+  "harness": {
+    "sha": "0369b845daa069678908c1358092d9661c2b51f4",
+    "describe": "v2.0.1-31-g0369b84-dirty",
+    "branch": "v3/out-1.4-kernel-grid",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.11.7",
+    "implementation": "CPython",
+    "platform": "macOS-26.7.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "cpu_count": 16,
+    "packages": {
+      "numpy": "1.26.4",
+      "pandas": "2.2.1",
+      "scipy": "1.12.0",
+      "xarray": "2024.2.0",
+      "netCDF4": "1.6.5",
+      "configobj": "5.0.9",
+      "gcamreader": "1.5.0"
+    },
+    "determinism_env": {
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "PYTHONHASHSEED": "0"
+    }
+  },
+  "repeats": 3,
+  "write_outputs": false,
+  "noise_floor": {
+    "identical_across_runs": true,
+    "max_abs_diff_km2": 0.0
+  },
+  "timing_summary": {
+    "config_s": 0.00044091700692661107,
+    "initialize_s": 0.3703498750110157,
+    "total_s": 18.036423083001864,
+    "peak_rss_bytes": 1884291072,
+    "step_2010_s": 10.60879191699496,
+    "step_2015_s": 6.213807458014344,
+    "model: Allocation files processed": 0.00453495979309082,
+    "model: Projected landuse data prepared": 0.07848310470581055,
+    "model: Base spatial landuse data prepared": 0.11487603187561035,
+    "model: Harmonization": 0.09844803810119629,
+    "model: Constraints applied to projected and spatial data": 0.03052997589111328,
+    "model: Kernel density filter prepared": 0.040393829345703125
+  },
+  "years": [
+    2010,
+    2015
+  ],
+  "baseline_id": "v3.0.0-b3",
+  "promoted_from": "/Users/d3y010/repos/github/demeter/benchmarks/results/out14_global_0p5deg_negcons"
+}

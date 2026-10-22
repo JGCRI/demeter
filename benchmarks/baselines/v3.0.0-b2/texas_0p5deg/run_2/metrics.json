@@ -2,62 +2,41 @@
   "case": "texas_0p5deg",
   "demeter_file": "/Users/d3y010/repos/github/demeter/demeter/__init__.py",
   "timings": {
-    "config_s": 0.00040699999954085797,
-    "initialize_s": 0.02183983300346881,
-    "total_s": 0.23586466700362507
+    "config_s": 0.0004339159931987524,
+    "initialize_s": 0.01833437499590218,
+    "total_s": 0.21341562499583233
   },
   "model_performance": [
     {
       "label": "Allocation files processed",
-      "seconds": 0.005151987075805664
+      "seconds": 0.004152059555053711
     },
     {
       "label": "Projected landuse data prepared",
-      "seconds": 0.012135028839111328
+      "seconds": 0.010223150253295898
     },
     {
       "label": "Base spatial landuse data prepared",
-      "seconds": 0.001934051513671875
+      "seconds": 0.0016617774963378906
     },
     {
       "label": "Harmonization",
-      "seconds": 0.00018095970153808594
+      "seconds": 0.00016117095947265625
     },
     {
       "label": "Constraints applied to projected and spatial data",
-      "seconds": 0.0010349750518798828
+      "seconds": 0.0009138584136962891
     },
     {
       "label": "Kernel density filter prepared",
-      "seconds": 0.00037407875061035156
+      "seconds": 0.0003230571746826172
     }
   ],
-  "peak_rss_bytes": 294207488,
+  "peak_rss_bytes": 295288832,
   "steps": [
     {
       "year": 2010,
-      "step_s": 0.12944474999676459,
-      "n_cells": 412,
-      "n_landclasses": 50,
-      "total_area_km2": 710562.6842343289,
-      "conservation_max_abs_cell_change_km2": 9.094947017729282e-13,
-      "conservation_total_change_km2": 0.0,
-      "n_negative": 0,
-      "min_value": 0.0,
-      "n_nonfinite": 0,
-      "target_change_abs_km2": 516878.4349362987,
-      "residual_change_abs_km2": 196313.23088480855,
-      "non_achieved_pct": 37.98054196418596,
-      "sha256_spat_ludataharm": "c2d5769302511452066d34e4bf6269808a4a123ec3705c03fc0ef0626611625f",
-      "sha256_output": "57afe8e0542cc48080d43177347e41fc55e3bc9cabce30ea061598b70588d906",
-      "output_shape": [
-        412,
-        55
-      ]
-    },
-    {
-      "year": 2015,
-      "step_s": 0.06884720899688546,
+      "step_s": 0.11616554200008977,
       "n_cells": 412,
       "n_landclasses": 50,
       "total_area_km2": 710562.6842343288,
@@ -66,11 +45,32 @@
       "n_negative": 0,
       "min_value": 0.0,
       "n_nonfinite": 0,
-      "target_change_abs_km2": 209212.41816195447,
-      "residual_change_abs_km2": 171521.58287668347,
-      "non_achieved_pct": 81.98441774326514,
-      "sha256_spat_ludataharm": "c2d3743ce0ecdcdba5904aaeea0b483498021c2ac09998ba02e55d3715816779",
-      "sha256_output": "a5d0c4f429d7e54d8af88a0fb7bdf1682370eac50c03c85e5f3a2d899a49c2a9",
+      "target_change_abs_km2": 516878.4349362987,
+      "residual_change_abs_km2": 197376.0994369507,
+      "non_achieved_pct": 38.1861741748378,
+      "sha256_spat_ludataharm": "952cd23a8a42c84cc651426ced9aec2e83aa89f3d4a85f4ef79a12cd8cce5039",
+      "sha256_output": "5f2510ae31f81ada8a47ca8a71adfda73a61e9dfc2f730e2ba44681c487dd7a6",
+      "output_shape": [
+        412,
+        55
+      ]
+    },
+    {
+      "year": 2015,
+      "step_s": 0.06345095799770206,
+      "n_cells": 412,
+      "n_landclasses": 50,
+      "total_area_km2": 710562.6842343288,
+      "conservation_max_abs_cell_change_km2": 6.821210263296962e-13,
+      "conservation_total_change_km2": 0.0,
+      "n_negative": 0,
+      "min_value": 0.0,
+      "n_nonfinite": 0,
+      "target_change_abs_km2": 210275.28434465066,
+      "residual_change_abs_km2": 171521.5843361013,
+      "non_achieved_pct": 81.57001659546907,
+      "sha256_spat_ludataharm": "151b4bf1913530d7c5a3a7bf29c9fa716aea82c2c0a23e32630e260bc9adc84c",
+      "sha256_output": "b5c0a143f0f5b390bd294b8844f3fa53384d09ee0409c328834aac6adbf1e95a",
       "output_shape": [
         412,
         55

@@ -1,0 +1,82 @@
+{
+  "case": "texas_0p5deg",
+  "demeter_file": "/Users/d3y010/repos/github/demeter/demeter/__init__.py",
+  "timings": {
+    "config_s": 0.00040470800013281405,
+    "initialize_s": 0.018930916005047038,
+    "total_s": 0.21318137500202283
+  },
+  "model_performance": [
+    {
+      "label": "Allocation files processed",
+      "seconds": 0.004481077194213867
+    },
+    {
+      "label": "Projected landuse data prepared",
+      "seconds": 0.010261058807373047
+    },
+    {
+      "label": "Base spatial landuse data prepared",
+      "seconds": 0.0017561912536621094
+    },
+    {
+      "label": "Harmonization",
+      "seconds": 0.0001590251922607422
+    },
+    {
+      "label": "Constraints applied to projected and spatial data",
+      "seconds": 0.0008828639984130859
+    },
+    {
+      "label": "Kernel density filter prepared",
+      "seconds": 0.0004930496215820312
+    }
+  ],
+  "peak_rss_bytes": 294223872,
+  "steps": [
+    {
+      "year": 2010,
+      "step_s": 0.11684937500103842,
+      "n_cells": 412,
+      "n_landclasses": 50,
+      "total_area_km2": 710562.6842343288,
+      "conservation_max_abs_cell_change_km2": 9.094947017729282e-13,
+      "conservation_total_change_km2": 0.0,
+      "n_negative": 0,
+      "min_value": 0.0,
+      "n_nonfinite": 0,
+      "target_change_abs_km2": 516878.4349362987,
+      "residual_change_abs_km2": 197094.18947595212,
+      "non_achieved_pct": 38.13163331146568,
+      "sha256_spat_ludataharm": "c773a8bac46b2afa5bb0c70d74cc21f828b16f5b7f403d1359bedf6af9480c81",
+      "sha256_output": "ee992330174df9061c7fbe4926b2091337a4bcd8ec827714b7eef6c61d0911a4",
+      "output_shape": [
+        412,
+        55
+      ]
+    },
+    {
+      "year": 2015,
+      "step_s": 0.06356525000592228,
+      "n_cells": 412,
+      "n_landclasses": 50,
+      "total_area_km2": 710562.6842343288,
+      "conservation_max_abs_cell_change_km2": 6.821210263296962e-13,
+      "conservation_total_change_km2": 0.0,
+      "n_negative": 0,
+      "min_value": 0.0,
+      "n_nonfinite": 0,
+      "target_change_abs_km2": 209993.374383652,
+      "residual_change_abs_km2": 171521.58448151237,
+      "non_achieved_pct": 81.67952202536983,
+      "sha256_spat_ludataharm": "e081aae0f14cc9664bed27b3a9bf575ea18b5258c3f5a977d996bfffddc57d12",
+      "sha256_output": "bfcba9274857ff7b1029af382a454994a3062307a82c8eeae4d7f2f028f83d48",
+      "output_shape": [
+        412,
+        55
+      ]
+    }
+  ],
+  "n_warnings": 0,
+  "n_errors": 0
+}

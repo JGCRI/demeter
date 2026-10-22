@@ -1,18 +1,18 @@
 {
   "case": "texas_0p5deg",
-  "label": "out-1.14-texas_0p5deg",
-  "created_utc": "2026-10-22T16:15:18+00:00",
+  "label": "b2-texas-res0.5",
+  "created_utc": "2026-10-22T16:17:45+00:00",
   "code": {
     "path": "/Users/d3y010/repos/github/demeter",
     "demeter_file": "/Users/d3y010/repos/github/demeter/demeter/__init__.py",
-    "sha": "a3b7d790e8dd20dfe61b17714346b40ac878588a",
-    "describe": "v2.0.1-30-ga3b7d79-dirty",
+    "sha": "0369b845daa069678908c1358092d9661c2b51f4",
+    "describe": "v2.0.1-31-g0369b84-dirty",
     "branch": "v3/out-1.14-taiwan-index",
     "dirty": true
   },
   "harness": {
-    "sha": "a3b7d790e8dd20dfe61b17714346b40ac878588a",
-    "describe": "v2.0.1-30-ga3b7d79-dirty",
+    "sha": "0369b845daa069678908c1358092d9661c2b51f4",
+    "describe": "v2.0.1-31-g0369b84-dirty",
     "branch": "v3/out-1.14-taiwan-index",
     "dirty": true
   },
@@ -47,23 +47,23 @@
     "max_abs_diff_km2": 0.0
   },
   "timing_summary": {
-    "config_s": 0.0004166250000707805,
-    "initialize_s": 0.02130958299676422,
-    "total_s": 0.23586466700362507,
-    "peak_rss_bytes": 294273024,
-    "step_2010_s": 0.12944474999676459,
-    "step_2015_s": 0.06882058300834615,
-    "model: Allocation files processed": 0.005151987075805664,
-    "model: Projected landuse data prepared": 0.011507034301757812,
-    "model: Base spatial landuse data prepared": 0.001934051513671875,
-    "model: Harmonization": 0.00018715858459472656,
-    "model: Constraints applied to projected and spatial data": 0.0010349750518798828,
-    "model: Kernel density filter prepared": 0.00037407875061035156
+    "config_s": 0.00042908400064334273,
+    "initialize_s": 0.01833437499590218,
+    "total_s": 0.21341562499583233,
+    "peak_rss_bytes": 294469632,
+    "step_2010_s": 0.11616554200008977,
+    "step_2015_s": 0.06182204200013075,
+    "model: Allocation files processed": 0.004317045211791992,
+    "model: Projected landuse data prepared": 0.010223150253295898,
+    "model: Base spatial landuse data prepared": 0.0016617774963378906,
+    "model: Harmonization": 0.0001583099365234375,
+    "model: Constraints applied to projected and spatial data": 0.0009119510650634766,
+    "model: Kernel density filter prepared": 0.0003230571746826172
   },
   "years": [
     2010,
     2015
   ],
   "baseline_id": "v3.0.0-b2",
-  "promoted_from": "/Users/d3y010/repos/github/demeter/benchmarks/results/out114_texas_0p5deg"
+  "promoted_from": "/Users/d3y010/repos/github/demeter/benchmarks/results/b2_texas_res05"
 }

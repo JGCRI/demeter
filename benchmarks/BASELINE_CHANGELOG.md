@@ -63,3 +63,22 @@ constraints subset to match) exercises the regional code path. Its "before" is t
 
 ⚠️ High resolution regional runs made with `version/v3.0.0` at `da6ce72` and a reduced region mapping file are
 likely affected (output equal to the base map). Not verified: the 150 m inputs are unavailable.
+
+*b2 note:* `texas_0p5deg` was re-recorded with `spatial_resolution=0.5` (matching its data) before b3; the first
+recording used the legacy default of 0.25.
+
+## v3.0.0-b3 — 2026-10-22 — plan 1.4: regional kernel density grid aligned to cell centers
+
+**Status: pending sign-off.**
+
+For regional domains the kernel density grid started half a cell inside the data bounds
+(`max_lat - res/2`, `min_lon + res/2`). Each cell center was then equidistant from two grid coordinates and the tie
+went to the lower index, so the first row and column of cells landed on the same grid positions as the second and
+overwrote each other: 35 of 412 cells (8.5%) in `texas_0p5deg`. The regional grid now coincides with the cell centers;
+a warning is logged if cells still share positions (e.g., `spatial_resolution` coarser than the data).
+
+| Case | vs b2 | Notes |
+|---|---|---|
+| `global_0p5deg` | IDENTICAL | global domains use the global grid |
+| `global_0p5deg_negcons` | IDENTICAL | |
+| `texas_0p5deg` | DRIFT: max 377 km²/cell; 396 (2010) / 406 (2015) of 412 cells; non-achieved 38.19 → 38.13 % / 81.57 → 81.68 % | report: `benchmarks/reports/out-1.4_texas_0p5deg.md` |
