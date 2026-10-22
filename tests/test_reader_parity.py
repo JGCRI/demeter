@@ -94,3 +94,25 @@ def test_netcdf_and_csv_basemaps_give_same_results(tmp_path):
         index_b = pd.MultiIndex.from_arrays([coords_b[:, 0], coords_b[:, 1]])
         order = index_b.get_indexer(pd.MultiIndex.from_arrays([coords_a[:, 0], coords_a[:, 1]]))
         np.testing.assert_allclose(state_b[order], state_a, rtol=1e-9, atol=1e-6)
+
+
+def test_valid_cells_frame_matches_to_dataframe():
+    import xarray as xr
+
+    from demeter.demeter_io.reader import _valid_cells_frame
+
+    rng = np.random.default_rng(3)
+    lat = np.arange(30, 25, -0.5)
+    lon = np.arange(-100, -95, 0.5)
+
+    a = rng.random((len(lon), len(lat))).astype("float32")
+    a[a < 0.2] = np.nan
+    b = rng.random((len(lon), len(lat)))
+    b[b > 0.9] = np.nan
+
+    # dimension order differs from the coordinate order, one variable is float32, NaNs differ by variable
+    ds = xr.Dataset(dict(a=(("longitude", "latitude"), a), b=(("longitude", "latitude"), b)),
+                    coords=dict(longitude=lon, latitude=lat))
+
+    expected = ds.to_dataframe().reset_index().dropna()
+    pd.testing.assert_frame_equal(_valid_cells_frame(ds), expected, check_exact=True)

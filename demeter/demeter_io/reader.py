@@ -403,6 +403,38 @@ def _coordinate_spacing(values):
     return float(np.median(np.diff(values)))
 
 
+def _valid_cells_frame(ds):
+    """Data frame of the cells where every data variable has a value.
+
+    Equivalent to ``ds.to_dataframe().reset_index().dropna()`` (same rows, order, index, columns, and dtypes) without
+    building a frame of every grid cell first, which does not fit in memory for high resolution grids.  Falls back to
+    that expression for layouts it does not handle (data variables not spanning every dimension, or non-dimension
+    coordinates).
+
+    """
+    dims = list(ds.dims)
+    data_vars = list(ds.data_vars)
+
+    if (not data_vars or set(ds.coords) != set(dims)
+            or any(set(ds[v].dims) != set(dims) for v in data_vars)):
+        return ds.to_dataframe().reset_index().dropna()
+
+    shape = tuple(ds.sizes[d] for d in dims)
+
+    valid = np.ones(shape, dtype=bool)
+    for v in data_vars:
+        valid &= ds[v].transpose(*dims).notnull().values
+
+    index = np.flatnonzero(valid)
+    positions = np.unravel_index(index, shape)
+
+    columns = {d: ds[d].values[positions[i]] for i, d in enumerate(dims)}
+    for v in data_vars:
+        columns[v] = ds[v].transpose(*dims).values.reshape(-1)[index]
+
+    return pd.DataFrame(columns, index=pd.Index(index, dtype=np.int64))
+
+
 def _read_observed_netcdf(f, resolution, logger=None):
     """Read a NetCDF observed land cover basemap into a data frame of square degrees per land class.
 
@@ -428,7 +460,7 @@ def _read_observed_netcdf(f, resolution, logger=None):
             if spacing is not None and not np.isclose(spacing, resolution, rtol=1e-6, atol=0):
                 logger.warning(f'NetCDF {coord} spacing ({spacing}) differs from `spatial_resolution` '
                                f'({resolution}); cell areas are computed from `spatial_resolution`.')
-    xr_df = xr_data.to_dataframe().reset_index().dropna()
+    xr_df = _valid_cells_frame(xr_data)
 
     # fall back to the variable name if there is no long_name
     name_map = {var: xr_data[var].attrs.get("long_name", var) for var in xr_data.data_vars}
