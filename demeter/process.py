@@ -17,6 +17,7 @@ import pandas as pd
 import demeter.change.intensification as itz
 import demeter.change.expansion as exp
 import demeter.demeter_io.writer as wdr
+from demeter.change.common import TransitionRecorder
 
 
 class ProcessStep:
@@ -32,6 +33,7 @@ class ProcessStep:
         self.land_mismatch = None
         self.target_change = None
         self.transitions = None
+        self.transitions_df = None
         self.l_spat_region = len(self.s.spat_region)
         self.l_order_rules = len(self.s.order_rules)
         self.l_fcs = len(s.final_landclasses)
@@ -64,10 +66,8 @@ class ProcessStep:
                                                            self.s.lat, self.s.lon, self.step, self.s.kernel_vector,
                                                            self.s.weights, self.s.spat_ludataharm)
 
-        if self.config.save_transitions == 1:
-            self.transitions = np.zeros(shape=(self.l_spat_region, self.l_order_rules, self.l_order_rules))
-        else:
-            self.transitions = np.zeros(shape=1)
+        # sparse record of conversions between land classes for this time step
+        self.transitions = TransitionRecorder() if self.config.save_transitions == 1 else None
 
     def intense_pass(self, pass_num):
         """Conduct the first pass of intensification."""
@@ -141,12 +141,12 @@ class ProcessStep:
 
         # convert land cover from sqkm per grid cell per land class to fraction (n_grids, n_landclasses)
         fraction_lu = self.s.spat_ludataharm / np.tile(self.s.cellarea * self.s.celltrunk, (self.l_fcs, 1)).T
-        if (self.config.save_transitions == 1):
-            wdr.write_transitions(self.config, self.s, self.step, transitions=self.transitions,
-                                  sce_name=self.config.scenario)
+        if self.transitions is not None:
+            self.transitions_df = self.transitions.summarize(self.s.spat_region, orig_spat_aez,
+                                                             self.s.final_landclasses)
 
-        # df = pd.DataFrame(self.transitions)
-        # df.to_csv("test2.csv")
+            if self.write_outputs:
+                wdr.write_transitions(self.config, self.transitions_df, self.step, self.config.scenario)
 
         # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
 
