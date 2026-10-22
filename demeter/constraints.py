@@ -27,7 +27,7 @@ class ApplyConstraints:
     def __init__(self, allreg, allaez, final_landclasses, user_years, ixr_ixm, allregaez, spat_region, allregnumber,
                  spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_array, gcam_ludata, ngrids,
                  constraint_names, observed_landclasses, observed_array, spat_ludata, constraint_files, logger,
-                 area_tolerance_scale=1.0):
+                 area_tolerance_scale=1.0, spat_grid_id=None):
 
         self.allreg = allreg
         self.allaez = allaez
@@ -55,6 +55,7 @@ class ApplyConstraints:
         self.constraint_files = constraint_files
         self.logger = logger
         self.area_tolerance_scale = area_tolerance_scale
+        self.spat_grid_id = spat_grid_id
 
         # cached cell and GCAM row indices; region, metric, and land class assignments do not change over time steps
         self._spat_index = {}
@@ -94,16 +95,51 @@ class ApplyConstraints:
         # create an empty array to house constraints data, add one for kernel density space holder
         cons_data = np.zeros((self.ngrids, len(self.constraint_files) + 1))
 
-        # add constraint data to output array upon import, leave position 0 for kernel density rules
+        # add constraint data to output array upon import; the kernel density column is filled in later
         for f in self.constraint_files:
 
             # get index number from file name
             idx = int(os.path.basename(f).split('_')[0])
 
+            if not 0 <= idx < cons_data.shape[1]:
+                raise ValidationException(f"Constraint file '{os.path.basename(f)}' has index {idx}; constraint "
+                                          f"files must be numbered 0 to {cons_data.shape[1] - 2} in their name prefix.")
+
             # read in file and add to out array
-            cons_data[:, idx] = rdr.to_array(f, target_index=1)
+            cons_data[:, idx] = self.align_constraint(rdr.to_array(f, target_index=0), rdr.to_array(f, target_index=1),
+                                                      os.path.basename(f))
 
         return cons_data
+
+    def align_constraint(self, ids, values, name):
+        """Order constraint values to match the base layer grid cells.
+
+        Constraint files are keyed by the base layer cell id (`observed_id_field`) in their first column.  Values are
+        matched by id when every grid cell id is present; otherwise, if the file has one row per grid cell, rows are
+        assumed to be in base layer order.
+
+        :param ids:             Cell ids from the first column of the constraint file
+        :param values:          Constraint values from the second column of the constraint file
+        :param name:            File name for messages
+
+        :return:                Constraint values ordered by base layer cell
+
+        """
+        if self.spat_grid_id is not None:
+            lookup = pd.Series(values, index=ids.astype(np.int64))
+            if lookup.index.is_unique:
+                grid_ids = np.asarray(self.spat_grid_id).astype(np.int64)
+                matched = lookup.reindex(grid_ids)
+                if not matched.isna().any():
+                    return matched.to_numpy()
+
+        if len(values) != self.ngrids:
+            raise ValidationException(f"Constraint file '{name}' has {len(values)} rows and its ids do not match the "
+                                      f"base layer cell ids; expected one row per grid cell ({self.ngrids}).")
+
+        self.logger.warning(f"Constraint file '{name}' ids do not match the base layer cell ids; assuming its rows "
+                            f"are in base layer order.")
+        return values
 
     def apply_spat_constraints(self):
         """
