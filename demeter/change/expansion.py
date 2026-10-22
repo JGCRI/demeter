@@ -16,7 +16,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 
 import demeter.tolerance as tol
-from demeter.change.common import RuleOrder, open_diagnostic
+from demeter.change.common import RuleOrder, iteration_limit_reached, open_diagnostic
 
 
 def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_ludataharm, spat_region, spat_met,
@@ -53,16 +53,6 @@ def extense_parallel_helper(regix_metix, log, c, allregnumber, allregmet, spat_l
     if transitions.size != 1:
         transitions[reg_met_mask, :, :] += trans_mat
 
-    non_chg = np.sum(abs(target_change[:, :, :])) / 2.
-
-    if non_chg > 0:
-        non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(
-            abs(land_mismatch[:, :, :].flatten())) * 100
-
-    else:
-        non_chg_per = 0
-
-    # log.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
 
 
 # close file if diagnostic
@@ -79,7 +69,10 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
     if diagnostic == 1:
         diag_file.write('{},{},{},{},{}\n'.format(reg + 1, met_idx + 1, pft, pft_toconv, exp_target))
 
+    iterations = 0
+
     while notdone:
+        iterations += 1
         # grid cells with both the expanding and to-convert PFT
         exist_cells = np.where(non_exist_cells & (spat_ludataharm_sub[:, pft_toconv] > 0))[0]
 
@@ -146,6 +139,9 @@ def _convert_pft(notdone, exp_target, met_idx, pft_toconv, spat_ludataharm_sub, 
                   & (np.sum(spat_ludataharm_sub[exist_cells, pft_toconv]) > errortol) \
                   & (len(exist_cells) > 0) \
                   & (np.sum(mean_cons_cells) != len(mean_cons_cells))
+
+        if notdone and iteration_limit_reached(iterations, reg, met_idx + 1, pft, pft_toconv):
+            notdone = False
 
         if diagnostic == 1:
             diag_file.write('{},{},{},{},{}\n'.format(reg + 1, met_idx + 1, pft, pft_toconv, exp_target))
@@ -304,5 +300,15 @@ def apply_expansion(log, c, allregnumber, allregmet, spat_ludataharm, spat_regio
         if diag_file is not None:
             diag_file.close()
 
+    # report non-achieved change once all regions and metrics are processed
+    non_chg = np.sum(abs(target_change[:, :, :])) / 2.
+
+    if non_chg > 0:
+        non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(
+            abs(land_mismatch[:, :, :].flatten())) * 100
+    else:
+        non_chg_per = 0
+
+    log.info("Total non-achieved expansion change for time step {0}:  {1} km2 ({2} %)".format(yr, non_chg, non_chg_per))
 
     return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, target_change]

@@ -101,3 +101,33 @@ def test_output_dirs_unique_within_same_second(tmp_path):
     b.dt = a.dt
     b_dir = b.get_outdir(os.path.join(str(run_dir), "outputs"))
     assert b_dir != a.output_dir
+
+
+def test_odd_kernel_distance_rejected():
+    with pytest.raises(ValidationException, match="even"):
+        _config(kernel_distance=9)
+
+
+def test_logger_handlers_do_not_accumulate(tmp_path):
+    import logging
+
+    logger = logging.getLogger("demeter_runtime")
+    for _ in range(3):
+        c = _config()
+        c.logger_ini.close_logger()
+    console = [h for h in logger.handlers if getattr(h, "_demeter_console", False)]
+    assert len(console) == 1
+
+
+def test_file_handler_removed_on_close(tmp_path):
+    import logging
+
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    (run_dir / "inputs").symlink_to(DATA_DIR / "inputs")
+    c = ReadConfig(dict(run_dir=str(run_dir), write_outputs=True, write_logfile=True, save_netcdf_yr=0,
+                        projected_lu_file="land.csv"))
+    logger = logging.getLogger("demeter_runtime")
+    assert any(isinstance(h, logging.FileHandler) for h in logger.handlers)
+    c.logger_ini.close_logger()
+    assert not any(isinstance(h, logging.FileHandler) for h in logger.handlers)

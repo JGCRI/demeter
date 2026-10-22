@@ -244,7 +244,12 @@ class ReadConfig:
         self.selection_threshold = self.valid_limit(run_params.get('selection_threshold', 0.75),
                                                     'selection_threshold', [0.0, 1.0], 'float')
         self.kernel_distance = self.valid_limit(run_params.get('kernel_distance', 10), 'kernel_distance',
-                                                [0, 10000000000], 'int')
+                                                [2, 10000000000], 'int')
+
+        # an odd kernel has a cell at distance zero from its center, which receives an infinite inverse square weight
+        if self.kernel_distance % 2 != 0:
+            raise ValidationException(f'Parameter "kernel_distance" must be an even number of grid cells; value '
+                                      f'entered was {self.kernel_distance}.')
         self.target_years_output = self.set_target(run_params.get('target_years_output', 'all'))
         self.save_tabular = self.valid_integer(run_params.get('save_tabular', 0), 'save_tabular', [0, 1])
         # self.map_transitions=self.valid_integer(run_params.get('map_transitions', 0), 'map_transitions', [0, 1])
@@ -458,13 +463,13 @@ class ReadConfig:
 
         """
         if kind == 'file' and os.path.isfile(f) is False:
-            logging.error("File not found:  {0}".format(f))
-            logging.error("Confirm path and retry.")
+            logging.getLogger('demeter_runtime').error("File not found:  {0}".format(f))
+            logging.getLogger('demeter_runtime').error("Confirm path and retry.")
             raise IOError('File not found: {0}. Confirm path and retry.'.format(f))
 
         elif kind == 'dir' and os.path.isdir(f) is False:
-            logging.error("Directory not found:  {0}".format(f))
-            logging.error("Confirm path and retry.")
+            logging.getLogger('demeter_runtime').error("Directory not found:  {0}".format(f))
+            logging.getLogger('demeter_runtime').error("Confirm path and retry.")
             raise IOError('Directory not found: {0}. Confirm path and retry.'.format(f))
 
         else:
@@ -485,7 +490,7 @@ class ReadConfig:
                     os.makedirs(d)
 
             except:
-                logging.error("ERROR:  Failed to create directory.")
+                logging.getLogger('demeter_runtime').error("ERROR:  Failed to create directory.")
                 raise
 
     @staticmethod
@@ -494,11 +499,11 @@ class ReadConfig:
         try:
             agg = int(a)
         except TypeError:
-            logging.error('"agg_level" parameter must be either  1 or 2.  Exiting...')
+            logging.getLogger('demeter_runtime').error('"agg_level" parameter must be either  1 or 2.  Exiting...')
             raise
 
         if agg < 1 or agg > 2:
-            logging.error('"agg_level" parameter must be either 1 or 2.  Exiting...')
+            logging.getLogger('demeter_runtime').error('"agg_level" parameter must be either 1 or 2.  Exiting...')
             raise ValidationException
 
         else:

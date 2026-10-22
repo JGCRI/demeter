@@ -26,15 +26,22 @@ class Logger:
         # generate log formatter
         self.log_format = logging.Formatter(self.LOG_FORMAT_STRING)
 
+        # handlers owned by this instance and removed by close_logger
+        self.handlers = []
+
         # logger console handler
         self.console_handler()
 
     def console_handler(self):
-        """Construct console handler."""
+        """Construct the console handler; only one is attached per process however many models are created."""
+
+        if any(getattr(h, '_demeter_console', False) for h in self.logger.handlers):
+            return
 
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(logging.INFO)
         console_handler.setFormatter(self.log_format)
+        console_handler._demeter_console = True
         self.logger.addHandler(console_handler)
 
     def file_handler(self, logfile, write_logfile):
@@ -46,16 +53,13 @@ class Logger:
             file_handler.setLevel(logging.INFO)
             file_handler.setFormatter(self.log_format)
             self.logger.addHandler(file_handler)
+            self.handlers.append(file_handler)
 
-    @staticmethod
-    def close_logger():
-        """Shutdown logger."""
+    def close_logger(self):
+        """Close and remove the handlers this instance added, so later runs do not log to this run's file."""
 
-        # Remove logging handlers
-        logger = logging.getLogger()
-
-        for handler in logger.handlers[:]:
+        for handler in self.handlers:
             handler.close()
-            logger.removeHandler(handler)
+            self.logger.removeHandler(handler)
 
-        logging.shutdown()
+        self.handlers = []
