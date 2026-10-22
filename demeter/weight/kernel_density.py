@@ -69,27 +69,31 @@ class KernelDensity:
         self.ngrids = ngrids
         self.order_rules = order_rules
 
+    # minimum longitudinal extent in degrees of the observed data for the domain to be treated as global
+    GLOBAL_LONGITUDE_EXTENT = 350.0
+
+    def is_global(self):
+        """Return True if the observed data spans the globe longitudinally."""
+        return (self.spat_coords[:, 1].max() - self.spat_coords[:, 1].min()) >= self.GLOBAL_LONGITUDE_EXTENT
+
     def global_system(self):
         """
         Create geographic latitude and longitude coordinates for map grid system from user-defined resolution.
 
-        :param resolution:              User-defined resolution setting
+        A global domain uses the full global grid; a regional domain uses a grid inferred from the bounds of the
+        observed data.
+
         :return:                        latitude and longitude arrays
         """
-        min_lat = self.spat_coords[:, 0].min()
-        max_lat = self.spat_coords[:, 0].max()
-        min_lon = self.spat_coords[:, 1].min()
-        max_lon = self.spat_coords[:, 1].max()
+        if self.is_global():
+            lat = np.arange(90 - self.resolution / 2., -90, -self.resolution)
+            lon = np.arange(-180 + self.resolution / 2., 180, self.resolution)
 
-        # get latitude and longitude for grid system
-        #lat = np.arange(90 - self.resolution / 2., -90, -self.resolution)
-        #lon = np.arange(-180 + self.resolution / 2., 180, self.resolution)
-
-        lat = np.arange(self.spat_coords[:, 0].max() - self.resolution / 2., self.spat_coords[:, 0].min(), -self.resolution)
-        lon = np.arange(self.spat_coords[:, 1].min() + self.resolution / 2., self.spat_coords[:, 1].max(),  self.resolution)
-
-        #lat = np.arange(34.667 - self.resolution / 2., 25.999, -self.resolution).round(3)
-        #lon = np.arange(-103.833 + self.resolution / 2., -93.082, self.resolution).round(3)
+        else:
+            lat = np.arange(self.spat_coords[:, 0].max() - self.resolution / 2., self.spat_coords[:, 0].min(),
+                            -self.resolution)
+            lon = np.arange(self.spat_coords[:, 1].min() + self.resolution / 2., self.spat_coords[:, 1].max(),
+                            self.resolution)
 
         return lat, lon
 
