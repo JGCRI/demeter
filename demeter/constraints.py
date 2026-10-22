@@ -9,6 +9,7 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 """
 import os
 import numpy as np
+import pandas as pd
 
 import demeter.demeter_io.reader as rdr
 import demeter.tolerance as tol
@@ -20,6 +21,8 @@ class ValidationException(Exception):
 
 
 class ApplyConstraints:
+
+    _EMPTY_INDEX = np.array([], dtype=np.intp)
 
     def __init__(self, allreg, allaez, final_landclasses, user_years, ixr_ixm, allregaez, spat_region, allregnumber,
                  spat_aez, gcam_landclasses, gcam_regionnumber, gcam_aez, gcam_landname, gcam_array, gcam_ludata, ngrids,
@@ -53,8 +56,30 @@ class ApplyConstraints:
         self.logger = logger
         self.area_tolerance_scale = area_tolerance_scale
 
+        # cached cell and GCAM row indices; region, metric, and land class assignments do not change over time steps
+        self._spat_index = {}
+        self._gcam_groups = None
+
         # assign array holding constraints
         self.cons_data = self.compile_constraints()
+
+    def spat_index(self, reg, met):
+        """Indices of base layer cells in the region and metric at the given positions."""
+        key = (reg, met)
+        if key not in self._spat_index:
+            self._spat_index[key] = np.where((self.spat_region == self.allregnumber[reg])
+                                             & (self.spat_aez == self.allregaez[reg][met]))[0]
+        return self._spat_index[key]
+
+    def gcam_index(self, reg, met, gix):
+        """Indices of GCAM rows in the region and metric at the given positions for a GCAM land class."""
+        if self._gcam_groups is None:
+            # ascending row positions per (region, metric, land class), as np.where would return them
+            keys = pd.DataFrame(dict(region=self.gcam_regionnumber, metric=self.gcam_aez, landname=self.gcam_landname))
+            self._gcam_groups = keys.groupby(['region', 'metric', 'landname'], sort=False).indices
+
+        key = (self.allregnumber[reg], self.allregaez[reg][met], self.gcam_landclasses[gix])
+        return self._gcam_groups.get(key, self._EMPTY_INDEX)
 
     def compile_constraints(self):
         """
@@ -154,7 +179,7 @@ class ApplyConstraints:
         for reg, met, lix in l:
 
             # create array of index from base layer data that meets criteria
-            regaezind = np.where((self.spat_region == self.allregnumber[reg]) & (self.spat_aez == self.allregaez[reg][met]))[0]
+            regaezind = self.spat_index(reg, met)
 
             # populate base land use layer summary array with summed area in km2
             spat_landmatrix[reg, self.allregaez[reg][met] - 1, lix] = np.sum(spat_ludataharm[regaezind, lix])
@@ -189,9 +214,7 @@ class ApplyConstraints:
             t = self.gcam_array[gix, :]
 
             # create array of index from GCAM land use data that meets criteria
-            regaezlandind = np.where((self.gcam_regionnumber == self.allregnumber[reg])
-                                     & (self.gcam_aez == self.allregaez[reg][met])
-                                     & (self.gcam_landname == self.gcam_landclasses[gix]))[0]
+            regaezlandind = self.gcam_index(reg, met, gix)
 
             # check for missing aggregation setting in GCAM allocation file
             if np.sum(t) == 0:

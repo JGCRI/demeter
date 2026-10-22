@@ -9,6 +9,8 @@ Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 import os
 import threading
 
+import numpy as np
+
 
 class DiagnosticWriter:
     """Thread-safe writer for a per time step diagnostic CSV file.
@@ -47,3 +49,29 @@ def open_diagnostic(c, base_file, yr):
         return DiagnosticWriter(base_file, yr)
 
     return None
+
+
+class RuleOrder:
+    """Precomputed processing order of land classes and of their conversion targets.
+
+    Equivalent to looking up ``np.where(order_rules == value)[0][0]`` for each unique treatment order value and
+    ``np.where(transition_rules[pft, :] == rank)[0][0]`` for each conversion priority rank, computed once instead of
+    in every region and metric.
+
+    :param order_rules:         Treatment order value per land class
+    :param transition_rules:    Conversion priority rank (land class x land class)
+
+    """
+
+    def __init__(self, order_rules, transition_rules):
+
+        order_rules = np.asarray(order_rules)
+        transition_rules = np.asarray(transition_rules)
+
+        # land class indices in the order they are treated
+        self.pfts = [int(np.where(order_rules == value)[0][0]) for value in np.unique(order_rules)]
+
+        # for each land class, the land classes to convert in order of priority
+        self.targets = {pft: [int(np.where(transition_rules[pft, :] == rank)[0][0])
+                              for rank in np.arange(1, len(transition_rules[pft]), 1)]
+                        for pft in self.pfts}

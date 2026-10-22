@@ -18,14 +18,14 @@ import pandas as pd
 
 import demeter.demeter_io.writer as wdr
 import demeter.tolerance as tol
-from demeter.change.common import open_diagnostic
+from demeter.change.common import RuleOrder, open_diagnostic
 
 
 def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
                             spat_landmatrix, gcam_landmatrix, yr_idx, d_regid_nm, target_change, spat_ludataharm,
                             spat_met, kernel_vector, cons_data, final_landclasses, spat_ludataharm_orig_steps, yr,
                             land_mismatch, constraint_rules, transition_rules, log, pass_number, c, diag_file,
-                            transitions):
+                            transitions, rule_order=None):
     reg_idx, met_idx = regix_metix
     # print("processing region " + str(reg_idx))
 
@@ -56,7 +56,7 @@ def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber,
     citz = _intensification(c.diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
                             cons_data_sub, reg_idx, metnumber, order_rules, final_landclasses, c.errortol,
                             constraint_rules, target_change, transition_rules, land_mismatch,
-                            tol_scale=c.area_tolerance_scale)
+                            tol_scale=c.area_tolerance_scale, rule_order=rule_order)
 
     # apply intensification
     spat_ludataharm[reg_met_mask], trans_mat, target_change, target_intensification = citz
@@ -187,9 +187,11 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
 
 def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensification, kernel_vector_sub,
                      cons_data_sub_o, reg, metnumber, order_rules, final_landclasses, errortol, constraint_rules,
-                     target_change, transition_rules, land_mismatch, tol_scale=1.0):
+                     target_change, transition_rules, land_mismatch, tol_scale=1.0, rule_order=None):
     """
     Calculate intensification.  Follow user-defined order of treatment.
+
+    :param rule_order:          Precomputed RuleOrder; computed from order_rules and transition_rules if None
     :return:
     """
     # get lengths for array creation
@@ -199,14 +201,16 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
     # initialize transition arrays
     trans_mat = np.zeros(shape=1)
 
+    if rule_order is None:
+        rule_order = RuleOrder(order_rules, transition_rules)
+
     # process PFTs in order
-    for pft_ord in np.unique(order_rules):
+    for pft in rule_order.pfts:
 
         # create a copy of the cons_data_sub array
         cons_data_sub = cons_data_sub_o.copy()
 
-        # lookup PFT and final land class
-        pft = np.where(order_rules == pft_ord)[0][0]
+        # lookup final land class
         fcs = final_landclasses[pft]
 
         # define intensification targets
@@ -254,19 +258,20 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
 
             # iterate through the conversion priority rules to find other PFTs that are contracting (where expansion
             #   can occur)
-            for pft_tcvo in np.arange(1, len(transition_rules[pft]), 1):
-
-                # get the PFT to convert and its final land class name
-                pft_toconv = np.where(transition_rules[pft, :] == pft_tcvo)[0][0]
+            for pft_toconv in rule_order.targets[pft]:
 
                 # round target change value to ensure minuscule values near zero are not counted as negative
-                if tol.round_area(target_change[reg, metnumber - 1, pft_toconv], tol_scale) < 0:
+                if tol.is_negative_area(target_change[reg, metnumber - 1, pft_toconv], tol_scale):
                     tce = 1
                 else:
                     tce = 0
 
                 # see if PFT to convert has to be converted in the target region, metric
                 notdone = (int_target > errortol) & (tce == 1)
+
+                # nothing to convert; only the diagnostic record of the pair requires the cell search below
+                if not notdone and diagnostic != 1:
+                    continue
 
                 # identify grid cells with both expanding and to-convert PFT
                 exist_cells = np.where((spat_ludataharm_sub[:, pft] > 0) & (spat_ludataharm_sub[:, pft_toconv] > 0))[0]
@@ -360,7 +365,8 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
                          repeat(spat_met), repeat(kernel_vector), repeat(cons_data), repeat(final_landclasses),
                          repeat(spat_ludataharm_orig_steps), repeat(yr),
                          repeat(land_mismatch), repeat(constraint_rules), repeat(transition_rules), repeat(log),
-                         repeat(pass_number), repeat(c), repeat(diag_file), repeat(transitions)))
+                         repeat(pass_number), repeat(c), repeat(diag_file), repeat(transitions),
+                         repeat(RuleOrder(order_rules, transition_rules))))
         # for each region
         # for index, pkg in enumerate(regix_metix):
 

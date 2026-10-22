@@ -21,6 +21,7 @@ DEFAULT_ERRORTOL_KM2 = 0.001
 
 # decimals (in km2 at the reference resolution) used to remove values very close to zero from target change
 ROUNDING_DECIMALS = 4
+ROUNDING_FACTOR = 10.0 ** ROUNDING_DECIMALS
 
 # value assigned to zero kernel density cells (in km2 at the reference resolution) so they can still be selected
 KERNEL_MIN_SEED = 0.0000000001
@@ -52,6 +53,16 @@ def round_area(value, scale):
 
     """
     return round(value / scale, ROUNDING_DECIMALS) * scale
+
+
+def is_negative_area(value, scale):
+    """Return True if ``round_area(value, scale) < 0`` without rounding.
+
+    Mirrors NumPy's rounding (``rint(x * 10**decimals) / 10**decimals``) applied to ``np.float64`` values: the rounded
+    value is negative exactly when the scaled product is below -0.5.
+
+    """
+    return (value / scale) * ROUNDING_FACTOR < -0.5
 
 
 def round_area_array(arr, scale):
