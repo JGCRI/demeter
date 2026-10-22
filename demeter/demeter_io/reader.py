@@ -14,7 +14,6 @@ import logging
 
 import numpy as np
 import pandas as pd
-import gcamreader
 import xarray as xr
 
 
@@ -215,6 +214,12 @@ def read_gcam_land(db_path, db_file, f_queries, d_basin_name, subreg, crop_water
 
     """
 
+    try:
+        import gcamreader
+    except ImportError as e:
+        raise ImportError("Reading a GCAM database requires `gcamreader`; install it with "
+                          "`pip install demeter[gcam]`.") from e
+
     # instantiate GCAM db
     conn = gcamreader.LocalDBConn(db_path, db_file, suppress_gabble=False)
 
@@ -240,24 +245,21 @@ def read_gcam_land(db_path, db_file, f_queries, d_basin_name, subreg, crop_water
         land_alloc['landclass'] = land_alloc['landclass'].str.replace('RootTuber', 'Root_Tuber')
 
         land_alloc['metric_id'] = land_alloc['metric_id'].map(d_basin_name)
-        land_alloc.drop('mgmt', axis=1, inplace=True)
-
+        land_alloc = land_alloc.drop('mgmt', axis=1)
     # filter out irrigated or rainfed crops, as specified in the config file
     if crop_water_src != 'BOTH':
         land_alloc = land_alloc[land_alloc['use'] == crop_water_src]
 
     # drop unused columns
-    land_alloc.drop(['Units', 'scenario', 'land-allocation', 'use'], axis=1, inplace=True)
-
+    land_alloc = land_alloc.drop(['Units', 'scenario', 'land-allocation', 'use'], axis=1)
     # sum hi and lo management allocation (and biomass_type)
     land_alloc = land_alloc.groupby(['region', 'landclass', 'metric_id', 'Year']).sum()
-    land_alloc.reset_index(inplace=True)
-
+    land_alloc = land_alloc.reset_index()
     # convert shape
     piv = pd.pivot_table(land_alloc, values='value',
                          index=['region', 'landclass', 'metric_id'],
                          columns='Year', fill_value=0)
-    piv.reset_index(inplace=True)
+    piv = piv.reset_index()
     piv['metric_id'] = piv['metric_id'].astype(np.int64)
     piv.columns = piv.columns.astype(str)
 
@@ -509,7 +511,8 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
         logger.warning('Water not represented in base layer.  Representing water as 0 percent of grid.')
         spat_water = np.zeros_like(spat_grid_id)
 
-    spat_region = df['region_id'].values
+    # copy: modified in place below and pandas Copy-on-Write returns read-only arrays
+    spat_region = df['region_id'].to_numpy(copy=True)
     spat_metric = df['{0}_id'.format(config.metric)].values
 
     # ensure that the observed data represents all expected region ids

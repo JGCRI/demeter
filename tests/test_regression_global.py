@@ -1,7 +1,7 @@
 """Regression test of the bundled global 0.5 degree case against the committed benchmark baseline.
 
 Compares region x basin x land class area totals and the residual (non-achieved) target change for every time step
-against ``benchmarks/baselines/<BASELINE_ID>/global_0p5deg/summary_<year>.npz``.  Cell-level comparison is done by
+against ``benchmarks/baselines/<CURRENT>/global_0p5deg/summary_<year>.npz``.  Cell-level comparison is done by
 ``benchmarks/compare.py`` against the full baseline arrays.
 
 """
@@ -19,7 +19,8 @@ sys.path.insert(0, str(BENCH_DIR))
 import cases  # noqa: E402
 from run_benchmark import _region_totals  # noqa: E402
 
-BASELINE_ID = "v3.0.0-b4"
+# the current baseline id is the single line of benchmarks/baselines/CURRENT
+BASELINE_ID = (BENCH_DIR / "baselines" / "CURRENT").read_text().strip()
 BASELINE_DIR = BENCH_DIR / "baselines" / BASELINE_ID / "global_0p5deg"
 
 # absolute tolerance in km2 for aggregated areas; cross-platform floating point noise is ~1e-11 km2 per cell

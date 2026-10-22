@@ -1,11 +1,16 @@
 """End-to-end run writing every output type, including diagnostics."""
 
+import sys
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "demeter" / "tests" / "data"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = REPO_ROOT / "demeter" / "tests" / "data"
+sys.path.insert(0, str(REPO_ROOT / "benchmarks"))
+
+from cases import read_projected  # noqa: E402
 
 
 @pytest.mark.slow
@@ -16,7 +21,7 @@ def test_run_writes_outputs_and_diagnostics(tmp_path):
     run_dir.mkdir()
     (run_dir / "inputs").symlink_to(DATA_DIR / "inputs")
 
-    gcam_df = pd.read_pickle(DATA_DIR / "inputs" / "projected" / "land_df.pickle")
+    gcam_df = read_projected(DATA_DIR)
 
     model = demeter.run_model(run_dir=str(run_dir), gcamwrapper_df=gcam_df, write_outputs=True, write_logfile=True,
                               diagnostic=1, save_tabular=1, save_netcdf_yr=1)

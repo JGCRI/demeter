@@ -19,6 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 BENCH_DIR = REPO_ROOT / "benchmarks"
 sys.path.insert(0, str(BENCH_DIR))
 
+from cases import read_projected  # noqa: E402
 from run_benchmark import _region_totals  # noqa: E402
 
 BASELINE_DIR = BENCH_DIR / "baselines" / "v3.0.0-b0" / "global_0p5deg"
@@ -46,7 +47,7 @@ def _scaled_inputs(tmp_path):
     with zipfile.ZipFile(obs_zip, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr(obs_zip.stem + ".csv", df.to_csv(index=False))
 
-    gcam_df = pd.read_pickle(DATA_DIR / "inputs" / "projected" / "land_df.pickle")
+    gcam_df = read_projected(DATA_DIR)
     gcam_df["land-allocation"] = gcam_df["land-allocation"] / SCALE
 
     return tmp_path, gcam_df

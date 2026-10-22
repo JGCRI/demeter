@@ -9,6 +9,7 @@ Every change is compared against a frozen baseline; changes that alter outputs m
 |---|---|---|
 | `global_0p5deg` | bundled `demeter/tests/data` (32 regions, 235 basins, 2010–2015) | matches the historical regression test configuration |
 | `global_0p5deg_negcons` | as above with the `soil_quality` constraint made negative | exercises negative-constraint handling |
+| `texas_0p5deg` | bundled USA cells inside a Texas bounding box; mapping, projected, and constraints subset to match | regional code path |
 | `texas_150m` | user-supplied; set `DEMETER_BENCH_150M_CONFIG=/path/to/config.ini` | data stays outside git |
 
 ## Workflow
@@ -18,11 +19,11 @@ Every change is compared against a frozen baseline; changes that alter outputs m
 python benchmarks/run_benchmark.py --case global_0p5deg --out benchmarks/results/my_change --repeat 3
 
 # 2. compare against the current baseline
-python benchmarks/compare.py benchmarks/baselines/v3.0.0-b0/global_0p5deg benchmarks/results/my_change
+python benchmarks/compare.py benchmarks/baselines/$(cat benchmarks/baselines/CURRENT)/global_0p5deg benchmarks/results/my_change
 
 # 3. only for an intentional, reviewed output change: promote a new baseline and log it
 python benchmarks/promote_baseline.py benchmarks/results/my_change --id v3.0.0-b1
-#    then add an entry to benchmarks/BASELINE_CHANGELOG.md and bump BASELINE_ID in tests/test_regression_global.py
+#    then add an entry to benchmarks/BASELINE_CHANGELOG.md and write the new id to benchmarks/baselines/CURRENT
 ```
 
 Benchmark any revision with `--code-path`, e.g. a worktree of a tag:
@@ -55,6 +56,10 @@ and `--fail-on-perf` turns them into exit code 3.
   CPU count, pinned thread environment, input file checksums, and run-to-run noise floor.
 
 ## Baseline storage
+
+When a baseline has no full arrays (e.g., in CI), `compare.py` compares the committed state hashes first
+(IDENTICAL) and otherwise the region × basin × land class totals and residual target change. Redistribution
+*within* a region × basin cannot be detected at that level.
 
 `benchmarks/baselines/<id>/<case>/` commits only small files (`manifest.json`, `run_*/metrics.json`,
 `run_0/inputs.json`, `summary_<year>.npz`, `SHA256SUMS`). The full arrays (`run_0/base.npz`, `run_0/step_*.npz`)

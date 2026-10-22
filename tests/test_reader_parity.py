@@ -16,6 +16,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "benchmarks"))
 
+from cases import read_projected  # noqa: E402
 from run_benchmark import _region_totals  # noqa: E402
 
 from demeter.demeter_io.reader import read_observed_table  # noqa: E402
@@ -55,7 +56,7 @@ def test_read_observed_table_netcdf_matches_csv(tmp_path):
 def _run(run_dir, observed_file, **kwargs):
     import demeter
 
-    gcam_df = pd.read_pickle(DATA_DIR / "inputs" / "projected" / "land_df.pickle")
+    gcam_df = read_projected(DATA_DIR)
     model = demeter.Model(run_dir=str(run_dir), gcamwrapper_df=gcam_df, write_outputs=False, write_logfile=False,
                           use_constraints=0, observed_lu_file=observed_file, **kwargs)
     model.initialize()

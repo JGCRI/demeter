@@ -1,11 +1,7 @@
 include README.md
 include LICENSE
 include DISCLAIMER
-include Dockerfile
-include .dockerignore
 include demeter/data/*
-include demeter/tests/data/comp_data/*
-include demeter/tests/data/inputs/allocation/*
-include demeter/tests/data/inputs/constraints/*
-include demeter/tests/data/inputs/observed/*
-include demeter/tests/data/inputs/projected/*
+recursive-include demeter/tests/data/inputs *.csv *.zip *.csv.gz
+prune demeter/tests/data/comp_data
+global-exclude *.pkl *.pickle *.py[cod] .DS_Store

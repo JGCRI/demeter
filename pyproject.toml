@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "demeter"
+dynamic = ["version"]
+description = "A land use land cover change disaggregation model"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "BSD-2-Clause" }
+authors = [{ name = "Chris R. Vernon", email = "chris.vernon@pnnl.gov" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "configobj>=5.0.6",
+    "netcdf4>=1.6.4",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "requests>=2.20.0",
+    "scipy>=1.11",
+    "xarray>=2024.1",
+]
+
+[project.optional-dependencies]
+gcam = ["gcamreader>=1.2.5"]
+plot = ["matplotlib>=3.4.2"]
+test = ["pytest>=8"]
+docs = ["sphinx>=7", "sphinx-rtd-theme>=2", "m2r2>=0.3"]
+dev = ["demeter[gcam,plot,test,docs]", "ruff>=0.6", "pre-commit>=3"]
+
+[project.urls]
+Homepage = "https://github.com/JGCRI/demeter"
+Documentation = "https://jgcri.github.io/demeter/"
+Issues = "https://github.com/JGCRI/demeter/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "demeter._version.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["demeter*"]
+
+[tool.setuptools.package-data]
+demeter = ["data/*", "tests/data/inputs/*/*"]
+
+[tool.setuptools.exclude-package-data]
+demeter = ["tests/data/comp_data/*", "tests/data/inputs/projected/*.pkl", "tests/data/inputs/projected/*.pickle"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: full model runs (deselect with '-m \"not slow\"')"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["docs", "build", "notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B"]
+ignore = ["E501"]

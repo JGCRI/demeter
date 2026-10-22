@@ -16,6 +16,22 @@ from pathlib import Path
 import pandas as pd
 
 
+def read_projected(data_dir):
+    """Read the bundled gcamwrapper-format projected land allocation.
+
+    Uses the compressed CSV when present (parsed with exact float round trip) and falls back to the pickle shipped by
+    older revisions so cases also run against them.
+
+    """
+    projected_dir = Path(data_dir) / "inputs" / "projected"
+    csv = projected_dir / "land_df.csv.gz"
+    if csv.exists():
+        # pandas >= 3 parses floats with exact round trip by default and deprecates the option
+        kwargs = {} if int(pd.__version__.split(".")[0]) >= 3 else dict(float_precision="round_trip")
+        return pd.read_csv(csv, **kwargs)
+    return pd.read_pickle(projected_dir / "land_df.pickle")
+
+
 def _files_under(directory):
     """Return a sorted list of all files under a directory."""
     return sorted(str(p) for p in Path(directory).rglob("*") if p.is_file())
@@ -29,14 +45,12 @@ def global_0p5deg(code_path, write_outputs=False):
 
     """
     data_dir = Path(os.environ.get("DEMETER_BENCH_GLOBAL_DIR", Path(code_path) / "demeter" / "tests" / "data"))
-    projected = data_dir / "inputs" / "projected" / "land_df.pickle"
-
     kwargs = dict(run_dir=str(data_dir),
-                  gcamwrapper_df=pd.read_pickle(projected),
+                  gcamwrapper_df=read_projected(data_dir),
                   write_outputs=write_outputs,
                   write_logfile=False)
 
-    inputs = [f for f in _files_under(data_dir / "inputs") if not f.endswith(".pkl")]
+    inputs = [f for f in _files_under(data_dir / "inputs") if not f.endswith((".pkl", ".pickle"))]
 
     return dict(kwargs=kwargs, inputs=inputs, data_dir=str(data_dir), cleanup=None)
 
@@ -60,7 +74,7 @@ def global_0p5deg_negcons(code_path, write_outputs=False):
     df.to_csv(cons_file, index=False)
 
     kwargs = dict(run_dir=str(tmp_dir),
-                  gcamwrapper_df=pd.read_pickle(tmp_dir / "inputs" / "projected" / "land_df.pickle"),
+                  gcamwrapper_df=read_projected(src_dir),
                   write_outputs=write_outputs,
                   write_logfile=False)
 
@@ -125,7 +139,7 @@ def texas_0p5deg(code_path, write_outputs=False):
     basins = basins[basins.basin_id.isin(obs.basin_id.unique())]
     basins.to_csv(tmp_dir / "inputs" / "mapping" / "gcam_basin_lookup.csv", index=False)
 
-    gcam_df = pd.read_pickle(src_dir / "inputs" / "projected" / "land_df.pickle")
+    gcam_df = read_projected(src_dir)
     glu = gcam_df["child-nodes"].str.split("_").str[1]
     gcam_df = gcam_df[(gcam_df.region == "USA") & glu.isin(basins.glu_name)].reset_index(drop=True)
 

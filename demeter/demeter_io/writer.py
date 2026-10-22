@@ -108,9 +108,9 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
                 sce_df = resampled.to_dataframe()
 
                 # Reset the index to convert the multi-index into columns
-                sce_df.reset_index(inplace=True)
+                sce_df = sce_df.reset_index()
                 # Resample the raster to the target resolution
-                sce_df.dropna(inplace=True)
+                sce_df = sce_df.dropna()
                 sce_df = sce_df[['lat', 'lon', 'value']]
 
                 sce_df = sce_df.rename(columns={'value': 'frac', 'lat': 'latitude',
@@ -133,8 +133,7 @@ def lc_timestep_csv(c, yr, final_landclasses, spat_coords, metric_id_array, gcam
                 t_temp['adj'] = t_temp['frac'] - t_temp[external_scenario_PFT_name]
                 # t_temp['adj'] = np.where(t_temp['adj'] < 0, 0, t_temp['adj'])
 
-                t_temp.dropna(inplace=True)
-
+                t_temp = t_temp.dropna()
                 lu_file_for_col = or_df.drop(
                     ['latitude', 'longitude', external_scenario_PFT_name, 'region_id', f'{metric.lower()}_id'], axis=1)
                 pft_columns = lu_file_for_col.columns
