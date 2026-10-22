@@ -4,7 +4,8 @@ from datetime import date
 import xarray as xr
 import pandas as pd
 import numpy as np
-from scipy import stats
+
+from demeter._version import __version__
 
 logger = logging.getLogger("demeter_runtime")
 
@@ -30,17 +31,17 @@ class DemeterToNetcdf:
                  start_year: int = 2005,
                  end_year: int = 2005,
                  year_interval: int = 5,
-                 xmin: float = -104.700861, #float = -180,
-                 xmax: float = -92.748474, #float = 180,
-                 ymin: float = 25.703538, #float = -90,
-                 ymax: float = 34.929809, #float = 90,
-                 resolution: float = 0.00151872768, #float = 0.05,
-                 regrid_resolution: float = 0.00151872768, #float = 0.05,
-                 project_name: str = "demeter",
+                 xmin: float = -180,
+                 xmax: float = 180,
+                 ymin: float = -90,
+                 ymax: float = 90,
+                 resolution: float = 0.05,
+                 regrid_resolution: float = 0.05,
+                 project_name: str = "",
                  scenario_name: str = "",
-                 demeter_version: str = "2.0.0",
+                 demeter_version: str = __version__,
                  csv_input=True,
-                 df=pd.DataFrame(data=None, columns=['a'])):
+                 df=None):
 
         self.base_year_file = base_year_file
         self.resolution = resolution
@@ -48,7 +49,7 @@ class DemeterToNetcdf:
         self.scenario_name = scenario_name
         self.demeter_version = demeter_version
         self.csv_input = csv_input
-        self.df = df
+        self.df = pd.DataFrame(data=None, columns=['a']) if df is None else df
         self.regrid_resolution = regrid_resolution
         self.regrid = False
 
@@ -216,7 +217,8 @@ class DemeterToNetcdf:
                 encoding = {str(i): DemeterToNetcdf.COMPRESSION_PARAMETERS}
 
                 # check if file exists. If it does, append to it else create a new file
-                output_file_name = f"{self.project_name + '_'}demeter_{self.scenario_name + '_'}{target_year}.nc"
+                prefix = f"{self.project_name}_" if self.project_name else ""
+                output_file_name = f"{prefix}demeter_{self.scenario_name}_{target_year}.nc"
                 output_file_path = os.path.join(output_file_directory, output_file_name)
 
                 if os.path.exists(output_file_path):

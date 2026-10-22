@@ -391,21 +391,40 @@ def read_gcam_file(gcam_data, gcam_landclasses, start_yr, end_yr, timestep, scen
 
 NETCDF_EXTENSIONS = ('.nc', '.nc4', '.netcdf')
 
-# NetCDF basemap cell size in geographic degrees; values are stored as fractions and converted to square degrees
-NETCDF_CELL_SIZE_DEGREES = 0.00151872768
+
+def _coordinate_spacing(values):
+    """Median spacing of a coordinate array in its own units; None if it cannot be determined."""
+    values = np.unique(np.asarray(values, dtype=float))
+    if len(values) < 2:
+        return None
+    return float(np.median(np.diff(values)))
 
 
-def _read_observed_netcdf(f):
+def _read_observed_netcdf(f, resolution, logger=None):
     """Read a NetCDF observed land cover basemap into a data frame of square degrees per land class.
 
-    Data variables are renamed by their `long_name` attribute when present.  Cells with missing data are dropped.
+    Land class values are stored as cell fractions and converted to square degrees using the configured
+    `spatial_resolution`, which is checked against the coordinate spacing of the file.  Data variables are renamed
+    by their `long_name` attribute when present.  Cells with missing data are dropped.
 
     :param f:                           Full path to the NetCDF file
+    :param resolution:                  Configured spatial resolution in geographic degrees
+    :param logger:                      Logger instance
 
     :return:                            Data frame with latitude, longitude, region_id, basin_id, fid, and land classes
 
     """
+    if logger is None:
+        logger = logging.getLogger('demeter_runtime')
+
     xr_data = xr.open_dataset(f)
+
+    for coord in ('latitude', 'longitude'):
+        if coord in xr_data.coords:
+            spacing = _coordinate_spacing(xr_data[coord].values)
+            if spacing is not None and not np.isclose(spacing, resolution, rtol=1e-6, atol=0):
+                logger.warning(f'NetCDF {coord} spacing ({spacing}) differs from `spatial_resolution` '
+                               f'({resolution}); cell areas are computed from `spatial_resolution`.')
     xr_df = xr_data.to_dataframe().reset_index().dropna()
 
     # fall back to the variable name if there is no long_name
@@ -414,7 +433,7 @@ def _read_observed_netcdf(f):
 
     landclass_columns = xr_df.drop(["region_id", "basin_id", "latitude", "longitude"], axis=1).columns
 
-    area = NETCDF_CELL_SIZE_DEGREES * NETCDF_CELL_SIZE_DEGREES
+    area = resolution * resolution
 
     xr_df[landclass_columns] = xr_df[landclass_columns].multiply(area, axis="index")
     xr_df = xr_df.dropna()
@@ -424,16 +443,18 @@ def _read_observed_netcdf(f):
     return xr_df
 
 
-def read_observed_table(f):
+def read_observed_table(f, resolution, logger=None):
     """Read the observed land cover basemap as a data frame from either NetCDF or a (compressed) CSV file.
 
     :param f:                           Full path to the observed land cover file (.nc or .csv / .zip / .gz)
+    :param resolution:                  Configured spatial resolution in geographic degrees
+    :param logger:                      Logger instance
 
     :return:                            Data frame of the observed land cover
 
     """
     if os.path.splitext(f)[1].lower() in NETCDF_EXTENSIONS:
-        return _read_observed_netcdf(f)
+        return _read_observed_netcdf(f, resolution, logger)
 
     return pd.read_csv(f, compression='infer')
 
@@ -448,13 +469,13 @@ def read_base(config, observed_landclasses, sequence_metric_dict, metric_seq, re
     :param region_seq:                  An ordered list of expected region ids
 
     """
-    df = read_observed_table(config.observed_lu_file)
+    if logger is None:
+        logger = logging.getLogger('demeter_runtime')
+
+    df = read_observed_table(config.observed_lu_file, config.spatial_resolution, logger)
 
     # rename columns as lower case
     df.columns = [i.lower() for i in df.columns]
-
-    if logger is None:
-        logger = logging.getLogger('demeter_runtime')
 
     # create array with only spatial land cover values
     missing = [i for i in observed_landclasses if i not in df.columns]

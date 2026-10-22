@@ -216,6 +216,13 @@ class ReadConfig:
         self.stitch_external = self.valid_integer(run_params.get('stitch_external', 0), 'stitch_external', [1, 0])
         self.path_to_external = (run_params.get('path_to_external', self.input_dir))
 
+        # number of leading land classes treated as natural (unmanaged) when stitching an external scenario
+        self.stitch_natural_pft_count = self.valid_limit(run_params.get('stitch_natural_pft_count', 17),
+                                                         'stitch_natural_pft_count', [0, 1000000], 'int')
+
+        # optional project name used as a prefix for NetCDF output file names
+        self.project_name = str(run_params.get('project_name', ''))
+
         # area tolerances scale with grid cell area relative to the resolution they were calibrated for
         self.area_tolerance_scale = tol.area_tolerance_scale(self.spatial_resolution)
 
