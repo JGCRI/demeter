@@ -150,17 +150,12 @@ class ProcessStep:
 
         # create a NetCDF file of land cover fraction for each year by grid cell containing each land class
 
-        # save land cover data for the time step
-        if (self.config.save_netcdf_yr == 1) and (self.step in self.config.target_years_output):
-            if self.config.save_tabular == 1:
-                write_csv = True
-            else:
-                write_csv = False
+        # build land cover data for target years; tabular and NetCDF files are written independently of each other
+        if self.step in self.config.target_years_output:
+            write_csv = self.config.save_tabular == 1
+            write_ncdf = self.config.save_netcdf_yr == 1
 
             self.config.logger.info("Generating projected land cover data for time step {0}...".format(self.step))
-            write_ncdf = False
-            if self.config.save_netcdf_yr == 1:
-                write_ncdf = True
             return wdr.lc_timestep_csv(self.config, self.step, self.s.final_landclasses, self.s.spat_coords,
                                        orig_spat_aez,
                                        self.s.spat_region, self.s.spat_water, self.s.cellarea, self.s.spat_ludataharm,
