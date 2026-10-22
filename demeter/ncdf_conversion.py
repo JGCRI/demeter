@@ -1,9 +1,12 @@
+import logging
 import os
 from datetime import date
 import xarray as xr
 import pandas as pd
 import numpy as np
 from scipy import stats
+
+logger = logging.getLogger("demeter_runtime")
 
 
 class DemeterToNetcdf:
@@ -154,7 +157,7 @@ class DemeterToNetcdf:
         if self.csv_input:
             lu_file = pd.read_csv(target_file_name, index_col=False)
         else:
-            print("Reading ncdf data from array")
+            logger.debug("Reading NetCDF data from array")
             lu_file = self.df
         # drop coordinate fields
         lu_file_for_col = lu_file.drop(['latitude', 'longitude'], axis=1)
@@ -164,7 +167,7 @@ class DemeterToNetcdf:
         for index, i in enumerate(columns):
             if i != "water.1":
 
-                print(f"Processing LT for ncdf : {i} in year {target_year} in scenario {self.scenario_name}")
+                logger.debug(f"Processing land type for NetCDF:  {i} in year {target_year} in scenario {self.scenario_name}")
 
                 temp_lu_file = lu_file[['latitude', 'longitude', i]].copy()
 
