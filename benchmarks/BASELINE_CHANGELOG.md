@@ -23,3 +23,21 @@ Notes:
   point noise; the legacy test compared with pandas' default rtol of 1e-5).
 - `global_0p5deg_negcons` is nondeterministic run to run, confirming plan item 1.1 (constraint weights mutated in
   place by concurrent region/basin threads). It is kept as a baseline to verify the fix restores determinism.
+
+## v3.0.0-b1 — 2026-10-22 — plan 1.1: constraint weights no longer mutated in place
+
+**Status: pending sign-off.**
+
+`cons_rules_pft = constraint_rules[:, pft]` was a view, so flipping the sign of negative weights changed the shared
+array. Only the first region × basin × land class processed (in nondeterministic thread order) applied a negative
+constraint as negative; all later ones treated it as positive. The weights are now copied.
+
+| Case | vs b0 | Deterministic | Notes |
+|---|---|---|---|
+| `global_0p5deg` | IDENTICAL | yes | no negative constraints |
+| `global_0p5deg_negcons` | DRIFT: max 1,612 km²/cell; 11,808 (2010) / 12,418 (2015) of 67,420 cells; non-achieved 31.9859 → 31.9802 % (2010), 88.6525 → 88.6327 % (2015) | **yes** (was 9.41 km² run-to-run noise) | reports: `benchmarks/reports/out-1.1_*.md` |
+
+Code: branch `v3/out-1.1-constraint-copy`. Timing: 16.9 s (b0: 34.0 s; speedups from earlier output-neutral commits).
+
+Open question raised by this fix (plan 1.19): negative constraints are "inverted" as `1 + x` (since the first
+commit, 513dd79) rather than `1 - x`, which shifts rather than inverts their effect.

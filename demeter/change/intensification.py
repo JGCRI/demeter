@@ -225,7 +225,8 @@ def _intensification(diagnostic, diag_file, spat_ludataharm_sub, target_intensif
             # print("\nIntensification desired for:  {0}, {1}".format(fcs, int_target))
 
             # retrieve constraints for the PFT (e.g., soil quality, protection status, etc.)
-            cons_rules_pft = constraint_rules[:, pft]
+            # copy: the sign of negative weights is flipped below and must not leak into other regions or steps
+            cons_rules_pft = constraint_rules[:, pft].copy()
 
             # add kernel density to the constraints and normalize their value
             kdc = kernel_vector_sub[:, pft] / np.nanmax([tol.KERNEL_NORMALIZATION_FLOOR * tol_scale,
