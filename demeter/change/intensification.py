@@ -18,7 +18,7 @@ import pandas as pd
 
 import demeter.demeter_io.writer as wdr
 import demeter.tolerance as tol
-from demeter.change.common import RuleOrder, open_diagnostic
+from demeter.change.common import RuleOrder, iteration_limit_reached, open_diagnostic
 
 
 def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber, allregmet, spat_ludata,
@@ -69,17 +69,6 @@ def intense_parallel_helper(regix_metix, spat_region, order_rules, allregnumber,
     if transitions.size != 1:
         transitions[reg_met_mask, :, :] += trans_mat
 
-    # calculate non-achieved change
-
-    non_chg = np.sum(abs(target_change[:, :, :])) / 2.0
-
-    if non_chg > 0:
-        non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(
-            abs(land_mismatch[:, :, :].flatten())) * 100
-    else:
-        non_chg_per = 0
-
-    log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(pass_number, yr, non_chg, non_chg_per))
 
 
 def diff_diagnostic(diag_outdir, d_regid_nm, gcam_landmatrix, spat_landmatrix, reg, yr, yr_idx):
@@ -122,7 +111,10 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
     if diagnostic == 1:
         diag_file.write('{},{},{},{},{}\n'.format(reg + 1, metnumber, pft, pft_toconv, int_target))
 
+    iterations = 0
+
     while notdone:
+        iterations += 1
         # grid cells with both the expanding and to-convert PFT
         exist_cells = np.where((spat_ludataharm_sub[:, pft] > 0)
                                & (spat_ludataharm_sub[:, pft_toconv] > 0))[0]
@@ -178,6 +170,9 @@ def _convert_pft(notdone, int_target, metnumber, pft_toconv, spat_ludataharm_sub
                   & (np.sum(spat_ludataharm_sub[exist_cells, pft_toconv]) > errortol) \
                   & (len(exist_cells) > 0) \
                   & (np.sum(mean_cons_cells) != len(mean_cons_cells))
+
+        if notdone and iteration_limit_reached(iterations, reg, metnumber, pft, pft_toconv):
+            notdone = False
 
         if diagnostic == 1:
             diag_file.write('{},{},{},{},{}\n'.format(reg + 1, metnumber, pft, pft_toconv, int_target))
@@ -377,5 +372,17 @@ def apply_intensification(log, pass_number, c, spat_region, order_rules, allregn
     finally:
         if diag_file is not None:
             diag_file.close()
+
+    # report non-achieved change once all regions and metrics are processed
+    non_chg = np.sum(abs(target_change[:, :, :])) / 2.0
+
+    if non_chg > 0:
+        non_chg_per = np.sum(abs(target_change[:, :, :].flatten())) / np.sum(
+            abs(land_mismatch[:, :, :].flatten())) * 100
+    else:
+        non_chg_per = 0
+
+    log.info("Total non-achieved intensification change for pass {0} time step {1}:  {2} km2 ({3} %)".format(
+        pass_number, yr, non_chg, non_chg_per))
 
     return [spat_ludataharm, spat_ludataharm_orig_steps, land_mismatch, cons_data, target_change]

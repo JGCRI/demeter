@@ -6,10 +6,26 @@ Copyright (c) 2017, Battelle Memorial Institute
 Open source under license BSD 2-Clause - see LICENSE and DISCLAIMER
 """
 
+import logging
 import os
 import threading
 
 import numpy as np
+
+
+# upper bound on land swap iterations for a single land class pair in one region and metric
+MAX_CONVERSION_ITERATIONS = 100000
+
+logger = logging.getLogger('demeter_runtime')
+
+
+def iteration_limit_reached(iterations, reg, met, pft, pft_toconv):
+    """Return True and warn if a conversion loop has reached the iteration cap."""
+    if iterations >= MAX_CONVERSION_ITERATIONS:
+        logger.warning(f'Land conversion stopped after {MAX_CONVERSION_ITERATIONS} iterations without converging for '
+                       f'region index {reg}, metric {met}, land class {pft} from {pft_toconv}.')
+        return True
+    return False
 
 
 class DiagnosticWriter:

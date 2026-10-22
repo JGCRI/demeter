@@ -166,16 +166,16 @@ def _check_constraints(allocate, actual):
     if (l_alloc > 0) and (l_act > 0):
         m1 = "Land classes in allocation file but not in projected model data:  {0}".format(alloc_extra)
         m2 = "Land classes in projected model but not in allocation file:  {0}".format(act_extra)
-        logging.warning(m1)
-        logging.warning(m2)
+        logging.getLogger('demeter_runtime').warning(m1)
+        logging.getLogger('demeter_runtime').warning(m2)
 
     elif (l_alloc > 0) and (l_act == 0):
         m1 = "Land classes in allocation file but not in projected model data:  {0}".format(alloc_extra)
-        logging.warning(m1)
+        logging.getLogger('demeter_runtime').warning(m1)
 
     elif (l_alloc == 0) and (l_act > 0):
         m2 = "Land classes in projected model but not in allocation file:  {0}".format(act_extra)
-        logging.warning(m2)
+        logging.getLogger('demeter_runtime').warning(m2)
 
 
 def _get_steps(df, start_step, end_step):
