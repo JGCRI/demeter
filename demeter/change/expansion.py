@@ -189,7 +189,8 @@ def _expansion(diagnostic, diag_file, spat_ludataharm_sub, kernel_vector_sub, co
             # print("\nExpansion desired for:  {0}, {1}".format(fcs, round(exp_target, 4)))
 
             # retrieve expansion constraints for the PFT (e.g., soil quality, protection status, etc.)
-            cons_rules_pft = constraint_rules[:, pft]
+            # copy: the sign of negative weights is flipped below and must not leak into other regions or steps
+            cons_rules_pft = constraint_rules[:, pft].copy()
 
             # add kernel density to the constraints and normalize their value (all constraints are [0 1])
             kdc = kernel_vector_sub[:, pft] / np.nanmax([tol.KERNEL_NORMALIZATION_FLOOR * tol_scale,

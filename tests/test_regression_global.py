@@ -19,7 +19,7 @@ sys.path.insert(0, str(BENCH_DIR))
 import cases  # noqa: E402
 from run_benchmark import _region_totals  # noqa: E402
 
-BASELINE_ID = "v3.0.0-b0"
+BASELINE_ID = "v3.0.0-b1"
 BASELINE_DIR = BENCH_DIR / "baselines" / BASELINE_ID / "global_0p5deg"
 
 # absolute tolerance in km2 for aggregated areas; cross-platform floating point noise is ~1e-11 km2 per cell
